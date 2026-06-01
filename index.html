@@ -454,7 +454,7 @@ function doPost(e) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // LANGKAH 2: Menghantar data ke Firestore & Google Sheets
+        // LANGKAH 2: Menghantar data ke Google Sheets & Firestore
         const handleFormSubmission = async function(e) {
             e.preventDefault();
             
@@ -484,7 +484,7 @@ function doPost(e) {
                 }
             }
 
-            // 2. Simpan ke Google Sheet menggunakan Apps Script URL
+            // 2. Simpan ke Google Sheet menggunakan POST CORS Bypass (Menggunakan text/plain untuk mengelakkan sekatan pre-flight)
             const gasTargetUrl = localStorage.getItem('gas_sheets_url');
             if (gasTargetUrl) {
                 try {
@@ -492,10 +492,11 @@ function doPost(e) {
                         method: 'POST',
                         mode: 'no-cors',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'text/plain' // CORS-friendly, bypasses standard preflight check blockages
                         },
                         body: JSON.stringify(payload)
                     });
+                    console.log("Data dihantar dengan jayanya ke Google Sheets.");
                 } catch (gasError) {
                     console.error("Gagal menyambung ke Google Sheets:", gasError);
                 }
@@ -585,7 +586,7 @@ function doPost(e) {
             lucide.createIcons();
         };
 
-        // Menambah Event Listener yang sangat selamat (Mengelakkan isu runtime modules)
+        // Menambah Event Listener yang sangat selamat
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             
