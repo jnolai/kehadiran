@@ -246,7 +246,7 @@
                     <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i>
                     <span>Kongsi Rekod</span>
                 </button>
-                <button id="btn-reset-system" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
+                <button id="btn-reset-system" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
                     <i data-lucide="user-plus-2" class="w-4 h-4"></i>
                     <span>Daftar Baru</span>
                 </button>
@@ -331,6 +331,11 @@ function doPost(e) {
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // =========================================================================
+        //  URL Google Apps Script telah disematkan di sini secara kekal (Hardcoded)
+        // =========================================================================
+        const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwj5diMO_xQAGxckDcAnvoFZvGqEbSKdN-G_5BjQzyPac5VCZMj49QqBfJKY-n0p2ph/exec"; 
+
         let firebaseApp, auth, db, appId;
         let currentUser = null;
 
@@ -414,7 +419,7 @@ function doPost(e) {
             }
         };
 
-        // Simpan URL Google Apps Script ke LocalStorage
+        // Simpan URL Google Apps Script ke LocalStorage (Fallback Tempatan)
         const saveSetupConfig = function() {
             const urlVal = document.getElementById('gas-url').value.trim();
             if (urlVal && !urlVal.startsWith('http')) {
@@ -422,7 +427,7 @@ function doPost(e) {
                 return;
             }
             localStorage.setItem('gas_sheets_url', urlVal);
-            showToast("Konfigurasi integrasi Google Sheet berjaya disimpan!");
+            showToast("Konfigurasi integrasi Google Sheet berjaya disimpan secara tempatan!");
             toggleSetupPanel();
         };
 
@@ -484,15 +489,20 @@ function doPost(e) {
                 }
             }
 
-            // 2. Simpan ke Google Sheet menggunakan POST CORS Bypass (Menggunakan text/plain untuk mengelakkan sekatan pre-flight)
-            const gasTargetUrl = localStorage.getItem('gas_sheets_url');
+            // 2. Simpan ke Google Sheet menggunakan URL tetap (Hardcoded) atau simpanan tempatan (LocalStorage)
+            let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
+            if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
+                // Fallback kepada simpanan tempatan jika belum diisi di dalam kod
+                gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
+            }
+
             if (gasTargetUrl) {
                 try {
                     await fetch(gasTargetUrl, {
                         method: 'POST',
                         mode: 'no-cors',
                         headers: {
-                            'Content-Type': 'text/plain' // CORS-friendly, bypasses standard preflight check blockages
+                            'Content-Type': 'text/plain' 
                         },
                         body: JSON.stringify(payload)
                     });
@@ -501,7 +511,7 @@ function doPost(e) {
                     console.error("Gagal menyambung ke Google Sheets:", gasError);
                 }
             } else {
-                console.warn("Tiada URL Google Apps Script yang dikonfigurasikan.");
+                console.warn("Ralat: Tiada URL Google Apps Script yang ditetapkan.");
             }
 
             showSuccessScreen(payload);
