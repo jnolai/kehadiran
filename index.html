@@ -61,7 +61,7 @@
         <span id="toast-message" class="text-xs font-semibold">Mesej makluman...</span>
     </div>
 
-    <!-- Header & Butang Konfigurasi -->
+    <!-- Header & Butang Konfigurasi (Butang Set Google Sheet telah disembunyikan menggunakan kelas "hidden") -->
     <header class="relative z-10 px-6 py-4 flex justify-between items-center border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center border border-brand-500/30">
@@ -72,7 +72,8 @@
                 <span class="text-[10px] text-brand-400 font-bold uppercase tracking-widest block">Kehadiran Mesyuarat</span>
             </div>
         </div>
-        <button id="btn-open-setup" class="text-slate-400 hover:text-brand-400 transition-colors duration-200 flex items-center gap-1.5 text-xs bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+        <!-- Kelas "hidden" ditambah di sini supaya butang tidak dipaparkan pada skrin -->
+        <button id="btn-open-setup" class="hidden text-slate-400 hover:text-brand-400 transition-colors duration-200 flex items-center gap-1.5 text-xs bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
             <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
             <span>Set Google Sheet</span>
         </button>
@@ -246,7 +247,7 @@
                     <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i>
                     <span>Kongsi Rekod</span>
                 </button>
-                <button id="btn-reset-system" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
+                <button id="btn-reset-system" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
                     <i data-lucide="user-plus-2" class="w-4 h-4"></i>
                     <span>Daftar Baru</span>
                 </button>
@@ -332,7 +333,7 @@ function doPost(e) {
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================
-        //  URL Google Apps Script telah disematkan di sini secara kekal (Hardcoded)
+        //  URL Google Apps Script anda telah disematkan secara kekal (Hardcoded)
         // =========================================================================
         const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwj5diMO_xQAGxckDcAnvoFZvGqEbSKdN-G_5BjQzyPac5VCZMj49QqBfJKY-n0p2ph/exec"; 
 
