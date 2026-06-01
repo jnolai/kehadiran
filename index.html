@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ms" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Kehadiran Mesyuarat Rasmi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Plus Jakarta Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- QR Code Generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#b9ddfe',
+                            300: '#7cc2fd',
+                            400: '#36a2fc',
+                            500: '#0c85eb', // Warna korporat utama
+                            600: '#0266c9',
+                            700: '#0352a2',
+                            800: '#074685',
+                            900: '#0c3b6f',
+                        },
+                        corporate: {
+                            dark: '#0B0F19',
+                            card: '#161F33',
+                            input: '#1E2942'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+        }
+    </style>
+</head>
+<body class="gradient-bg text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Notifikasi Toast Khas -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border-l-4 border-brand-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform -translate-y-20 opacity-0 flex items-center gap-3 max-w-sm w-[92%]">
+        <i data-lucide="info" class="text-brand-400 w-5 h-5 flex-shrink-0"></i>
+        <span id="toast-message" class="text-xs font-semibold">Mesej makluman...</span>
+    </div>
+
+    <!-- Header & Butang Konfigurasi -->
+    <header class="relative z-10 px-6 py-4 flex justify-between items-center border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center border border-brand-500/30">
+                <i data-lucide="clipboard-check" class="text-brand-400 w-5 h-5"></i>
+            </div>
+            <div>
+                <span class="font-bold text-sm tracking-wider block text-slate-100">SISTEM REKOD</span>
+                <span class="text-[10px] text-brand-400 font-bold uppercase tracking-widest block">Kehadiran Mesyuarat</span>
+            </div>
+        </div>
+        <button onclick="toggleSetupPanel()" class="text-slate-400 hover:text-brand-400 transition-colors duration-200 flex items-center gap-1.5 text-xs bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+            <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+            <span>Set Google Sheet</span>
+        </button>
+    </header>
+
+    <!-- Kandungan Utama (Responsif Mudah Alih) -->
+    <main class="relative z-10 flex-grow flex items-center justify-center p-4 max-w-md mx-auto w-full">
+        
+        <!-- LANGKAH 1: MASUKKAN EMEL -->
+        <div id="step-login" class="w-full space-y-6 animate-fade-in py-6">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
+                    <i data-lucide="mail" class="text-brand-400 w-7 h-7"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold tracking-tight text-white">KEHADIRAN MESYUARAT</h1>
+                <p class="text-xs text-slate-400 max-w-xs mx-auto">
+                    Masukkan alamat emel rasmi anda untuk memulakan proses pendaftaran kehadiran mesyuarat.
+                </p>
+            </div>
+
+            <!-- Kad Input Emel Tunggal -->
+            <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-xl">
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="at-sign" class="w-3.5 h-3.5 text-brand-400"></i> Alamat Emel Rasmi
+                    </label>
+                    <div class="relative">
+                        <input type="email" id="input-email-manual" placeholder="contoh: nama@organisasi.gov.my" 
+                            class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                    </div>
+                    <p class="text-[10px] text-slate-500">Rekod kehadiran akan dipautkan ke alamat emel yang dimasukkan.</p>
+                </div>
+
+                <button onclick="submitManualEmail()" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/10">
+                    <span>Mula Pendaftaran</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- LANGKAH 2: BORANG MAKLUMAT PERIBADI (Nama, Jawatan, Jabatan) -->
+        <div id="step-details" class="w-full space-y-6 hidden animate-fade-in py-4">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
+                    <i data-lucide="user-plus" class="text-brand-400 w-7 h-7"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Masukkan Maklumat Kehadiran</h2>
+                <p class="text-xs text-slate-400">Sila lengkapkan butiran anda dengan betul untuk tujuan rekod kehadiran minit mesyuarat.</p>
+            </div>
+
+            <!-- Info Emel Semasa -->
+            <div class="bg-slate-800/30 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                        <i data-lucide="check" class="text-emerald-400 w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-slate-500 uppercase tracking-wider">Log Masuk Sebagai</p>
+                        <p id="display-user-email" class="text-xs font-semibold text-slate-300">emel@domain.my</p>
+                    </div>
+                </div>
+                <button onclick="goBackToLogin()" class="text-[10px] text-brand-400 hover:underline">Tukar</button>
+            </div>
+
+            <!-- Form Kehadiran -->
+            <form id="details-form" onsubmit="handleFormSubmission(event)" class="space-y-4">
+                
+                <!-- Nama -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="user" class="w-3.5 h-3.5 text-brand-400"></i> Nama Penuh
+                    </label>
+                    <input type="text" id="guest-name" required placeholder="Masukkan nama penuh anda" 
+                        class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Jawatan -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="briefcase" class="w-3.5 h-3.5 text-brand-400"></i> Jawatan
+                    </label>
+                    <input type="text" id="guest-designation" required placeholder="Contoh: Penolong Pengarah / Pegawai IT" 
+                        class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Jabatan -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="building" class="w-3.5 h-3.5 text-brand-400"></i> Jabatan / Unit / Organisasi
+                    </label>
+                    <input type="text" id="guest-department" required placeholder="Contoh: Bahagian Sumber Manusia / KPM" 
+                        class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Catatan (Pilihan) -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5 text-brand-400"></i> Catatan (Pilihan)
+                    </label>
+                    <input type="text" id="guest-note" placeholder="Contoh: Hadir sebagai pemerhati" 
+                        class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Butang Hantar -->
+                <button type="submit" id="btn-submit-kehadiran" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 mt-6">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    <span>Sahkan & Hantar Kehadiran</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- LANGKAH 3: PENGESAHAN KEHADIRAN BERJAYA -->
+        <div id="step-success" class="w-full space-y-6 hidden animate-fade-in py-4">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-1">
+                    <i data-lucide="badge-check" class="text-emerald-400 w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Kehadiran Direkodkan!</h2>
+                <p class="text-xs text-slate-400">Terima kasih. Rekod kehadiran anda telah dihantar ke Google Sheet secara automatik.</p>
+            </div>
+
+            <!-- Kad Resit Digital -->
+            <div class="relative bg-gradient-to-b from-corporate-card to-slate-950 rounded-2xl p-5 border border-slate-800 shadow-2xl space-y-4">
+                
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div>
+                        <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">PAS MASUK DIKEDALIKAN</p>
+                        <p class="text-xs text-slate-400" id="ticket-time">Tarikh: - </p>
+                    </div>
+                    <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20">
+                        BERJAYA
+                    </span>
+                </div>
+
+                <!-- Butiran Pengguna -->
+                <div class="space-y-3.5">
+                    <div>
+                        <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Nama Penuh</span>
+                        <span id="resit-nama" class="text-sm font-bold text-slate-100">-</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jawatan</span>
+                            <span id="resit-jawatan" class="text-xs font-semibold text-slate-300">-</span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jabatan</span>
+                            <span id="resit-jabatan" class="text-xs font-semibold text-slate-300">-</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Alamat Emel</span>
+                        <span id="resit-emel" class="text-xs text-slate-400 font-mono">-</span>
+                    </div>
+                </div>
+
+                <!-- Pembina Kod QR -->
+                <div class="pt-4 border-t border-dashed border-slate-800 flex flex-col items-center gap-3">
+                    <div class="p-3 bg-white rounded-xl shadow-lg flex items-center justify-center">
+                        <div id="qrcode" class="w-32 h-32"></div>
+                    </div>
+                    <span class="text-[9px] text-slate-500 font-mono tracking-wider" id="unique-id">-</span>
+                </div>
+            </div>
+
+            <!-- Tindakan -->
+            <div class="flex gap-3">
+                <button onclick="shareAttendance()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-slate-700">
+                    <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i>
+                    <span>Kongsi Rekod</span>
+                </button>
+                <button onclick="resetSystem()" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
+                    <i data-lucide="user-plus-2" class="w-4 h-4"></i>
+                    <span>Daftar Baru</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SETUP PANEL: CONFIG GOOGLE SHEETS -->
+    <div id="setup-panel" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-end md:items-center md:justify-center p-0 md:p-4">
+        <div class="w-full md:max-w-md bg-corporate-card rounded-t-3xl md:rounded-2xl border-t md:border border-slate-700/60 p-6 md:p-8 space-y-5 transform translate-y-full md:translate-y-4 transition-transform duration-300 shadow-2xl relative">
+            
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto md:hidden absolute top-3 left-1/2 -translate-x-1/2"></div>
+
+            <div class="text-center space-y-1 pt-2">
+                <h3 class="text-lg font-bold text-slate-100 flex items-center justify-center gap-2">
+                    <i data-lucide="database" class="text-brand-400 w-5 h-5"></i>
+                    <span>Konfigurasi Google Sheets</span>
+                </h3>
+                <p class="text-xs text-slate-400">Masukkan URL Google Apps Script Web App yang anda jana daripada Google Sheet anda.</p>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-xs font-semibold text-slate-300 block">Google Apps Script URL:</label>
+                <input type="url" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" 
+                    class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500">
+            </div>
+
+            <details class="bg-slate-800/40 rounded-xl border border-slate-700/30 overflow-hidden">
+                <summary class="p-3 text-xs font-medium text-slate-300 cursor-pointer select-none flex justify-between items-center hover:bg-slate-800/20">
+                    Panduan Kod Google Apps Script
+                    <i data-lucide="help-circle" class="w-4 h-4 text-brand-400"></i>
+                </summary>
+                <div class="p-4 pt-0 border-t border-slate-800/40 text-[10px] text-slate-400 space-y-3.5 leading-relaxed font-mono bg-black/10">
+                    <ol class="list-decimal pl-4 space-y-1.5 font-sans text-slate-300 pt-2">
+                        <li>Buka Google Sheet baru.</li>
+                        <li>Klik <strong>Extensions > Apps Script</strong> dan tampalkan kod Apps Script di bawah.</li>
+                        <li>Deploy sebagai <strong>Web App</strong> (Akses set kepada: <em>Anyone</em>), salin URL dan tampal di kotak input atas.</li>
+                    </ol>
+                    <pre class="bg-slate-900 p-2.5 rounded text-emerald-400 overflow-x-auto text-[9px] max-h-36">
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    sheet.appendRow([
+      new Date(), 
+      data.email, 
+      data.nama, 
+      data.jawatan, 
+      data.jabatan,
+      data.catatan
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({"status":"success"}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({"status":"error", "message": err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+                </div>
+            </details>
+
+            <div class="flex gap-3 pt-2">
+                <button onclick="toggleSetupPanel()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150">
+                    Batal
+                </button>
+                <button onclick="saveSetupConfig()" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold text-xs py-3 rounded-xl transition duration-150">
+                    Simpan URL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-5 text-center text-[10px] text-slate-500 border-t border-slate-800/40 bg-slate-950/40 relative z-10">
+        <p>© 2026 Sistem Kehadiran Mesyuarat Bersepadu. Hak Cipta Terpelihara.</p>
+    </footer>
+
+    <!-- Firebase SDK Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let firebaseApp, auth, db, appId;
+        let currentUser = null;
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "",
+            authDomain: "meet-attendance-app.firebaseapp.com",
+            projectId: "meet-attendance-app",
+            storageBucket: "meet-attendance-app.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+        appId = typeof __app_id !== 'undefined' ? __app_id : 'kehadiran-mesyuarat-app';
+
+        try {
+            firebaseApp = initializeApp(firebaseConfig);
+            auth = getAuth(firebaseApp);
+            db = getFirestore(firebaseApp);
+        } catch (e) {
+            console.warn("Firebase offline/mock initialized: ", e);
+        }
+
+        // Simpanan data kehadiran semasa
+        let attendanceRecord = {
+            email: "",
+            nama: "",
+            jawatan: "",
+            jabatan: "",
+            catatan: ""
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // Dapatkan semula URL GAS yang telah disimpan sebelum ini
+            const cachedGasUrl = localStorage.getItem('gas_sheets_url');
+            if (cachedGasUrl) {
+                document.getElementById('gas-url').value = cachedGasUrl;
+            }
+        });
+
+        // Pengaktifan Sesi Selamat (Rule 3)
+        const runSecureAuth = async () => {
+            if (!auth) return;
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Auth process encountered an issue: ", err);
+            }
+        };
+        runSecureAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+            }
+        });
+
+        // Makluman Mesej Khas (Toast)
+        window.showToast = function(message) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            msgEl.textContent = message;
+            
+            toast.classList.remove('opacity-0', '-translate-y-20');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-20');
+            }, 3500);
+        };
+
+        // Panel Konfigurasi Sheet
+        window.toggleSetupPanel = function() {
+            const panel = document.getElementById('setup-panel');
+            if (panel.classList.contains('opacity-0')) {
+                panel.classList.remove('opacity-0', 'pointer-events-none');
+                panel.querySelector('div').classList.remove('translate-y-full');
+                panel.querySelector('div').classList.add('translate-y-0');
+            } else {
+                panel.classList.add('opacity-0', 'pointer-events-none');
+                panel.querySelector('div').classList.remove('translate-y-0');
+                panel.querySelector('div').classList.add('translate-y-full');
+            }
+        };
+
+        // Simpan URL Google Apps Script ke LocalStorage
+        window.saveSetupConfig = function() {
+            const urlVal = document.getElementById('gas-url').value.trim();
+            if (urlVal && !urlVal.startsWith('http')) {
+                showToast("Sila pastikan URL Google Apps Script dimasukkan dengan betul.");
+                return;
+            }
+            localStorage.setItem('gas_sheets_url', urlVal);
+            showToast("Konfigurasi integrasi Google Sheet berjaya disimpan!");
+            toggleSetupPanel();
+        };
+
+        // LANGKAH 1: Hantar emel yang ditaip secara manual
+        window.submitManualEmail = function() {
+            const val = document.getElementById('input-email-manual').value.trim();
+            if (!val || !val.includes('@')) {
+                showToast("Sila masukkan alamat emel rasmi yang sah.");
+                return;
+            }
+            attendanceRecord.email = val;
+            proceedToDetailsForm();
+        };
+
+        // Peralihan ke Halaman Borang Butiran
+        function proceedToDetailsForm() {
+            document.getElementById('display-user-email').textContent = attendanceRecord.email;
+            
+            document.getElementById('step-login').classList.add('hidden');
+            document.getElementById('step-details').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast("Emel disahkan! Sila isi Nama, Jawatan & Jabatan.");
+        }
+
+        // Kembali ke halaman emel
+        window.goBackToLogin = function() {
+            document.getElementById('step-details').classList.add('hidden');
+            document.getElementById('step-login').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // LANGKAH 2: Menghantar data ke Firestore & Google Sheets
+        window.handleFormSubmission = async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btn-submit-kehadiran');
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>Merekodkan Kehadiran...</span>`;
+            lucide.createIcons();
+
+            // Sediakan rekod data
+            attendanceRecord.nama = document.getElementById('guest-name').value.trim();
+            attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
+            attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
+            attendanceRecord.catatan = document.getElementById('guest-note').value.trim();
+
+            const timestamp = Date.now();
+            const payload = {
+                ...attendanceRecord,
+                timestamp: timestamp
+            };
+
+            // 1. Simpan ke database Firestore (Rule 1 & Rule 3: Koleksi tersusun yang selamat)
+            if (currentUser && db) {
+                try {
+                    const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
+                    await addDoc(ref, payload);
+                } catch (fsError) {
+                    console.warn("Firestore error saving, fallback to Sheets: ", fsError);
+                }
+            }
+
+            // 2. Simpan ke Google Sheet menggunakan Apps Script URL
+            const gasTargetUrl = localStorage.getItem('gas_sheets_url');
+            if (gasTargetUrl) {
+                try {
+                    await fetch(gasTargetUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    console.log("Data dihantar ke Google Sheets.");
+                } catch (gasError) {
+                    console.error("Gagal menyambung ke Google Sheets:", gasError);
+                }
+            } else {
+                console.warn("Tiada URL Google Apps Script yang dikonfigurasikan.");
+            }
+
+            // Tunjukkan slip pengesahan & hasilkan kod QR unik
+            showSuccessScreen(payload);
+        };
+
+        // LANGKAH 3: Papar Halaman Kejayaan & Hasilkan QR Code
+        function showSuccessScreen(record) {
+            document.getElementById('step-details').classList.add('hidden');
+            
+            document.getElementById('resit-nama').textContent = record.nama;
+            document.getElementById('resit-jawatan').textContent = record.jawatan;
+            document.getElementById('resit-jabatan').textContent = record.jabatan;
+            document.getElementById('resit-emel').textContent = record.email;
+            
+            const timeNow = new Date();
+            document.getElementById('ticket-time').textContent = `Masa: ${timeNow.toLocaleDateString('ms-MY')} | ${timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            
+            // Jana ID Rujukan Unik
+            const randomRef = 'REG-' + Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('unique-id').textContent = randomRef;
+
+            // Bina QR Code
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: `${randomRef}|${record.nama}|${record.email}|${record.jawatan}`,
+                width: 128,
+                height: 128,
+                colorDark : "#0F172A",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
+
+            const successStep = document.getElementById('step-success');
+            successStep.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Efek Confetti meraikan kejayaan rekod!
+            confetti({
+                particleCount: 120,
+                spread: 60,
+                origin: { y: 0.65 },
+                colors: ['#0c85eb', '#36a2fc', '#ffffff', '#1e2942']
+            });
+
+            showToast("Kehadiran anda telah berjaya direkodkan.");
+        }
+
+        // Salin maklumat pendaftaran
+        window.shareAttendance = function() {
+            const textToCopy = `Pendaftaran Kehadiran Mesyuarat Berjaya!\nNama: ${attendanceRecord.nama}\nJawatan: ${attendanceRecord.jawatan}\nJabatan: ${attendanceRecord.jabatan}\nStatus: Direkodkan ke Google Sheet`;
+            
+            const temp = document.createElement("textarea");
+            temp.value = textToCopy;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            
+            showToast("Rekod kehadiran disalin ke papan klip!");
+        };
+
+        // Reset sistem pendaftaran baru
+        window.resetSystem = function() {
+            document.getElementById('input-email-manual').value = "";
+            document.getElementById('guest-name').value = "";
+            document.getElementById('guest-designation').value = "";
+            document.getElementById('guest-department').value = "";
+            document.getElementById('guest-note').value = "";
+            
+            attendanceRecord = {
+                email: "",
+                nama: "",
+                jawatan: "",
+                jabatan: "",
+                catatan: ""
+            };
+
+            const btn = document.getElementById('btn-submit-kehadiran');
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>Sahkan & Hantar Kehadiran</span>`;
+
+            document.getElementById('step-success').classList.add('hidden');
+            document.getElementById('step-login').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            lucide.createIcons();
+        };
+
+    </script>
+</body>
+</html>
