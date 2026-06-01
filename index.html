@@ -31,7 +31,7 @@
                             200: '#b9ddfe',
                             300: '#7cc2fd',
                             400: '#36a2fc',
-                            500: '#0c85eb', // Warna korporat utama
+                            500: '#0c85eb', 
                             600: '#0266c9',
                             700: '#0352a2',
                             800: '#074685',
@@ -72,7 +72,7 @@
                 <span class="text-[10px] text-brand-400 font-bold uppercase tracking-widest block">Kehadiran Mesyuarat</span>
             </div>
         </div>
-        <button onclick="toggleSetupPanel()" class="text-slate-400 hover:text-brand-400 transition-colors duration-200 flex items-center gap-1.5 text-xs bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+        <button id="btn-open-setup" class="text-slate-400 hover:text-brand-400 transition-colors duration-200 flex items-center gap-1.5 text-xs bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
             <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
             <span>Set Google Sheet</span>
         </button>
@@ -106,7 +106,7 @@
                     <p class="text-[10px] text-slate-500">Rekod kehadiran akan dipautkan ke alamat emel yang dimasukkan.</p>
                 </div>
 
-                <button onclick="submitManualEmail()" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/10">
+                <button id="btn-submit-email" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/10">
                     <span>Mula Pendaftaran</span>
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </button>
@@ -134,11 +134,11 @@
                         <p id="display-user-email" class="text-xs font-semibold text-slate-300">emel@domain.my</p>
                     </div>
                 </div>
-                <button onclick="goBackToLogin()" class="text-[10px] text-brand-400 hover:underline">Tukar</button>
+                <button id="btn-back-login" class="text-[10px] text-brand-400 hover:underline">Tukar</button>
             </div>
 
             <!-- Form Kehadiran -->
-            <form id="details-form" onsubmit="handleFormSubmission(event)" class="space-y-4">
+            <form id="details-form" class="space-y-4">
                 
                 <!-- Nama -->
                 <div class="space-y-1.5">
@@ -242,11 +242,11 @@
 
             <!-- Tindakan -->
             <div class="flex gap-3">
-                <button onclick="shareAttendance()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-slate-700">
+                <button id="btn-share-attendance" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-slate-700">
                     <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i>
                     <span>Kongsi Rekod</span>
                 </button>
-                <button onclick="resetSystem()" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
+                <button id="btn-reset-system" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
                     <i data-lucide="user-plus-2" class="w-4 h-4"></i>
                     <span>Daftar Baru</span>
                 </button>
@@ -283,7 +283,7 @@
                 <div class="p-4 pt-0 border-t border-slate-800/40 text-[10px] text-slate-400 space-y-3.5 leading-relaxed font-mono bg-black/10">
                     <ol class="list-decimal pl-4 space-y-1.5 font-sans text-slate-300 pt-2">
                         <li>Buka Google Sheet baru.</li>
-                        <li>Klik <strong>Extensions > Apps Script</strong> dan tampalkan kod Apps Script di bawah.</li>
+                        <li>Klik <strong>Extensions > Apps Script</strong> dan tampal kod di bawah.</li>
                         <li>Deploy sebagai <strong>Web App</strong> (Akses set kepada: <em>Anyone</em>), salin URL dan tampal di kotak input atas.</li>
                     </ol>
                     <pre class="bg-slate-900 p-2.5 rounded text-emerald-400 overflow-x-auto text-[9px] max-h-36">
@@ -310,10 +310,10 @@ function doPost(e) {
             </details>
 
             <div class="flex gap-3 pt-2">
-                <button onclick="toggleSetupPanel()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150">
+                <button id="btn-close-setup" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150">
                     Batal
                 </button>
-                <button onclick="saveSetupConfig()" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold text-xs py-3 rounded-xl transition duration-150">
+                <button id="btn-save-setup" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold text-xs py-3 rounded-xl transition duration-150">
                     Simpan URL
                 </button>
             </div>
@@ -344,6 +344,7 @@ function doPost(e) {
         };
         appId = typeof __app_id !== 'undefined' ? __app_id : 'kehadiran-mesyuarat-app';
 
+        // Menggunakan langkah keselamatan sekiranya Firebase gagal dimuatkan
         try {
             firebaseApp = initializeApp(firebaseConfig);
             auth = getAuth(firebaseApp);
@@ -352,7 +353,7 @@ function doPost(e) {
             console.warn("Firebase offline/mock initialized: ", e);
         }
 
-        // Simpanan data kehadiran semasa
+        // Simpanan data pendaftaran semasa
         let attendanceRecord = {
             email: "",
             nama: "",
@@ -360,16 +361,6 @@ function doPost(e) {
             jabatan: "",
             catatan: ""
         };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            
-            // Dapatkan semula URL GAS yang telah disimpan sebelum ini
-            const cachedGasUrl = localStorage.getItem('gas_sheets_url');
-            if (cachedGasUrl) {
-                document.getElementById('gas-url').value = cachedGasUrl;
-            }
-        });
 
         // Pengaktifan Sesi Selamat (Rule 3)
         const runSecureAuth = async () => {
@@ -386,14 +377,16 @@ function doPost(e) {
         };
         runSecureAuth();
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-            }
-        });
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                }
+            });
+        }
 
-        // Makluman Mesej Khas (Toast)
-        window.showToast = function(message) {
+        // Papan Makluman Toast
+        const showToast = function(message) {
             const toast = document.getElementById('toast');
             const msgEl = document.getElementById('toast-message');
             msgEl.textContent = message;
@@ -408,7 +401,7 @@ function doPost(e) {
         };
 
         // Panel Konfigurasi Sheet
-        window.toggleSetupPanel = function() {
+        const toggleSetupPanel = function() {
             const panel = document.getElementById('setup-panel');
             if (panel.classList.contains('opacity-0')) {
                 panel.classList.remove('opacity-0', 'pointer-events-none');
@@ -422,7 +415,7 @@ function doPost(e) {
         };
 
         // Simpan URL Google Apps Script ke LocalStorage
-        window.saveSetupConfig = function() {
+        const saveSetupConfig = function() {
             const urlVal = document.getElementById('gas-url').value.trim();
             if (urlVal && !urlVal.startsWith('http')) {
                 showToast("Sila pastikan URL Google Apps Script dimasukkan dengan betul.");
@@ -434,7 +427,7 @@ function doPost(e) {
         };
 
         // LANGKAH 1: Hantar emel yang ditaip secara manual
-        window.submitManualEmail = function() {
+        const submitManualEmail = function() {
             const val = document.getElementById('input-email-manual').value.trim();
             if (!val || !val.includes('@')) {
                 showToast("Sila masukkan alamat emel rasmi yang sah.");
@@ -455,14 +448,14 @@ function doPost(e) {
         }
 
         // Kembali ke halaman emel
-        window.goBackToLogin = function() {
+        const goBackToLogin = function() {
             document.getElementById('step-details').classList.add('hidden');
             document.getElementById('step-login').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         // LANGKAH 2: Menghantar data ke Firestore & Google Sheets
-        window.handleFormSubmission = async function(e) {
+        const handleFormSubmission = async function(e) {
             e.preventDefault();
             
             const btn = document.getElementById('btn-submit-kehadiran');
@@ -470,7 +463,6 @@ function doPost(e) {
             btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>Merekodkan Kehadiran...</span>`;
             lucide.createIcons();
 
-            // Sediakan rekod data
             attendanceRecord.nama = document.getElementById('guest-name').value.trim();
             attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
             attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
@@ -482,13 +474,13 @@ function doPost(e) {
                 timestamp: timestamp
             };
 
-            // 1. Simpan ke database Firestore (Rule 1 & Rule 3: Koleksi tersusun yang selamat)
+            // 1. Simpan ke database Firestore
             if (currentUser && db) {
                 try {
                     const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
                     await addDoc(ref, payload);
                 } catch (fsError) {
-                    console.warn("Firestore error saving, fallback to Sheets: ", fsError);
+                    console.warn("Firestore offline/error saving: ", fsError);
                 }
             }
 
@@ -504,7 +496,6 @@ function doPost(e) {
                         },
                         body: JSON.stringify(payload)
                     });
-                    console.log("Data dihantar ke Google Sheets.");
                 } catch (gasError) {
                     console.error("Gagal menyambung ke Google Sheets:", gasError);
                 }
@@ -512,7 +503,6 @@ function doPost(e) {
                 console.warn("Tiada URL Google Apps Script yang dikonfigurasikan.");
             }
 
-            // Tunjukkan slip pengesahan & hasilkan kod QR unik
             showSuccessScreen(payload);
         };
 
@@ -528,11 +518,9 @@ function doPost(e) {
             const timeNow = new Date();
             document.getElementById('ticket-time').textContent = `Masa: ${timeNow.toLocaleDateString('ms-MY')} | ${timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
             
-            // Jana ID Rujukan Unik
             const randomRef = 'REG-' + Math.floor(100000 + Math.random() * 900000);
             document.getElementById('unique-id').textContent = randomRef;
 
-            // Bina QR Code
             document.getElementById('qrcode').innerHTML = "";
             new QRCode(document.getElementById("qrcode"), {
                 text: `${randomRef}|${record.nama}|${record.email}|${record.jawatan}`,
@@ -547,7 +535,6 @@ function doPost(e) {
             successStep.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Efek Confetti meraikan kejayaan rekod!
             confetti({
                 particleCount: 120,
                 spread: 60,
@@ -559,7 +546,7 @@ function doPost(e) {
         }
 
         // Salin maklumat pendaftaran
-        window.shareAttendance = function() {
+        const shareAttendance = function() {
             const textToCopy = `Pendaftaran Kehadiran Mesyuarat Berjaya!\nNama: ${attendanceRecord.nama}\nJawatan: ${attendanceRecord.jawatan}\nJabatan: ${attendanceRecord.jabatan}\nStatus: Direkodkan ke Google Sheet`;
             
             const temp = document.createElement("textarea");
@@ -573,7 +560,7 @@ function doPost(e) {
         };
 
         // Reset sistem pendaftaran baru
-        window.resetSystem = function() {
+        const resetSystem = function() {
             document.getElementById('input-email-manual').value = "";
             document.getElementById('guest-name').value = "";
             document.getElementById('guest-designation').value = "";
@@ -597,6 +584,27 @@ function doPost(e) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             lucide.createIcons();
         };
+
+        // Menambah Event Listener yang sangat selamat (Mengelakkan isu runtime modules)
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            const cachedGasUrl = localStorage.getItem('gas_sheets_url');
+            if (cachedGasUrl) {
+                document.getElementById('gas-url').value = cachedGasUrl;
+            }
+
+            // Pautan Butang
+            document.getElementById('btn-open-setup').addEventListener('click', toggleSetupPanel);
+            document.getElementById('btn-close-setup').addEventListener('click', toggleSetupPanel);
+            document.getElementById('btn-save-setup').addEventListener('click', saveSetupConfig);
+            document.getElementById('btn-submit-email').addEventListener('click', submitManualEmail);
+            document.getElementById('btn-back-login').addEventListener('click', goBackToLogin);
+            document.getElementById('btn-share-attendance').addEventListener('click', shareAttendance);
+            document.getElementById('btn-reset-system').addEventListener('click', resetSystem);
+            
+            document.getElementById('details-form').addEventListener('submit', handleFormSubmission);
+        });
 
     </script>
 </body>
