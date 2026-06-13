@@ -292,20 +292,20 @@
 
         </div>
 
-        <!-- SECTION 2: SENARAI KEHADIRAN (ATTENDEE LIST - LIVE) -->
+        <!-- SECTION 2: SENARAI KEHADIRAN (ATTENDEE LIST - LIVE - HARI SEMASA SAHAJA) -->
         <div id="section-list" class="w-full space-y-6 hidden animate-fade-in max-w-xl mx-auto">
             <div class="text-center space-y-2">
                 <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
                     <i data-lucide="users" class="text-brand-400 w-7 h-7"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white">Senarai Kehadiran Semasa</h2>
-                <p class="text-xs text-slate-400">Senarai terkini rakan mesyuarat yang telah berjaya berdaftar masuk secara langsung.</p>
+                <p class="text-xs text-slate-400">Senarai terkini rakan mesyuarat yang telah berjaya berdaftar masuk secara langsung (Hari Ini).</p>
             </div>
 
-            <!-- Statistik Ringkas -->
+            <!-- Statistik Ringkas (Hari Semasa Sahaja) -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-sm text-center">
-                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Jumlah Hadir</span>
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Jumlah Hadir (Hari Ini)</span>
                     <div id="stats-total-count" class="text-3xl font-extrabold text-brand-400 mt-1">0</div>
                 </div>
                 <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-sm text-center">
@@ -314,12 +314,12 @@
                 </div>
             </div>
 
-            <!-- Carian & Penapis -->
+            <!-- Carian & Penapis (Hari Semasa Sahaja) -->
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
                 </div>
-                <input type="text" id="search-attendees" placeholder="Cari nama, jawatan, atau jabatan..." 
+                <input type="text" id="search-attendees" placeholder="Cari nama, jawatan, atau jabatan hari ini..." 
                     class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
             </div>
 
@@ -643,6 +643,18 @@ function doPost(e) {
             }
         };
 
+        // Fungsi penapisan rekod hari semasa (Hari Ini) sahaja secara tepat
+        const getTodayList = () => {
+            const today = new Date();
+            return allAttendees.filter(item => {
+                if (!item.timestamp) return false;
+                const d = new Date(item.timestamp);
+                return d.getDate() === today.getDate() &&
+                       d.getMonth() === today.getMonth() &&
+                       d.getFullYear() === today.getFullYear();
+            });
+        };
+
         // Setup Firestore Listener secara Realtime sejurus selepas auth selesai (Rule 3 Guarded)
         const listenToAttendeesRealtime = () => {
             if (!db || !currentUser) return;
@@ -668,8 +680,9 @@ function doPost(e) {
                     }
                 });
                 
-                // Kemaskini jumlah statistik umum
-                updateAttendeesUI(allAttendees);
+                // Kemaskini jumlah statistik umum (Hanya hantar senarai hari semasa sahaja)
+                const todayList = getTodayList();
+                updateAttendeesUI(todayList);
                 
                 // Kemaskini panel admin secara masa nyata sekiranya log masuk aktif
                 if (isAdminAuthenticated) {
@@ -692,7 +705,7 @@ function doPost(e) {
             });
         }
 
-        // Kemaskini Visual UI bagi Senarai Kehadiran Awam
+        // Kemaskini Visual UI bagi Senarai Kehadiran Awam (Hari Ini Sahaja)
         const updateAttendeesUI = (list) => {
             const container = document.getElementById('attendees-container');
             const totalCountBadge = document.getElementById('badge-total-attendees');
@@ -701,12 +714,15 @@ function doPost(e) {
 
             if (!container) return;
 
-            // Update badge dan statistik ringkas
-            totalCountBadge.textContent = list.length;
-            totalStatsEl.textContent = list.length;
+            // Dapatkan set data pendaftar hari semasa
+            const todayList = getTodayList();
 
-            // Kira keunikan jabatan
-            const uniqueDepts = new Set(list.map(item => (item.jabatan || '').trim().toLowerCase()).filter(Boolean));
+            // Set bilangan badge tab dan statistik keseluruhan dengan hari semasa sahaja
+            totalCountBadge.textContent = todayList.length;
+            totalStatsEl.textContent = todayList.length;
+
+            // Kira keunikan jabatan hanya untuk pendaftar hari semasa sahaja
+            const uniqueDepts = new Set(todayList.map(item => (item.jabatan || '').trim().toLowerCase()).filter(Boolean));
             deptStatsEl.textContent = uniqueDepts.size;
 
             if (list.length === 0) {
@@ -1089,15 +1105,17 @@ function doPost(e) {
             return `"${field.toString().replace(/"/g, '""')}"`;
         };
 
-        // Tapisan Pencarian Awam (Memori)
+        // Tapisan Pencarian Awam (Memori - Dihubungkan Hanya Untuk Pendaftar Hari Ini Sahaja)
         const handleSearch = () => {
             const query = document.getElementById('search-attendees').value.trim().toLowerCase();
+            const todayList = getTodayList();
+
             if (!query) {
-                updateAttendeesUI(allAttendees);
+                updateAttendeesUI(todayList);
                 return;
             }
 
-            const filtered = allAttendees.filter(item => {
+            const filtered = todayList.filter(item => {
                 const name = (item.nama || '').toLowerCase();
                 const designation = (item.jawatan || '').toLowerCase();
                 const department = (item.jabatan || '').toLowerCase();
@@ -1129,7 +1147,8 @@ function doPost(e) {
             } else if (tabName === 'list') {
                 btnList.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md";
                 secList.classList.remove('hidden');
-                updateAttendeesUI(allAttendees);
+                // Tapis dan paparkan hanya senarai hari ini apabila membuka tab
+                updateAttendeesUI(getTodayList());
             } else if (tabName === 'admin') {
                 btnAdmin.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md";
                 secAdmin.classList.remove('hidden');
