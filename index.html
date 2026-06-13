@@ -316,6 +316,15 @@
                 <p class="text-xs text-slate-400">Senarai terkini rakan mesyuarat yang telah berjaya berdaftar masuk secara langsung (Hari Ini).</p>
             </div>
 
+            <!-- Petunjuk Status Sambungan Pintar -->
+            <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-xl border border-slate-800/80 mb-2">
+                <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Penyegerakan Data:</span>
+                <span id="sync-status-badge" class="bg-amber-500/10 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/20 flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span>Menyemak Sambungan...</span>
+                </span>
+            </div>
+
             <!-- Statistik Ringkas (Hari Semasa Sahaja) -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-sm text-center">
@@ -328,13 +337,18 @@
                 </div>
             </div>
 
-            <!-- Carian & Penapis (Hari Semasa Sahaja) -->
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+            <!-- Carian & Penapis (Hari Semasa Sahaja) + Butang Penyegaran Manual -->
+            <div class="flex gap-2">
+                <div class="relative flex-grow">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+                    </div>
+                    <input type="text" id="search-attendees" placeholder="Cari nama, jawatan, atau jabatan hari ini..." 
+                        class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
                 </div>
-                <input type="text" id="search-attendees" placeholder="Cari nama, jawatan, atau jabatan hari ini..." 
-                    class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
+                <button id="btn-refresh-list" class="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-brand-400 hover:text-brand-300 transition-colors rounded-xl flex-shrink-0 flex items-center justify-center active:scale-[0.95]" title="Segarkan Semula dari Google Sheets">
+                    <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+                </button>
             </div>
 
             <!-- Senarai Paparan Utama -->
@@ -343,7 +357,7 @@
                     <!-- Loading state -->
                     <div class="flex flex-col items-center justify-center py-10 text-slate-400 space-y-2">
                         <i data-lucide="loader" class="w-8 h-8 animate-spin text-brand-400"></i>
-                        <span class="text-xs">Memuatkan data kehadiran langsung...</span>
+                        <span class="text-xs">Memuatkan data pendaftaran...</span>
                     </div>
                 </div>
             </div>
@@ -476,7 +490,7 @@
 
             <details class="bg-slate-800/40 rounded-xl border border-slate-700/30 overflow-hidden">
                 <summary class="p-3 text-xs font-medium text-slate-300 cursor-pointer select-none flex justify-between items-center hover:bg-slate-800/20">
-                    Panduan Kod Google Apps Script
+                    Panduan Kod Google Apps Script Lengkap
                     <i data-lucide="help-circle" class="w-4 h-4 text-brand-400"></i>
                 </summary>
                 <div class="p-4 pt-0 border-t border-slate-800/40 text-[10px] text-slate-400 space-y-3.5 leading-relaxed font-mono bg-black/10">
@@ -485,7 +499,37 @@
                         <li>Klik <strong>Extensions > Apps Script</strong> dan tampal kod di bawah.</li>
                         <li>Deploy sebagai <strong>Web App</strong> (Akses set kepada: <em>Anyone</em>), salin URL dan tampal di kotak input atas.</li>
                     </ol>
-                    <pre class="bg-slate-900 p-2.5 rounded text-emerald-400 overflow-x-auto text-[9px] max-h-36">
+                    <pre class="bg-slate-900 p-2.5 rounded text-emerald-400 overflow-x-auto text-[9px] max-h-48">
+// FUNGSI MENAMPILKAN DATA (GET) UNTUK SENARAI HADIR
+function doGet(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var rows = sheet.getDataRange().getValues();
+    var data = [];
+    
+    // Baris 0 ialah kepala jadual (headers)
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][2]) { // Pastikan nama wujud
+        data.push({
+          id: "sheet-" + i + "-" + new Date(rows[i][0]).getTime(),
+          timestamp: rows[i][0] ? new Date(rows[i][0]).getTime() : Date.now(),
+          email: rows[i][1] || "",
+          nama: rows[i][2] || "",
+          jawatan: rows[i][3] || "",
+          jabatan: rows[i][4] || "",
+          catatan: rows[i][5] || ""
+        });
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({"status":"success", "data": data}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({"status":"error", "message": err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// FUNGSI MENYIMPAN DATA (POST) UNTUK PENDAFTARAN
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
@@ -527,7 +571,7 @@ function doPost(e) {
                     <i data-lucide="trash-2" class="text-rose-400 w-6 h-6 animate-pulse"></i>
                 </div>
                 <h3 class="text-lg font-bold text-white">Sahkan Padam Rekod</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Adakah anda benar-benar pasti untuk memadam rekod pendaftaran ini secara kekal daripada pangkalan data?</p>
+                <p class="text-xs text-slate-400 leading-relaxed">Adakah anda benar-benar pasti untuk memadam rekod pendaftaran ini secara kekal?</p>
             </div>
             <div class="flex gap-3">
                 <button id="btn-cancel-delete" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold">
@@ -599,6 +643,7 @@ function doPost(e) {
         let selectedAttendeeIds = new Set(); // Simpanan set pendaftar yang ditandakan (ticked)
         let isAdminAuthenticated = false;
         let deleteTargetId = null; // temporary placeholder for document to be deleted
+        let isFirebaseActive = false; // Flag untuk menentukan samada Firebase aktif atau tidak
 
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "",
@@ -610,13 +655,23 @@ function doPost(e) {
         };
         appId = typeof __app_id !== 'undefined' ? __app_id : 'kehadiran-mesyuarat-app';
 
-        // Menggunakan langkah keselamatan sekiranya Firebase gagal dimuatkan
+        // Menguji kesahihan kunci Firebase untuk mengelakkan ralat di GitHub
+        const isFirebaseConfigValid = () => {
+            return firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "";
+        };
+
         try {
-            firebaseApp = initializeApp(firebaseConfig);
-            auth = getAuth(firebaseApp);
-            db = getFirestore(firebaseApp);
+            if (isFirebaseConfigValid()) {
+                firebaseApp = initializeApp(firebaseConfig);
+                auth = getAuth(firebaseApp);
+                db = getFirestore(firebaseApp);
+                isFirebaseActive = true;
+            } else {
+                isFirebaseActive = false;
+            }
         } catch (e) {
-            console.warn("Firebase offline/mock initialized: ", e);
+            console.warn("Firebase tidak diaktifkan: ", e);
+            isFirebaseActive = false;
         }
 
         // Simpanan data pendaftaran semasa
@@ -645,7 +700,10 @@ function doPost(e) {
 
         // Memulakan Firebase Autentikasi terlebih dahulu (Rule 3)
         const runSecureAuth = async () => {
-            if (!auth) return;
+            if (!auth || !isFirebaseActive) {
+                updateSyncBadge();
+                return;
+            }
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -654,12 +712,27 @@ function doPost(e) {
                 }
             } catch (err) {
                 console.error("Auth process encountered an issue: ", err);
-                // Fallback sekiranya custom token ralat/luput
                 try {
                     await signInAnonymously(auth);
                 } catch (anonErr) {
                     console.error("Anonymous authentication fallback failed: ", anonErr);
+                    isFirebaseActive = false;
                 }
+            }
+            updateSyncBadge();
+        };
+
+        // Kemaskini Lencana Status Penyegerakan UI
+        const updateSyncBadge = () => {
+            const badge = document.getElementById('sync-status-badge');
+            if (!badge) return;
+
+            if (isFirebaseActive && currentUser) {
+                badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5 animate-fade-in";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span>Awan (Firebase Realtime)</span>`;
+            } else {
+                badge.className = "bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-blue-500/20 flex items-center gap-1.5 animate-fade-in";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span><span>Mod Google Sheets & Tempatan</span>`;
             }
         };
 
@@ -677,7 +750,7 @@ function doPost(e) {
 
         // Setup Firestore Listener secara Realtime sejurus selepas auth selesai (Rule 3 Guarded)
         const listenToAttendeesRealtime = () => {
-            if (!db || !currentUser) return;
+            if (!db || !currentUser || !isFirebaseActive) return;
             const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
             
             // Menggunakan Simple Query mengikut Rule 2 (No Complex Ordering/Filtering in query)
@@ -692,7 +765,7 @@ function doPost(e) {
                 
                 allAttendees = fetched;
 
-                // Bersihkan IDs terpilih yang sudah tiada dalam sistem (jika dipadam pihak lain)
+                // Bersihkan IDs terpilih yang sudah tiada dalam sistem
                 const currentIds = new Set(allAttendees.map(item => item.id));
                 selectedAttendeeIds.forEach(id => {
                     if (!currentIds.has(id)) {
@@ -700,10 +773,8 @@ function doPost(e) {
                     }
                 });
                 
-                // Reaktif Render: Kemaskini UI senarai utama & admin secara reaktif
                 updateAttendeesUI();
                 
-                // Kemaskini panel admin secara masa nyata sekiranya log masuk aktif
                 if (isAdminAuthenticated) {
                     updateAdminUI(allAttendees);
                 }
@@ -714,15 +785,110 @@ function doPost(e) {
         };
 
         // Pemasangan Status Listener
-        if (auth) {
+        if (auth && isFirebaseActive) {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
-                    // Aktifkan pangkalan data realtime sebaik sahaja identiti sah
+                    updateSyncBadge();
                     listenToAttendeesRealtime();
                 }
             });
         }
+
+        // --- SISTEM PENGURUSAN DATA SEBELUM AWAN & CADANGAN GOOGLE SHEETS ---
+
+        // Fungsi Menyimpan Ke Cache Tempatan (Sandaran Segera)
+        const saveToLocalCache = (record) => {
+            try {
+                let localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
+                // Semak untuk mengelakkan pertindihan data
+                const exists = localData.some(item => item.email === record.email && Math.abs(item.timestamp - record.timestamp) < 1000);
+                if (!exists) {
+                    localData.unshift(record);
+                    localStorage.setItem('local_kehadiran', JSON.stringify(localData));
+                }
+            } catch (e) {
+                console.warn("Gagal menyimpan data ke cache komputer:", e);
+            }
+        };
+
+        // Fungsi Mengambil Data Terus Dari Google Sheets (doGet)
+        const fetchAttendeesFromGoogleSheets = async () => {
+            let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
+            if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
+                gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
+            }
+            if (!gasTargetUrl) return null;
+
+            try {
+                // Gunakan cache-buster untuk mengelak data lapuk
+                const response = await fetch(`${gasTargetUrl}?t=${Date.now()}`, {
+                    method: 'GET'
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result && result.status === "success" && Array.isArray(result.data)) {
+                        return result.data;
+                    }
+                }
+            } catch (e) {
+                console.warn("Gagal mendapatkan data langsung dari Google Sheets (Kemungkinan doGet belum diaktifkan):", e);
+            }
+            return null;
+        };
+
+        // Memuatkan Gabungan Data Tempatan + Google Sheets (Sesuai untuk GitHub)
+        const loadLocalAndSheetsData = async (showNotification = false) => {
+            let localData = [];
+            try {
+                localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
+            } catch (e) {
+                console.error(e);
+            }
+
+            // Papar cache tempatan dahulu agar pengguna mendapat respons segera
+            allAttendees = [...localData];
+            updateAttendeesUI();
+
+            let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
+            if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
+                gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
+            }
+
+            if (gasTargetUrl) {
+                if (showNotification) {
+                    showToast("Sedang menyegerakkan data daripada Google Sheets...");
+                }
+                const sheetData = await fetchAttendeesFromGoogleSheets();
+                if (sheetData && sheetData.length > 0) {
+                    const combinedMap = new Map();
+                    
+                    // Masukkan rekod daripada Google Sheets dahulu
+                    sheetData.forEach(item => {
+                        const uniqueKey = `${item.email}_${item.timestamp}`;
+                        combinedMap.set(uniqueKey, item);
+                    });
+
+                    // Tambah rekod cache tempatan yang belum tersinkronisasi
+                    localData.forEach(item => {
+                        const uniqueKey = `${item.email}_${item.timestamp}`;
+                        if (!combinedMap.has(uniqueKey)) {
+                            combinedMap.set(uniqueKey, item);
+                        }
+                    });
+
+                    allAttendees = Array.from(combinedMap.values());
+                    allAttendees.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    
+                    updateAttendeesUI();
+                    if (showNotification) {
+                        showToast("Senarai berjaya dikemaskini daripada Google Sheets!");
+                    }
+                } else if (showNotification && gasTargetUrl) {
+                    showToast("Selesai (Tiada rekod dikesan atau doGet belum dikonfigurasikan).");
+                }
+            }
+        };
 
         // Kemaskini Visual UI bagi Senarai Kehadiran Awam (Hari Ini Sahaja & Reaktif kepada Carian)
         const updateAttendeesUI = () => {
@@ -923,7 +1089,6 @@ function doPost(e) {
             } else {
                 selectedAttendeeIds.add(id);
             }
-            // Trigger check-state updates
             const query = document.getElementById('search-admin-attendees').value.trim().toLowerCase();
             const filtered = allAttendees.filter(item => {
                 if (!query) return true;
@@ -959,7 +1124,6 @@ function doPost(e) {
                 }
             });
 
-            // Re-render admin UI to reflect checked states visually
             updateAdminUI(allAttendees);
         };
 
@@ -996,7 +1160,7 @@ function doPost(e) {
 
             if (password === 'umkb13813') {
                 isAdminAuthenticated = true;
-                input.value = ""; // Kosongkan medan input demi keselamatan
+                input.value = ""; 
                 document.getElementById('admin-login-view').classList.add('hidden');
                 document.getElementById('admin-dashboard-view').classList.remove('hidden');
                 showToast("Log masuk pentadbir berjaya disahkan!");
@@ -1010,7 +1174,7 @@ function doPost(e) {
         // Log Keluar dari Sesi Admin
         const logoutAdmin = () => {
             isAdminAuthenticated = false;
-            selectedAttendeeIds.clear(); // Padam semua rekod pilihan apabila log keluar
+            selectedAttendeeIds.clear(); 
             document.getElementById('admin-password-input').value = "";
             showToast("Log keluar dari portal pentadbir berjaya.");
             switchTab('register');
@@ -1034,25 +1198,44 @@ function doPost(e) {
         };
 
         const executeDelete = async () => {
-            if (!deleteTargetId || !db || !currentUser) {
+            if (!deleteTargetId) {
                 closeDeleteModal();
                 return;
             }
-            try {
-                // Rule 1 compliant path: artifacts/{appId}/public/data/kehadiran/{docId}
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'kehadiran', deleteTargetId);
-                await deleteDoc(docRef);
-                showToast("Rekod pendaftaran mesyuarat berjaya dipadam secara kekal!");
-            } catch (err) {
-                console.error("Gagal memadam rekod:", err);
-                showToast("Sistem awan ralat: Gagal memadam data.");
+
+            if (isFirebaseActive && db && currentUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'kehadiran', deleteTargetId);
+                    await deleteDoc(docRef);
+                    showToast("Rekod pendaftaran mesyuarat berjaya dipadam secara kekal!");
+                } catch (err) {
+                    console.error("Gagal memadam rekod:", err);
+                    showToast("Sistem awan ralat: Gagal memadam data.");
+                }
+            } else {
+                // Mod Manual: Padam daripada simpanan cache tempatan
+                try {
+                    let localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
+                    localData = localData.filter(item => item.id !== deleteTargetId);
+                    localStorage.setItem('local_kehadiran', JSON.stringify(localData));
+
+                    allAttendees = allAttendees.filter(item => item.id !== deleteTargetId);
+                    updateAttendeesUI();
+                    
+                    if (isAdminAuthenticated) {
+                        updateAdminUI(allAttendees);
+                    }
+                    showToast("Rekod berjaya dipadam daripada simpanan peranti.");
+                } catch (e) {
+                    console.error(e);
+                    showToast("Gagal memadam data tempatan.");
+                }
             }
             closeDeleteModal();
         };
 
         // Kawalan Dialog Modal Muat Turun CSV
         const openCSVModal = () => {
-            // Filter list to check if there is any selected attendee
             const selectedList = allAttendees.filter(item => selectedAttendeeIds.has(item.id));
             if (selectedList.length === 0) {
                 showToast("Sila pilih (tik) sekurang-kurangnya satu rekod pendaftaran untuk dimuat turun.");
@@ -1097,9 +1280,8 @@ function doPost(e) {
                 return;
             }
 
-            let csvContent = "\uFEFF"; // Byte Order Mark (BOM) untuk sokongan tulisan bahasa Melayu di MS Excel
+            let csvContent = "\uFEFF"; 
             
-            // Masukkan butiran Mesyuarat di bahagian atas CSV
             csvContent += `TAJUK MESYUARAT:,${escapeCSV(meetingTitle)}\n`;
             csvContent += `TARIKH PENJANAAN DOS:,${escapeCSV(new Date().toLocaleString('ms-MY'))}\n`;
             csvContent += `JUMLAH PESERTA DIEKSPORT:,${escapeCSV(selectedList.length)}\n\n`;
@@ -1122,7 +1304,6 @@ function doPost(e) {
                 csvContent += row + "\r\n";
             });
 
-            // Penyediaan pautan muat turun fail .csv
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -1152,7 +1333,6 @@ function doPost(e) {
             const secList = document.getElementById('section-list');
             const secAdmin = document.getElementById('section-admin');
 
-            // Reset semua keadaan aktif tab
             [btnReg, btnList, btnAdmin].forEach(btn => {
                 btn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200";
             });
@@ -1164,13 +1344,16 @@ function doPost(e) {
             } else if (tabName === 'list') {
                 btnList.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md";
                 secList.classList.remove('hidden');
-                // Tapis dan paparkan hanya senarai hari ini apabila membuka tab
-                updateAttendeesUI();
+                
+                if (!isFirebaseActive) {
+                    loadLocalAndSheetsData();
+                } else {
+                    updateAttendeesUI();
+                }
             } else if (tabName === 'admin') {
                 btnAdmin.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md";
                 secAdmin.classList.remove('hidden');
                 
-                // Semak status pengesahan kata laluan admin
                 if (isAdminAuthenticated) {
                     document.getElementById('admin-login-view').classList.add('hidden');
                     document.getElementById('admin-dashboard-view').classList.remove('hidden');
@@ -1206,6 +1389,9 @@ function doPost(e) {
             localStorage.setItem('gas_sheets_url', urlVal);
             showToast("Konfigurasi integrasi Google Sheet berjaya disimpan secara tempatan!");
             toggleSetupPanel();
+            if (!isFirebaseActive) {
+                loadLocalAndSheetsData(true);
+            }
         };
 
         // LANGKAH 1: Hantar emel yang ditaip secara manual
@@ -1251,27 +1437,30 @@ function doPost(e) {
             attendanceRecord.catatan = document.getElementById('guest-note').value.trim();
 
             const timestamp = Date.now();
+            const uniqueId = 'reg-' + timestamp + '-' + Math.floor(Math.random() * 100000);
+            
             const payload = {
+                id: uniqueId,
                 ...attendanceRecord,
                 timestamp: timestamp
             };
 
-            // 1. Simpan ke database Firestore (Sesuai dengan Aturan Laluan Rule 1 & Kehadiran Auth)
-            if (currentUser && db) {
+            // Simpan ke cache komputer peranti sebagai sandaran serta merta
+            saveToLocalCache(payload);
+
+            // 1. Simpan ke database Firestore
+            if (isFirebaseActive && currentUser && db) {
                 try {
                     const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
                     await addDoc(ref, payload);
                 } catch (fsError) {
                     console.warn("Firestore offline/error saving: ", fsError);
                 }
-            } else {
-                showToast("Sistem awan sedang menyegerak secara setempat.");
             }
 
             // 2. Simpan ke Google Sheet menggunakan URL tetap (Hardcoded) atau simpanan tempatan (LocalStorage)
             let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
             if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
-                // Fallback kepada simpanan tempatan jika belum diisi di dalam kod
                 gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
             }
 
@@ -1289,8 +1478,11 @@ function doPost(e) {
                 } catch (gasError) {
                     console.error("Gagal menyambung ke Google Sheets:", gasError);
                 }
-            } else {
-                console.warn("Ralat: Tiada URL Google Apps Script yang ditetapkan.");
+            }
+
+            // Segarkan senarai pendaftaran dalam memori sebelum memapar skrin berjaya
+            if (!isFirebaseActive) {
+                await loadLocalAndSheetsData();
             }
 
             showSuccessScreen(payload);
@@ -1379,7 +1571,10 @@ function doPost(e) {
         window.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
             
-            // Lari autentikasi Firestore dahulu
+            // Dapatkan data awal secara tempatan/Google Sheets dahulu demi kelancaran paparan
+            loadLocalAndSheetsData();
+
+            // Jalankan autentikasi Firebase
             await runSecureAuth();
 
             const cachedGasUrl = localStorage.getItem('gas_sheets_url');
@@ -1405,6 +1600,9 @@ function doPost(e) {
             
             document.getElementById('details-form').addEventListener('submit', handleFormSubmission);
             document.getElementById('search-attendees').addEventListener('input', updateAttendeesUI);
+            document.getElementById('btn-refresh-list').addEventListener('click', () => {
+                loadLocalAndSheetsData(true);
+            });
 
             // Log Masuk Keselamatan Admin & Kawalan Papan Pemuka
             document.getElementById('btn-submit-admin-login').addEventListener('click', verifyAdminPassword);
