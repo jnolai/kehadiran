@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ms" class="scroll-smooth">
 <head>
@@ -51,207 +52,391 @@
         .gradient-bg {
             background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
         }
+        /* Custom dynamic scrollbar for modern looks */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(54, 162, 252, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(54, 162, 252, 0.5);
+        }
     </style>
 </head>
 <body class="gradient-bg text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-    <!-- Notifikasi Toast Khas -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border-l-4 border-brand-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform -translate-y-20 opacity-0 flex items-center gap-3 max-w-sm w-[92%]">
-        <i data-lucide="info" class="text-brand-400 w-5 h-5 flex-shrink-0"></i>
+    <!-- Notifikasi Toast Khas (Premium Touch Notification) -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-brand-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform -translate-y-20 opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800">
+        <div class="p-1 rounded-full bg-brand-500/10">
+            <i data-lucide="info" class="text-brand-400 w-4 h-4 flex-shrink-0"></i>
+        </div>
         <span id="toast-message" class="text-xs font-semibold">Mesej makluman...</span>
     </div>
 
-    <!-- Header & Butang Konfigurasi (Butang Set Google Sheet telah disembunyikan menggunakan kelas "hidden") -->
-    <header class="relative z-10 px-6 py-4 flex justify-between items-center border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center border border-brand-500/30">
-                <i data-lucide="clipboard-check" class="text-brand-400 w-5 h-5"></i>
+    <!-- Header & Navigasi Tab -->
+    <header class="relative z-10 px-4 py-4 md:px-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-500/20 flex items-center justify-center border border-brand-500/30 shadow-lg shadow-brand-500/10">
+                <i data-lucide="clipboard-check" class="text-brand-400 w-6 h-6"></i>
             </div>
             <div>
-                <span class="font-bold text-sm tracking-wider block text-slate-100">SISTEM REKOD</span>
-                <span class="text-[10px] text-brand-400 font-bold uppercase tracking-widest block">Kehadiran Mesyuarat</span>
+                <span class="font-extrabold text-sm tracking-wider block text-slate-100">SISTEM KEHADIRAN</span>
+                <span class="text-[10px] text-brand-400 font-bold uppercase tracking-widest block">Mesyuarat Bersepadu</span>
             </div>
         </div>
-        <!-- Kelas "hidden" ditambah di sini supaya butang tidak dipaparkan pada skrin -->
-        <button id="btn-open-setup" class="hidden text-slate-400 hover:text-brand-400 transition-colors duration-200 flex items-center gap-1.5 text-xs bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
-            <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
-            <span>Set Google Sheet</span>
-        </button>
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center gap-2 bg-slate-950/60 p-1.5 rounded-xl border border-slate-800/80 w-full sm:w-auto">
+            <button id="tab-btn-register" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md">
+                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                <span>Daftar Masuk</span>
+            </button>
+            <button id="tab-btn-list" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200">
+                <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                <span>Senarai Hadir</span>
+                <span id="badge-total-attendees" class="bg-slate-800 text-brand-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-slate-700/50">0</span>
+            </button>
+            <button id="tab-btn-admin" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                <span>Admin</span>
+            </button>
+            <!-- Pengurusan Manual Google Sheet -->
+            <button id="btn-open-setup" class="p-2 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 hover:bg-slate-800/50" title="Konfigurasi Google Sheets">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+            </button>
+        </div>
     </header>
 
     <!-- Kandungan Utama (Responsif Mudah Alih) -->
-    <main class="relative z-10 flex-grow flex items-center justify-center p-4 max-w-md mx-auto w-full">
+    <main class="relative z-10 flex-grow flex items-center justify-center p-4 max-w-4xl mx-auto w-full transition-all duration-300">
         
-        <!-- LANGKAH 1: MASUKKAN EMEL -->
-        <div id="step-login" class="w-full space-y-6 animate-fade-in py-6">
-            <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
-                    <i data-lucide="mail" class="text-brand-400 w-7 h-7"></i>
+        <!-- SECTION 1: DAFTAR MASUK (REGISTER) -->
+        <div id="section-register" class="w-full space-y-6 max-w-xl mx-auto">
+            
+            <!-- LANGKAH 1: MASUKKAN EMEL -->
+            <div id="step-login" class="w-full space-y-6 animate-fade-in py-6">
+                <div class="text-center space-y-2">
+                    <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
+                        <i data-lucide="mail" class="text-brand-400 w-7 h-7"></i>
+                    </div>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-white">KEHADIRAN MESYUARAT</h1>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">
+                        Masukkan alamat emel rasmi anda untuk memulakan proses pendaftaran kehadiran mesyuarat.
+                    </p>
                 </div>
-                <h1 class="text-2xl font-extrabold tracking-tight text-white">KEHADIRAN MESYUARAT</h1>
-                <p class="text-xs text-slate-400 max-w-xs mx-auto">
-                    Masukkan alamat emel rasmi anda untuk memulakan proses pendaftaran kehadiran mesyuarat.
-                </p>
+
+                <!-- Kad Input Emel Tunggal -->
+                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-xl backdrop-blur-sm">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="at-sign" class="w-3.5 h-3.5 text-brand-400"></i> Alamat Emel Rasmi
+                        </label>
+                        <div class="relative">
+                            <input type="email" id="input-email-manual" placeholder="contoh: nama@organisasi.gov.my" 
+                                class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                        </div>
+                        <p class="text-[10px] text-slate-500">Rekod kehadiran akan dipautkan ke alamat emel yang dimasukkan.</p>
+                    </div>
+
+                    <button id="btn-submit-email" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/10">
+                        <span>Mula Pendaftaran</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
 
-            <!-- Kad Input Emel Tunggal -->
-            <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-xl">
-                <div class="space-y-2">
-                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="at-sign" class="w-3.5 h-3.5 text-brand-400"></i> Alamat Emel Rasmi
-                    </label>
-                    <div class="relative">
-                        <input type="email" id="input-email-manual" placeholder="contoh: nama@organisasi.gov.my" 
+            <!-- LANGKAH 2: BORANG MAKLUMAT PERIBADI (Nama, Jawatan, Jabatan) -->
+            <div id="step-details" class="w-full space-y-6 hidden animate-fade-in py-4">
+                <div class="text-center space-y-2">
+                    <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
+                        <i data-lucide="user-plus" class="text-brand-400 w-7 h-7"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Masukkan Maklumat Kehadiran</h2>
+                    <p class="text-xs text-slate-400">Sila lengkapkan butiran anda dengan betul untuk tujuan rekod kehadiran minit mesyuarat.</p>
+                </div>
+
+                <!-- Info Emel Semasa -->
+                <div class="bg-slate-800/30 border border-slate-800/80 rounded-xl p-3.5 flex items-center justify-between backdrop-blur-sm">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                            <i data-lucide="check" class="text-emerald-400 w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] text-slate-500 uppercase tracking-wider">Log Masuk Sebagai</p>
+                            <p id="display-user-email" class="text-xs font-semibold text-slate-300">emel@domain.my</p>
+                        </div>
+                    </div>
+                    <button id="btn-back-login" class="text-[10px] text-brand-400 hover:underline font-bold">Tukar</button>
+                </div>
+
+                <!-- Form Kehadiran -->
+                <form id="details-form" class="space-y-4">
+                    
+                    <!-- Nama -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="user" class="w-3.5 h-3.5 text-brand-400"></i> Nama Penuh
+                        </label>
+                        <input type="text" id="guest-name" required placeholder="Masukkan nama penuh anda" 
+                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                    </div>
+
+                    <!-- Jawatan -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="briefcase" class="w-3.5 h-3.5 text-brand-400"></i> Jawatan
+                        </label>
+                        <input type="text" id="guest-designation" required placeholder="Contoh: Penolong Pengarah / Pegawai IT" 
+                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                    </div>
+
+                    <!-- Jabatan -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="building" class="w-3.5 h-3.5 text-brand-400"></i> Jabatan / Unit / Organisasi
+                        </label>
+                        <input type="text" id="guest-department" required placeholder="Contoh: Bahagian Sumber Manusia / KPM" 
+                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                    </div>
+
+                    <!-- Catatan (Pilihan) -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="message-square" class="w-3.5 h-3.5 text-brand-400"></i> Catatan (Pilihan)
+                        </label>
+                        <input type="text" id="guest-note" placeholder="Contoh: Hadir sebagai pemerhati" 
+                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                    </div>
+
+                    <!-- Butang Hantar -->
+                    <button type="submit" id="btn-submit-kehadiran" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 mt-6">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <span>Sahkan & Hantar Kehadiran</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- LANGKAH 3: PENGESAHAN KEHADIRAN BERJAYA -->
+            <div id="step-success" class="w-full space-y-6 hidden animate-fade-in py-4">
+                <div class="text-center space-y-2">
+                    <div class="inline-flex p-3 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-1">
+                        <i data-lucide="badge-check" class="text-emerald-400 w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Kehadiran Direkodkan!</h2>
+                    <p class="text-xs text-slate-400">Terima kasih. Rekod kehadiran anda telah didaftarkan ke sistem awan dan Google Sheet.</p>
+                </div>
+
+                <!-- Kad Resit Digital -->
+                <div class="relative bg-gradient-to-b from-corporate-card to-slate-950 rounded-2xl p-5 border border-slate-800 shadow-2xl space-y-4">
+                    
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <div>
+                            <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">PAS MASUK MESYUARAT</p>
+                            <p class="text-xs text-slate-400" id="ticket-time">Tarikh: - </p>
+                        </div>
+                        <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20">
+                            BERJAYA
+                        </span>
+                    </div>
+
+                    <!-- Butiran Pengguna -->
+                    <div class="space-y-3.5">
+                        <div>
+                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Nama Penuh</span>
+                            <span id="resit-nama" class="text-sm font-bold text-slate-100">-</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jawatan</span>
+                                <span id="resit-jawatan" class="text-xs font-semibold text-slate-300">-</span>
+                            </div>
+                            <div>
+                                <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jabatan</span>
+                                <span id="resit-jabatan" class="text-xs font-semibold text-slate-300">-</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Alamat Emel</span>
+                            <span id="resit-emel" class="text-xs text-slate-400 font-mono">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Pembina Kod QR -->
+                    <div class="pt-4 border-t border-dashed border-slate-800 flex flex-col items-center gap-3">
+                        <div class="p-3 bg-white rounded-xl shadow-lg flex items-center justify-center">
+                            <div id="qrcode" class="w-32 h-32"></div>
+                        </div>
+                        <span class="text-[9px] text-slate-500 font-mono tracking-wider" id="unique-id">-</span>
+                    </div>
+                </div>
+
+                <!-- Tindakan -->
+                <div class="flex gap-3">
+                    <button id="btn-share-attendance" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-slate-700">
+                        <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i>
+                        <span>Salin Pas Rekod</span>
+                    </button>
+                    <button id="btn-reset-system" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        <span>Daftar Baru</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION 2: SENARAI KEHADIRAN (ATTENDEE LIST - LIVE) -->
+        <div id="section-list" class="w-full space-y-6 hidden animate-fade-in max-w-xl mx-auto">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
+                    <i data-lucide="users" class="text-brand-400 w-7 h-7"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Senarai Kehadiran Semasa</h2>
+                <p class="text-xs text-slate-400">Senarai terkini rakan mesyuarat yang telah berjaya berdaftar masuk secara langsung.</p>
+            </div>
+
+            <!-- Statistik Ringkas -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-sm text-center">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Jumlah Hadir</span>
+                    <div id="stats-total-count" class="text-3xl font-extrabold text-brand-400 mt-1">0</div>
+                </div>
+                <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-sm text-center">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Jabatan Terlibat</span>
+                    <div id="stats-dept-count" class="text-3xl font-extrabold text-emerald-400 mt-1">0</div>
+                </div>
+            </div>
+
+            <!-- Carian & Penapis -->
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+                </div>
+                <input type="text" id="search-attendees" placeholder="Cari nama, jawatan, atau jabatan..." 
+                    class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
+            </div>
+
+            <!-- Senarai Paparan Utama -->
+            <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-sm">
+                <div id="attendees-container" class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                    <!-- Loading state -->
+                    <div class="flex flex-col items-center justify-center py-10 text-slate-400 space-y-2">
+                        <i data-lucide="loader" class="w-8 h-8 animate-spin text-brand-400"></i>
+                        <span class="text-xs">Memuatkan data kehadiran langsung...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: BAHAGIAN ADMIN (ADMIN PANEL) -->
+        <div id="section-admin" class="w-full space-y-6 hidden animate-fade-in">
+            
+            <!-- Pandangan Log Masuk Admin -->
+            <div id="admin-login-view" class="max-w-md mx-auto space-y-6 py-6">
+                <div class="text-center space-y-2">
+                    <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
+                        <i data-lucide="lock" class="text-brand-400 w-7 h-7"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Log Masuk Pentadbir</h2>
+                    <p class="text-xs text-slate-400">Sila masukkan kata laluan kesulitaan admin untuk mengakses kawalan penuh data.</p>
+                </div>
+
+                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl backdrop-blur-sm">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="key-round" class="w-3.5 h-3.5 text-brand-400"></i> Kata Laluan Pengesahan
+                        </label>
+                        <input type="password" id="admin-password-input" placeholder="••••••••" 
                             class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
                     </div>
-                    <p class="text-[10px] text-slate-500">Rekod kehadiran akan dipautkan ke alamat emel yang dimasukkan.</p>
+                    <button id="btn-submit-admin-login" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/10">
+                        <i data-lucide="log-in" class="w-4 h-4"></i>
+                        <span>Sahkan Kata Laluan</span>
+                    </button>
                 </div>
-
-                <button id="btn-submit-email" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/10">
-                    <span>Mula Pendaftaran</span>
-                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- LANGKAH 2: BORANG MAKLUMAT PERIBADI (Nama, Jawatan, Jabatan) -->
-        <div id="step-details" class="w-full space-y-6 hidden animate-fade-in py-4">
-            <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
-                    <i data-lucide="user-plus" class="text-brand-400 w-7 h-7"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white">Masukkan Maklumat Kehadiran</h2>
-                <p class="text-xs text-slate-400">Sila lengkapkan butiran anda dengan betul untuk tujuan rekod kehadiran minit mesyuarat.</p>
             </div>
 
-            <!-- Info Emel Semasa -->
-            <div class="bg-slate-800/30 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                        <i data-lucide="check" class="text-emerald-400 w-4 h-4"></i>
-                    </div>
+            <!-- Pandangan Dashboard Pengurusan Admin -->
+            <div id="admin-dashboard-view" class="space-y-6 hidden w-full">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800/80 pb-5">
                     <div>
-                        <p class="text-[9px] text-slate-500 uppercase tracking-wider">Log Masuk Sebagai</p>
-                        <p id="display-user-email" class="text-xs font-semibold text-slate-300">emel@domain.my</p>
+                        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="shield" class="text-brand-400 w-6 h-6"></i>
+                            <span>Panel Kawalan Pentadbir</span>
+                        </h2>
+                        <p class="text-xs text-slate-400">Pengurusan penuh data rekod, eksport, dan kawalan pendaftar.</p>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap justify-end">
+                        <span id="selected-count-badge" class="bg-brand-500/15 text-brand-400 text-xs font-bold px-3 py-2.5 rounded-xl border border-brand-500/20 shadow-md">
+                            0 Terpilih
+                        </span>
+                        <button id="btn-export-csv" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Muat Turun CSV</span>
+                        </button>
+                        <button id="btn-admin-logout" class="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-rose-500/20">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            <span>Keluar Admin</span>
+                        </button>
                     </div>
                 </div>
-                <button id="btn-back-login" class="text-[10px] text-brand-400 hover:underline">Tukar</button>
-            </div>
 
-            <!-- Form Kehadiran -->
-            <form id="details-form" class="space-y-4">
-                
-                <!-- Nama -->
-                <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="user" class="w-3.5 h-3.5 text-brand-400"></i> Nama Penuh
-                    </label>
-                    <input type="text" id="guest-name" required placeholder="Masukkan nama penuh anda" 
-                        class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-                </div>
-
-                <!-- Jawatan -->
-                <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="briefcase" class="w-3.5 h-3.5 text-brand-400"></i> Jawatan
-                    </label>
-                    <input type="text" id="guest-designation" required placeholder="Contoh: Penolong Pengarah / Pegawai IT" 
-                        class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-                </div>
-
-                <!-- Jabatan -->
-                <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="building" class="w-3.5 h-3.5 text-brand-400"></i> Jabatan / Unit / Organisasi
-                    </label>
-                    <input type="text" id="guest-department" required placeholder="Contoh: Bahagian Sumber Manusia / KPM" 
-                        class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-                </div>
-
-                <!-- Catatan (Pilihan) -->
-                <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="message-square" class="w-3.5 h-3.5 text-brand-400"></i> Catatan (Pilihan)
-                    </label>
-                    <input type="text" id="guest-note" placeholder="Contoh: Hadir sebagai pemerhati" 
-                        class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-                </div>
-
-                <!-- Butang Hantar -->
-                <button type="submit" id="btn-submit-kehadiran" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 mt-6">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                    <span>Sahkan & Hantar Kehadiran</span>
-                </button>
-            </form>
-        </div>
-
-        <!-- LANGKAH 3: PENGESAHAN KEHADIRAN BERJAYA -->
-        <div id="step-success" class="w-full space-y-6 hidden animate-fade-in py-4">
-            <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-1">
-                    <i data-lucide="badge-check" class="text-emerald-400 w-8 h-8"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white">Kehadiran Direkodkan!</h2>
-                <p class="text-xs text-slate-400">Terima kasih. Rekod kehadiran anda telah dihantar ke Google Sheet secara automatik.</p>
-            </div>
-
-            <!-- Kad Resit Digital -->
-            <div class="relative bg-gradient-to-b from-corporate-card to-slate-950 rounded-2xl p-5 border border-slate-800 shadow-2xl space-y-4">
-                
-                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <div>
-                        <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">PAS MASUK DIKEDALIKAN</p>
-                        <p class="text-xs text-slate-400" id="ticket-time">Tarikh: - </p>
+                <!-- Penapis Carian Admin -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
                     </div>
-                    <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20">
-                        BERJAYA
-                    </span>
+                    <input type="text" id="search-admin-attendees" placeholder="Cari pendaftar (Nama, Emel, Jawatan, Jabatan, Catatan)..." 
+                        class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
                 </div>
 
-                <!-- Butiran Pengguna -->
-                <div class="space-y-3.5">
-                    <div>
-                        <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Nama Penuh</span>
-                        <span id="resit-nama" class="text-sm font-bold text-slate-100">-</span>
-                    </div>
+                <!-- Mobile Selection Helper Bar -->
+                <div class="p-3 bg-slate-950/40 border border-slate-800/80 rounded-xl md:hidden flex items-center justify-between text-xs">
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="admin-select-all-mobile" onchange="window.toggleSelectAll(this.checked)" class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4 h-4">
+                        <span class="text-slate-300 font-semibold">Pilih Semua</span>
+                    </label>
+                    <span class="text-brand-400 font-bold" id="mobile-selected-count">0 Terpilih</span>
+                </div>
 
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jawatan</span>
-                            <span id="resit-jawatan" class="text-xs font-semibold text-slate-300">-</span>
-                        </div>
-                        <div>
-                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jabatan</span>
-                            <span id="resit-jabatan" class="text-xs font-semibold text-slate-300">-</span>
+                <!-- Visual Data Jadual (Desktop) & Kad (Mobile) -->
+                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm">
+                    <div class="overflow-x-auto">
+                        <!-- Desktop Table View -->
+                        <table class="w-full text-left border-collapse hidden md:table">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-950/40 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                    <th class="p-4 w-12 text-center">
+                                        <input type="checkbox" id="admin-select-all" onchange="window.toggleSelectAll(this.checked)" class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4 h-4">
+                                    </th>
+                                    <th class="p-4">Masa Daftar</th>
+                                    <th class="p-4">Nama & Emel</th>
+                                    <th class="p-4">Jawatan & Jabatan</th>
+                                    <th class="p-4">Catatan</th>
+                                    <th class="p-4 text-right">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body" class="divide-y divide-slate-800/60 text-xs">
+                                <!-- Dynamic rows generated via JS -->
+                            </tbody>
+                        </table>
+
+                        <!-- Mobile List Card View -->
+                        <div id="admin-cards-container" class="p-4 space-y-4 md:hidden">
+                            <!-- Dynamic cards for mobile screens -->
                         </div>
                     </div>
-                    
-                    <div>
-                        <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Alamat Emel</span>
-                        <span id="resit-emel" class="text-xs text-slate-400 font-mono">-</span>
-                    </div>
-                </div>
-
-                <!-- Pembina Kod QR -->
-                <div class="pt-4 border-t border-dashed border-slate-800 flex flex-col items-center gap-3">
-                    <div class="p-3 bg-white rounded-xl shadow-lg flex items-center justify-center">
-                        <div id="qrcode" class="w-32 h-32"></div>
-                    </div>
-                    <span class="text-[9px] text-slate-500 font-mono tracking-wider" id="unique-id">-</span>
                 </div>
             </div>
 
-            <!-- Tindakan -->
-            <div class="flex gap-3">
-                <button id="btn-share-attendance" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-slate-700">
-                    <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i>
-                    <span>Kongsi Rekod</span>
-                </button>
-                <button id="btn-reset-system" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2">
-                    <i data-lucide="user-plus-2" class="w-4 h-4"></i>
-                    <span>Daftar Baru</span>
-                </button>
-            </div>
         </div>
 
     </main>
@@ -321,16 +506,74 @@ function doPost(e) {
         </div>
     </div>
 
+    <!-- MODAL KHAS PENGESAHAN PADAM REKOD (Anti Browser-Alert Pattern) -->
+    <div id="delete-confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
+        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-rose-500/10 rounded-full border border-rose-500/20 mb-1">
+                    <i data-lucide="trash-2" class="text-rose-400 w-6 h-6 animate-pulse"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Sahkan Padam Rekod</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Adakah anda benar-benar pasti untuk memadam rekod pendaftaran ini secara kekal daripada pangkalan data?</p>
+            </div>
+            <div class="flex gap-3">
+                <button id="btn-cancel-delete" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold">
+                    Batal
+                </button>
+                <button id="btn-confirm-delete" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs py-3 rounded-xl transition duration-150 font-bold">
+                    Sahkan Padam
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KHAS MUAT TURUN CSV (Tajuk Mesyuarat & Kata Laluan) -->
+    <div id="download-csv-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
+        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-1">
+                    <i data-lucide="file-spreadsheet" class="text-emerald-400 w-6 h-6"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Sahkan Muat Turun CSV</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Sila masukkan tajuk mesyuarat dan kata laluan pentadbir untuk membenarkan muat turun.</p>
+            </div>
+            <div class="space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="heading" class="w-3.5 h-3.5 text-brand-400"></i> Tajuk Mesyuarat / Perkara
+                    </label>
+                    <input type="text" id="csv-meeting-title" placeholder="Contoh: Mesyuarat Agung Tahunan 2026" 
+                        class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="key-round" class="w-3.5 h-3.5 text-brand-400"></i> Kata Laluan Pengesahan
+                    </label>
+                    <input type="password" id="csv-download-password" placeholder="••••••••" 
+                        class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button id="btn-cancel-csv" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold">
+                    Batal
+                </button>
+                <button id="btn-confirm-csv" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-3 rounded-xl transition duration-150 font-bold">
+                    Sahkan & Muat Turun
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="py-5 text-center text-[10px] text-slate-500 border-t border-slate-800/40 bg-slate-950/40 relative z-10">
-        <p>© 2026 Sistem Kehadiran Mesyuarat Bersepadu. Hak Cipta Terpelihara.</p>
+        <p>© 2026 Sistem Kehadiran Mesyuarat Bersepadu. Hak Cipta Terpelihara Jnol Ai.</p>
     </footer>
 
     <!-- Firebase SDK Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================
         //  URL Google Apps Script anda telah disematkan secara kekal (Hardcoded)
@@ -339,6 +582,10 @@ function doPost(e) {
 
         let firebaseApp, auth, db, appId;
         let currentUser = null;
+        let allAttendees = []; // local cache for search, filter, and exports
+        let selectedAttendeeIds = new Set(); // Simpanan set pendaftar yang ditandakan (ticked)
+        let isAdminAuthenticated = false;
+        let deleteTargetId = null; // temporary placeholder for document to be deleted
 
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "",
@@ -368,30 +615,7 @@ function doPost(e) {
             catatan: ""
         };
 
-        // Pengaktifan Sesi Selamat (Rule 3)
-        const runSecureAuth = async () => {
-            if (!auth) return;
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Auth process encountered an issue: ", err);
-            }
-        };
-        runSecureAuth();
-
-        if (auth) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                }
-            });
-        }
-
-        // Papan Makluman Toast
+        // Papan Makluman Toast (Modern micro-UI)
         const showToast = function(message) {
             const toast = document.getElementById('toast');
             const msgEl = document.getElementById('toast-message');
@@ -404,6 +628,523 @@ function doPost(e) {
                 toast.classList.remove('opacity-100', 'translate-y-0');
                 toast.classList.add('opacity-0', '-translate-y-20');
             }, 3500);
+        };
+
+        // Memulakan Firebase Autentikasi terlebih dahulu (Rule 3)
+        const runSecureAuth = async () => {
+            if (!auth) return;
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Auth process encountered an issue: ", err);
+            }
+        };
+
+        // Setup Firestore Listener secara Realtime sejurus selepas auth selesai (Rule 3 Guarded)
+        const listenToAttendeesRealtime = () => {
+            if (!db || !currentUser) return;
+            const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
+            
+            // Menggunakan Simple Query mengikut Rule 2 (No Complex Ordering/Filtering in query)
+            onSnapshot(ref, (snapshot) => {
+                const fetched = [];
+                snapshot.forEach((doc) => {
+                    fetched.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Diisih (Sorted) dalam memori Javascript mengikut Rule 2
+                fetched.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                
+                allAttendees = fetched;
+
+                // Bersihkan IDs terpilih yang sudah tiada dalam sistem (jika dipadam pihak lain)
+                const currentIds = new Set(allAttendees.map(item => item.id));
+                selectedAttendeeIds.forEach(id => {
+                    if (!currentIds.has(id)) {
+                        selectedAttendeeIds.delete(id);
+                    }
+                });
+                
+                // Kemaskini jumlah statistik umum
+                updateAttendeesUI(allAttendees);
+                
+                // Kemaskini panel admin secara masa nyata sekiranya log masuk aktif
+                if (isAdminAuthenticated) {
+                    updateAdminUI(allAttendees);
+                }
+            }, (error) => {
+                console.error("Gagal mendapatkan senarai masa nyata:", error);
+                showToast("Sesi bermasalah ketika memuat turun data.");
+            });
+        };
+
+        // Pemasangan Status Listener
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    // Aktifkan pangkalan data realtime sebaik sahaja identiti sah
+                    listenToAttendeesRealtime();
+                }
+            });
+        }
+
+        // Kemaskini Visual UI bagi Senarai Kehadiran Awam
+        const updateAttendeesUI = (list) => {
+            const container = document.getElementById('attendees-container');
+            const totalCountBadge = document.getElementById('badge-total-attendees');
+            const totalStatsEl = document.getElementById('stats-total-count');
+            const deptStatsEl = document.getElementById('stats-dept-count');
+
+            if (!container) return;
+
+            // Update badge dan statistik ringkas
+            totalCountBadge.textContent = list.length;
+            totalStatsEl.textContent = list.length;
+
+            // Kira keunikan jabatan
+            const uniqueDepts = new Set(list.map(item => (item.jabatan || '').trim().toLowerCase()).filter(Boolean));
+            deptStatsEl.textContent = uniqueDepts.size;
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500">
+                        <i data-lucide="users" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+                        <p class="text-xs font-semibold">Tiada pendaftaran dikesan buat masa ini.</p>
+                        <p class="text-[10px] text-slate-600 mt-1">Jadilah yang pertama mendaftar hari ini!</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            let html = "";
+            list.forEach((item, index) => {
+                const initial = item.nama ? item.nama.charAt(0).toUpperCase() : '?';
+                const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                
+                html += `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/40 border border-slate-800/80 hover:bg-slate-800/60 transition-all duration-200">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center border border-brand-500/20 flex-shrink-0">
+                            <span class="text-brand-400 text-xs font-extrabold">${initial}</span>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold text-slate-100 truncate">${item.nama || 'Tiada Nama'}</h4>
+                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jabatan || '-'}</span></p>
+                        </div>
+                    </div>
+                    <div class="text-right flex-shrink-0 ml-2">
+                        <span class="bg-brand-500/10 text-brand-400 text-[9px] font-bold px-2 py-0.5 rounded-full border border-brand-500/20">${timeStr}</span>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        };
+
+        // Kemaskini Maklumat Keseluruhan Bahagian Admin
+        const updateAdminUI = (list) => {
+            if (!isAdminAuthenticated) return;
+
+            const tableBody = document.getElementById('admin-table-body');
+            const cardsContainer = document.getElementById('admin-cards-container');
+
+            // Jalankan tapisan mengikut input carian khusus Admin
+            const query = document.getElementById('search-admin-attendees').value.trim().toLowerCase();
+            const filtered = list.filter(item => {
+                if (!query) return true;
+                const nama = (item.nama || '').toLowerCase();
+                const emel = (item.email || '').toLowerCase();
+                const jawatan = (item.jawatan || '').toLowerCase();
+                const jabatan = (item.jabatan || '').toLowerCase();
+                const catatan = (item.catatan || '').toLowerCase();
+                return nama.includes(query) || emel.includes(query) || jawatan.includes(query) || jabatan.includes(query) || catatan.includes(query);
+            });
+
+            if (filtered.length === 0) {
+                const emptyMarkup = `
+                    <tr class="text-slate-500">
+                        <td colspan="6" class="p-8 text-center">
+                            <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+                            <p class="text-xs">Tiada rekod pendaftaran ditemui.</p>
+                        </td>
+                    </tr>`;
+                tableBody.innerHTML = emptyMarkup;
+                cardsContainer.innerHTML = `
+                    <div class="text-center py-8 text-slate-500">
+                        <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+                        <p class="text-xs">Tiada rekod pendaftaran ditemui.</p>
+                    </div>`;
+                lucide.createIcons();
+                updateSelectAllCheckboxState(filtered);
+                updateSelectedBadge();
+                return;
+            }
+
+            let tableHtml = "";
+            let cardsHtml = "";
+
+            filtered.forEach(item => {
+                const id = item.id;
+                const nama = item.nama || 'Tiada Nama';
+                const emel = item.email || 'Tiada Emel';
+                const jawatan = item.jawatan || '-';
+                const jabatan = item.jabatan || '-';
+                const catatan = item.catatan || '-';
+                const dateObj = item.timestamp ? new Date(item.timestamp) : null;
+                const dateFormatted = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
+                const isChecked = selectedAttendeeIds.has(id) ? 'checked' : '';
+
+                // Generasi Jadual Desktop
+                tableHtml += `
+                <tr class="border-b border-slate-800/40 hover:bg-slate-800/25 transition-all">
+                    <td class="p-4 text-center">
+                        <input type="checkbox" onchange="window.toggleAttendeeSelect('${id}')" ${isChecked} class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4 h-4 cursor-pointer">
+                    </td>
+                    <td class="p-4 font-mono text-[10px] text-slate-400">${dateFormatted}</td>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-200">${nama}</div>
+                        <div class="text-[10px] text-slate-500 font-mono">${emel}</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="font-semibold text-slate-300">${jawatan}</div>
+                        <div class="text-[10px] text-brand-400 font-bold">${jabatan}</div>
+                    </td>
+                    <td class="p-4 text-slate-400 max-w-xs truncate" title="${catatan}">${catatan}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="window.triggerDeleteConfirmation('${id}')" class="p-2 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 rounded-lg border border-rose-500/20 transition-all" title="Padam Rekod">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </td>
+                </tr>`;
+
+                // Generasi Kad Mudah Alih
+                cardsHtml += `
+                <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-800/80 space-y-3">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex items-start gap-3 min-w-0">
+                            <input type="checkbox" onchange="window.toggleAttendeeSelect('${id}')" ${isChecked} class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4 h-4 mt-0.5 flex-shrink-0 cursor-pointer">
+                            <div class="min-w-0">
+                                <span class="text-[9px] font-mono text-slate-500 block">${dateFormatted}</span>
+                                <h4 class="text-xs font-bold text-slate-100 truncate">${nama}</h4>
+                                <p class="text-[10px] text-slate-400 font-mono truncate">${emel}</p>
+                            </div>
+                        </div>
+                        <button onclick="window.triggerDeleteConfirmation('${id}')" class="p-2 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 rounded-lg border border-rose-500/20 transition-all flex-shrink-0">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-[10px] bg-slate-900/40 p-2 rounded-lg border border-slate-800/50">
+                        <div>
+                            <span class="text-slate-500 block uppercase tracking-wider text-[8px]">Jawatan</span>
+                            <span class="text-slate-300 font-medium truncate block">${jawatan}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 block uppercase tracking-wider text-[8px]">Jabatan</span>
+                            <span class="text-brand-400 font-bold truncate block">${jabatan}</span>
+                        </div>
+                    </div>
+                    <div class="text-[10px]">
+                        <span class="text-slate-500 block uppercase tracking-wider text-[8px]">Catatan</span>
+                        <p class="text-slate-400 bg-slate-900/20 p-2 rounded border border-slate-800/30 italic text-xs">${catatan}</p>
+                    </div>
+                </div>`;
+            });
+
+            tableBody.innerHTML = tableHtml;
+            cardsContainer.innerHTML = cardsHtml;
+            lucide.createIcons();
+
+            updateSelectAllCheckboxState(filtered);
+            updateSelectedBadge();
+        };
+
+        // Fungsi Memilih/Menyahpilih Pendaftar Secara Individu
+        window.toggleAttendeeSelect = (id) => {
+            if (selectedAttendeeIds.has(id)) {
+                selectedAttendeeIds.delete(id);
+            } else {
+                selectedAttendeeIds.add(id);
+            }
+            // Trigger check-state updates
+            const query = document.getElementById('search-admin-attendees').value.trim().toLowerCase();
+            const filtered = allAttendees.filter(item => {
+                if (!query) return true;
+                const nama = (item.nama || '').toLowerCase();
+                const emel = (item.email || '').toLowerCase();
+                const jawatan = (item.jawatan || '').toLowerCase();
+                const jabatan = (item.jabatan || '').toLowerCase();
+                const catatan = (item.catatan || '').toLowerCase();
+                return nama.includes(query) || emel.includes(query) || jawatan.includes(query) || jabatan.includes(query) || catatan.includes(query);
+            });
+            updateSelectAllCheckboxState(filtered);
+            updateSelectedBadge();
+        };
+
+        // Fungsi Memilih/Menyahpilih Semua Pendaftar (Select All)
+        window.toggleSelectAll = (checked) => {
+            const query = document.getElementById('search-admin-attendees').value.trim().toLowerCase();
+            const filtered = allAttendees.filter(item => {
+                if (!query) return true;
+                const nama = (item.nama || '').toLowerCase();
+                const emel = (item.email || '').toLowerCase();
+                const jawatan = (item.jawatan || '').toLowerCase();
+                const jabatan = (item.jabatan || '').toLowerCase();
+                const catatan = (item.catatan || '').toLowerCase();
+                return nama.includes(query) || emel.includes(query) || jawatan.includes(query) || jabatan.includes(query) || catatan.includes(query);
+            });
+
+            filtered.forEach(item => {
+                if (checked) {
+                    selectedAttendeeIds.add(item.id);
+                } else {
+                    selectedAttendeeIds.delete(item.id);
+                }
+            });
+
+            // Re-render admin UI to reflect checked states visually
+            updateAdminUI(allAttendees);
+        };
+
+        // Memantau Keadaan Kotak Tik Pilih Semua
+        function updateSelectAllCheckboxState(filteredList) {
+            const selectAllCheckbox = document.getElementById('admin-select-all');
+            const selectAllMobileCheckbox = document.getElementById('admin-select-all-mobile');
+
+            if (filteredList.length === 0) {
+                if (selectAllCheckbox) selectAllCheckbox.checked = false;
+                if (selectAllMobileCheckbox) selectAllMobileCheckbox.checked = false;
+                return;
+            }
+
+            const allFilteredSelected = filteredList.every(item => selectedAttendeeIds.has(item.id));
+            if (selectAllCheckbox) selectAllCheckbox.checked = allFilteredSelected;
+            if (selectAllMobileCheckbox) selectAllMobileCheckbox.checked = allFilteredSelected;
+        }
+
+        // Kemaskini Lencana Jumlah Terpilih
+        function updateSelectedBadge() {
+            const totalSelected = selectedAttendeeIds.size;
+            const badge = document.getElementById('selected-count-badge');
+            const mobileBadge = document.getElementById('mobile-selected-count');
+
+            if (badge) badge.textContent = `${totalSelected} Terpilih`;
+            if (mobileBadge) mobileBadge.textContent = `${totalSelected} Terpilih`;
+        }
+
+        // Pengesahan Kata Laluan Portal Admin
+        const verifyAdminPassword = () => {
+            const input = document.getElementById('admin-password-input');
+            const password = input.value.trim();
+
+            if (password === 'umkb13813') {
+                isAdminAuthenticated = true;
+                input.value = ""; // Kosongkan medan input demi keselamatan
+                document.getElementById('admin-login-view').classList.add('hidden');
+                document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                showToast("Log masuk pentadbir berjaya disahkan!");
+                updateAdminUI(allAttendees);
+            } else {
+                showToast("Kata laluan salah! Sila hubungi urus setia.");
+                input.focus();
+            }
+        };
+
+        // Log Keluar dari Sesi Admin
+        const logoutAdmin = () => {
+            isAdminAuthenticated = false;
+            selectedAttendeeIds.clear(); // Padam semua rekod pilihan apabila log keluar
+            document.getElementById('admin-password-input').value = "";
+            showToast("Log keluar dari portal pentadbir berjaya.");
+            switchTab('register');
+        };
+
+        // Kawalan Dialog Modal Padam
+        window.triggerDeleteConfirmation = (id) => {
+            deleteTargetId = id;
+            const modal = document.getElementById('delete-confirm-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-95');
+            modal.querySelector('div').classList.add('scale-100');
+        };
+
+        const closeDeleteModal = () => {
+            deleteTargetId = null;
+            const modal = document.getElementById('delete-confirm-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+        };
+
+        const executeDelete = async () => {
+            if (!deleteTargetId || !db || !currentUser) {
+                closeDeleteModal();
+                return;
+            }
+            try {
+                // Rule 1 compliant path: artifacts/{appId}/public/data/kehadiran/{docId}
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'kehadiran', deleteTargetId);
+                await deleteDoc(docRef);
+                showToast("Rekod pendaftaran mesyuarat berjaya dipadam secara kekal!");
+            } catch (err) {
+                console.error("Gagal memadam rekod:", err);
+                showToast("Sistem awan ralat: Gagal memadam data.");
+            }
+            closeDeleteModal();
+        };
+
+        // Kawalan Dialog Modal Muat Turun CSV
+        const openCSVModal = () => {
+            // Filter list to check if there is any selected attendee
+            const selectedList = allAttendees.filter(item => selectedAttendeeIds.has(item.id));
+            if (selectedList.length === 0) {
+                showToast("Sila pilih (tik) sekurang-kurangnya satu rekod pendaftaran untuk dimuat turun.");
+                return;
+            }
+
+            document.getElementById('csv-meeting-title').value = "";
+            document.getElementById('csv-download-password').value = "";
+
+            const modal = document.getElementById('download-csv-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-95');
+            modal.querySelector('div').classList.add('scale-100');
+            lucide.createIcons();
+        };
+
+        const closeCSVModal = () => {
+            const modal = document.getElementById('download-csv-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+        };
+
+        // Fungsi Muat Turun Data CSV Pintar (Diproses Secara Selamat)
+        const executeExportToCSV = () => {
+            const selectedList = allAttendees.filter(item => selectedAttendeeIds.has(item.id));
+            if (selectedList.length === 0) {
+                showToast("Tiada rekod data yang dipilih untuk dieksport.");
+                return;
+            }
+
+            const meetingTitle = document.getElementById('csv-meeting-title').value.trim();
+            const passwordVal = document.getElementById('csv-download-password').value.trim();
+
+            if (!meetingTitle) {
+                showToast("Sila masukkan tajuk mesyuarat sebelum muat turun.");
+                return;
+            }
+
+            if (passwordVal !== 'umkb13813') {
+                showToast("Kebenaran Ditolak: Kata laluan pengesahan muat turun salah!");
+                return;
+            }
+
+            let csvContent = "\uFEFF"; // Byte Order Mark (BOM) untuk sokongan tulisan bahasa Melayu di MS Excel
+            
+            // Masukkan butiran Mesyuarat di bahagian atas CSV
+            csvContent += `TAJUK MESYUARAT:,${escapeCSV(meetingTitle)}\n`;
+            csvContent += `TARIKH PENJANAAN DOS:,${escapeCSV(new Date().toLocaleString('ms-MY'))}\n`;
+            csvContent += `JUMLAH PESERTA DIEKSPORT:,${escapeCSV(selectedList.length)}\n\n`;
+            
+            csvContent += "Masa Pendaftaran,Nama Penuh,Alamat Emel,Jawatan,Jabatan/Organisasi,Catatan\n";
+
+            selectedList.forEach(item => {
+                const dateObj = item.timestamp ? new Date(item.timestamp) : null;
+                const timeStr = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
+
+                const row = [
+                    escapeCSV(timeStr),
+                    escapeCSV(item.nama),
+                    escapeCSV(item.email),
+                    escapeCSV(item.jawatan),
+                    escapeCSV(item.jabatan),
+                    escapeCSV(item.catatan)
+                ].join(",");
+
+                csvContent += row + "\r\n";
+            });
+
+            // Penyediaan pautan muat turun fail .csv
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            const safeTitle = meetingTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Kehadiran_${safeTitle}_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            closeCSVModal();
+            showToast("Fail CSV berjaya dijana dan dimuat turun!");
+        };
+
+        const escapeCSV = (field) => {
+            if (!field) return '""';
+            return `"${field.toString().replace(/"/g, '""')}"`;
+        };
+
+        // Tapisan Pencarian Awam (Memori)
+        const handleSearch = () => {
+            const query = document.getElementById('search-attendees').value.trim().toLowerCase();
+            if (!query) {
+                updateAttendeesUI(allAttendees);
+                return;
+            }
+
+            const filtered = allAttendees.filter(item => {
+                const name = (item.nama || '').toLowerCase();
+                const designation = (item.jawatan || '').toLowerCase();
+                const department = (item.jabatan || '').toLowerCase();
+                return name.includes(query) || designation.includes(query) || department.includes(query);
+            });
+
+            updateAttendeesUI(filtered);
+        };
+
+        // Pengurusan Pertukaran Tab Berbilang
+        const switchTab = (tabName) => {
+            const btnReg = document.getElementById('tab-btn-register');
+            const btnList = document.getElementById('tab-btn-list');
+            const btnAdmin = document.getElementById('tab-btn-admin');
+            
+            const secReg = document.getElementById('section-register');
+            const secList = document.getElementById('section-list');
+            const secAdmin = document.getElementById('section-admin');
+
+            // Reset semua keadaan aktif tab
+            [btnReg, btnList, btnAdmin].forEach(btn => {
+                btn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200";
+            });
+            [secReg, secList, secAdmin].forEach(sec => sec.classList.add('hidden'));
+
+            if (tabName === 'register') {
+                btnReg.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md";
+                secReg.classList.remove('hidden');
+            } else if (tabName === 'list') {
+                btnList.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md";
+                secList.classList.remove('hidden');
+                updateAttendeesUI(allAttendees);
+            } else if (tabName === 'admin') {
+                btnAdmin.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md";
+                secAdmin.classList.remove('hidden');
+                
+                // Semak status pengesahan kata laluan admin
+                if (isAdminAuthenticated) {
+                    document.getElementById('admin-login-view').classList.add('hidden');
+                    document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                    updateAdminUI(allAttendees);
+                } else {
+                    document.getElementById('admin-login-view').classList.remove('hidden');
+                    document.getElementById('admin-dashboard-view').classList.add('hidden');
+                }
+            }
         };
 
         // Panel Konfigurasi Sheet
@@ -450,7 +1191,7 @@ function doPost(e) {
             document.getElementById('step-login').classList.add('hidden');
             document.getElementById('step-details').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            showToast("Emel disahkan! Sila isi Nama, Jawatan & Jabatan.");
+            showToast("Emel disahkan! Sila isi maklumat peribadi.");
         }
 
         // Kembali ke halaman emel
@@ -480,7 +1221,7 @@ function doPost(e) {
                 timestamp: timestamp
             };
 
-            // 1. Simpan ke database Firestore
+            // 1. Simpan ke database Firestore (Sesuai dengan Aturan Laluan Rule 1 & Kehadiran Auth)
             if (currentUser && db) {
                 try {
                     const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
@@ -488,6 +1229,8 @@ function doPost(e) {
                 } catch (fsError) {
                     console.warn("Firestore offline/error saving: ", fsError);
                 }
+            } else {
+                showToast("Sistem awan sedang menyegerak secara setempat.");
             }
 
             // 2. Simpan ke Google Sheet menggunakan URL tetap (Hardcoded) atau simpanan tempatan (LocalStorage)
@@ -559,7 +1302,7 @@ function doPost(e) {
 
         // Salin maklumat pendaftaran
         const shareAttendance = function() {
-            const textToCopy = `Pendaftaran Kehadiran Mesyuarat Berjaya!\nNama: ${attendanceRecord.nama}\nJawatan: ${attendanceRecord.jawatan}\nJabatan: ${attendanceRecord.jabatan}\nStatus: Direkodkan ke Google Sheet`;
+            const textToCopy = `Pendaftaran Kehadiran Mesyuarat Berjaya!\n\nNama: ${attendanceRecord.nama}\nJawatan: ${attendanceRecord.jawatan}\nJabatan: ${attendanceRecord.jabatan}\nSistem Rekod: Kehadiran Mesyuarat Bersepadu\nTarikh Daftar: ${new Date().toLocaleDateString('ms-MY')}`;
             
             const temp = document.createElement("textarea");
             temp.value = textToCopy;
@@ -568,7 +1311,7 @@ function doPost(e) {
             document.execCommand('copy');
             document.body.removeChild(temp);
             
-            showToast("Rekod kehadiran disalin ke papan klip!");
+            showToast("Maklumat pas rekod disalin ke papan klip!");
         };
 
         // Reset sistem pendaftaran baru
@@ -597,25 +1340,55 @@ function doPost(e) {
             lucide.createIcons();
         };
 
-        // Menambah Event Listener yang sangat selamat
-        window.addEventListener('DOMContentLoaded', () => {
+        // Menambah Event Listener yang selamat
+        window.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
             
+            // Lari autentikasi Firestore dahulu
+            await runSecureAuth();
+
             const cachedGasUrl = localStorage.getItem('gas_sheets_url');
             if (cachedGasUrl) {
                 document.getElementById('gas-url').value = cachedGasUrl;
             }
 
-            // Pautan Butang
+            // Pautan Butang Setup & Navigasi Tab
             document.getElementById('btn-open-setup').addEventListener('click', toggleSetupPanel);
             document.getElementById('btn-close-setup').addEventListener('click', toggleSetupPanel);
             document.getElementById('btn-save-setup').addEventListener('click', saveSetupConfig);
+            
+            document.getElementById('tab-btn-register').addEventListener('click', () => switchTab('register'));
+            document.getElementById('tab-btn-list').addEventListener('click', () => switchTab('list'));
+            document.getElementById('tab-btn-admin').addEventListener('click', () => switchTab('admin'));
+            
+            // Pautan Pendaftaran
             document.getElementById('btn-submit-email').addEventListener('click', submitManualEmail);
             document.getElementById('btn-back-login').addEventListener('click', goBackToLogin);
             document.getElementById('btn-share-attendance').addEventListener('click', shareAttendance);
             document.getElementById('btn-reset-system').addEventListener('click', resetSystem);
             
             document.getElementById('details-form').addEventListener('submit', handleFormSubmission);
+            document.getElementById('search-attendees').addEventListener('input', handleSearch);
+
+            // Log Masuk Keselamatan Admin & Kawalan Papan Pemuka
+            document.getElementById('btn-submit-admin-login').addEventListener('click', verifyAdminPassword);
+            document.getElementById('admin-password-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') verifyAdminPassword();
+            });
+            document.getElementById('btn-admin-logout').addEventListener('click', logoutAdmin);
+            document.getElementById('btn-export-csv').addEventListener('click', openCSVModal);
+            document.getElementById('search-admin-attendees').addEventListener('input', () => updateAdminUI(allAttendees));
+
+            // Pautan Butang Modal Padam Rekod
+            document.getElementById('btn-cancel-delete').addEventListener('click', closeDeleteModal);
+            document.getElementById('btn-confirm-delete').addEventListener('click', executeDelete);
+
+            // Pautan Butang Modal Muat Turun CSV
+            document.getElementById('btn-cancel-csv').addEventListener('click', closeCSVModal);
+            document.getElementById('btn-confirm-csv').addEventListener('click', executeExportToCSV);
+            document.getElementById('csv-download-password').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') executeExportToCSV();
+            });
         });
 
     </script>
