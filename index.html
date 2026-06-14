@@ -1067,7 +1067,7 @@
         const getTodayList = () => {
             const today = new Date(window.getSyncedNow());
             return allAttendees.filter(item => {
-                if (!item.timestamp) return false;
+                if (!item.timestamp || item.email === "SYSTEM_SETTINGS") return false;
                 const d = new Date(item.timestamp);
                 return d.getDate() === today.getDate() &&
                        d.getMonth() === today.getMonth() &&
@@ -1108,7 +1108,8 @@
 
                 fetched.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                 
-                allAttendees = fetched;
+                // Tapis SYSTEM_SETTINGS sebelum dimasukkan ke dalam senarai awam
+                allAttendees = fetched.filter(item => item.email !== "SYSTEM_SETTINGS");
 
                 const currentIds = new Set(allAttendees.map(item => item.id));
                 selectedAttendeeIds.forEach(id => {
@@ -1199,6 +1200,9 @@
                 console.error(e);
             }
 
+            // Tapis keluar sebarang rekod sistem khas dari komputer setempat
+            localData = localData.filter(item => item.email !== "SYSTEM_SETTINGS");
+
             allAttendees = [...localData];
             updateAttendeesUI();
 
@@ -1233,9 +1237,26 @@
                 }
                 const sheetData = await fetchAttendeesFromGoogleSheets();
                 if (sheetData && sheetData.length > 0) {
+                    // SISTEM PENYELARASAN GOOGLE SHEETS BROKER: Extrak rekod tetapan sistem terkini
+                    const settingsRows = sheetData.filter(item => item.email === "SYSTEM_SETTINGS");
+                    if (settingsRows.length > 0) {
+                        settingsRows.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                        try {
+                            const latestSettings = JSON.parse(settingsRows[0].nama);
+                            systemSettings = latestSettings;
+                            localStorage.setItem('system_settings', JSON.stringify(systemSettings));
+                            updateRegistrationAccessUI();
+                        } catch (e) {
+                            console.error("Gagal parse sistem tetapan daripada Google Sheets:", e);
+                        }
+                    }
+
+                    // Tapis SYSTEM_SETTINGS sebelum digabungkan ke paparan senarai peserta
+                    const actualAttendees = sheetData.filter(item => item.email !== "SYSTEM_SETTINGS");
+
                     const combinedMap = new Map();
                     
-                    sheetData.forEach(item => {
+                    actualAttendees.forEach(item => {
                         const uniqueKey = `${item.email}_${item.timestamp}`;
                         combinedMap.set(uniqueKey, item);
                     });
@@ -1420,7 +1441,7 @@
                         </div>
                         <div class="min-w-0">
                             <h4 class="text-xs font-bold text-slate-100 truncate">${toTitleCase(item.nama || 'Tiada Nama')}</h4>
-                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jawatan || '-'}</span></p>
+                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jabatan || '-'}</span></p>
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0 ml-2">
@@ -1943,26 +1964,51 @@
 
             const updatedSettings = { enabled, expiresAt };
 
-            // Persist check-in permissions configuration
+            // 1. Simpan ke Local Storage Komputer Admin
+            localStorage.setItem('system_settings', JSON.stringify(updatedSettings));
+            systemSettings = updatedSettings;
+            updateRegistrationAccessUI();
+
+            // 2. Simpan ke Firebase (Sekiranya Aktif)
             if (isFirebaseActive && db && currentUser) {
                 try {
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tetapan', 'sistem');
                     await setDoc(docRef, updatedSettings);
-                    showToast("Tetapan pendaftaran berjaya dikemaskini!", "success");
                 } catch (e) {
                     console.error("Gagal mengemaskini tetapan di Firebase:", e);
-                    showToast("Ralat pelayan: Gagal menyimpan tetapan ke awan.", "error");
+                }
+            }
+
+            // 3. Simpan ke Google Sheets (Sentiasa hantar supaya platform lain yang tiada Firebase boleh menyegerak status!)
+            let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
+            if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
+                gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
+            }
+            if (gasTargetUrl) {
+                const settingsPayload = {
+                    id: 'settings-' + Date.now(),
+                    email: "SYSTEM_SETTINGS",
+                    nama: JSON.stringify(updatedSettings),
+                    jawatan: "SYSTEM",
+                    jabatan: "SYSTEM",
+                    catatan: "SYSTEM",
+                    timestamp: Date.now()
+                };
+                try {
+                    await fetch(gasTargetUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'text/plain' 
+                        },
+                        body: JSON.stringify(settingsPayload)
+                    });
+                    showToast("Had Akses berjaya dikongsi ke semua peranti talian!", "success");
+                } catch (e) {
+                    console.error("Gagal menyegerak tetapan ke Google Sheets:", e);
                 }
             } else {
-                try {
-                    localStorage.setItem('system_settings', JSON.stringify(updatedSettings));
-                    systemSettings = updatedSettings;
-                    updateRegistrationAccessUI();
-                    showToast("Tetapan disimpan secara peranti tempatan.", "success");
-                } catch (e) {
-                    console.error(e);
-                    showToast("Gagal menyimpan tetapan tempatan.", "error");
-                }
+                showToast("Tetapan disimpan secara peranti tempatan sahaja.", "success");
             }
         };
 
@@ -2355,6 +2401,13 @@
                     if (e.key === 'Enter') executeLockSettingsUpdate();
                 });
             }
+
+            // SEGERAK LATAR BELAKANG AUTOMATIK: Menyegerakkan had akses terkini ke semua peranti mudah alih setiap 12 saat
+            setInterval(() => {
+                if (!isFirebaseActive) {
+                    loadLocalAndSheetsData(false); // Proses berjalan senyap tanpa popup pemberitahuan mengganggu
+                }
+            }, 12000);
         });
 
     </script>
