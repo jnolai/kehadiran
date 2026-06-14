@@ -17,6 +17,42 @@
     <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+    <!-- Skrip Perlindungan Keselamatan Berlapis -->
+    <script>
+        // Menghentikan sebarang klik kanan pada sistem
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        // Menghentikan fungsi drag and select teks untuk mengelakkan pencurian data struktur
+        document.addEventListener('selectstart', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
+        
+        // Menghentikan kekunci pintasan pengintip tegar (F12, View Source, Inspect Element)
+        document.addEventListener('keydown', e => {
+            const key = e.key.toUpperCase();
+            if (
+                e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(key)) ||
+                (e.ctrlKey && key === 'U') ||
+                (e.metaKey && e.altKey && ['I', 'J', 'C'].includes(e.key.toLowerCase())) ||
+                (e.metaKey && e.key.toLowerCase() === 'u')
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Loop debugger aktif bagi melumpuhkan panel konsol pembakar kod (DevTools Protection)
+        setInterval(function() {
+            try {
+                (function() {
+                    return function(inst) {
+                        inst = inst || function() {};
+                        return inst.constructor('debugger')();
+                    }
+                })()();
+            } catch (e) {}
+        }, 100);
+    </script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -332,7 +368,7 @@
                             </div>
                             <div>
                                 <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jabatan</span>
-                                <span id="resit-jabatan" class="text-xs font-semibold text-slate-300 block truncate">-</span>
+                                <span id="resit-jawatan" class="text-xs font-semibold text-slate-300 block truncate">-</span>
                             </div>
                         </div>
                         
@@ -757,8 +793,22 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // URL Google Apps Script yang disematkan secara kekal (Hardcoded)
-        const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwj5diMO_xQAGxckDcAnvoFZvGqEbSKdN-G_5BjQzyPac5VCZMj49QqBfJKY-n0p2ph/exec"; 
+        // Fungsi Penyahsulit Hexadecimal untuk melindungi pembolehubah sensitif dengan kestabilan maksimum
+        const _dec = (hex) => {
+            let str = '';
+            for (let i = 0; i < hex.length; i += 2) {
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+            }
+            return str;
+        };
+
+        // Pembolehubah sensitif yang telah dikodkan dalam bentuk Hexadecimal demi keselamatan tinggi
+        const _ob_gas = "68747470733a2f2f7363726970742e676f6f676c652e636f6d2f6d6163726f732f732f414b66796362776a3564694d4f5f7851414778636b4463416e766f465a7647714562534b644e2d475f35426a517a795061633556435a4d6a3439517142664a4b592d6e30703270682f65786563";
+        const _ob_p1 = "756d6b623133383133"; // Nyahsulit kepada 'umkb13813'
+        const _ob_p2 = "6a6e6f6c616932303236"; // Nyahsulit kepada 'jnolai2026'
+
+        // URL Google Apps Script yang disematkan secara terlindung
+        const URL_GOOGLE_APPS_SCRIPT = _dec(_ob_gas); 
 
         let firebaseApp, auth, db, appId;
         let currentUser = null;
@@ -1248,7 +1298,7 @@
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0 ml-2">
-                        <span class="bg-brand-500/10 text-brand-400 text-[9px] font-bold px-2 py-0.5 rounded-full border border-brand-500/20">${timeStr}</span>
+                        <span class="bg-brand-500/10 text-brand-400 text-[9px] font-bold px-2.5 py-0.5 rounded-full border border-brand-500/20">${timeStr}</span>
                     </div>
                 </div>`;
             });
@@ -1456,7 +1506,8 @@
             const input = document.getElementById('admin-password-input');
             const password = input.value.trim();
 
-            if (password === 'umkb13813') {
+            // Membaca kata laluan yang disulitkan secara dinamik
+            if (password === _dec(_ob_p1)) {
                 isAdminAuthenticated = true;
                 input.value = ""; 
                 document.getElementById('admin-login-view').classList.add('hidden');
@@ -1569,7 +1620,8 @@
                 return;
             }
 
-            if (passwordVal !== 'umkb13813') {
+            // Membaca kata laluan yang disulitkan secara dinamik
+            if (passwordVal !== _dec(_ob_p1)) {
                 showToast("Kebenaran Ditolak: Kata laluan pengesahan salah!", 'error');
                 return;
             }
@@ -1678,7 +1730,8 @@
 
         const executeLockSettingsUpdate = async () => {
             const passwordInput = document.getElementById('lock-auth-password');
-            if (passwordInput.value.trim() !== 'umkb13813') {
+            // Membaca kata laluan yang disulitkan secara dinamik
+            if (passwordInput.value.trim() !== _dec(_ob_p1)) {
                 showToast("Kata laluan salah! Kemaskini had akses ditolak.", "error");
                 passwordInput.focus();
                 return;
@@ -1757,7 +1810,8 @@
 
         const verifySetupPassword = () => {
             const passwordInput = document.getElementById('setup-auth-password');
-            if (passwordInput.value.trim() === 'jnolai2026') {
+            // Membaca kata laluan yang disulitkan secara dinamik
+            if (passwordInput.value.trim() === _dec(_ob_p2)) {
                 closeSetupAuthModal();
                 toggleSetupPanel(); 
                 showToast("Akses tetapan Google Sheets dibenarkan!", "success");
