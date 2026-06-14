@@ -482,8 +482,8 @@
                             <i data-lucide="shield-alert" class="text-brand-400 w-5 h-5"></i>
                             <span>Kawalan Kebenaran Daftar Masuk</span>
                         </h3>
-                        <span id="admin-reg-status-badge" class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20">
-                            AKTIF
+                        <span id="admin-reg-status-badge" class="bg-rose-500/10 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-rose-500/20">
+                            DITUTUP
                         </span>
                     </div>
 
@@ -491,12 +491,12 @@
                         <!-- Status & Info -->
                         <div class="space-y-3 text-xs text-slate-300 bg-slate-900/40 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-center">
                             <p class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" id="admin-reg-status-dot"></span>
-                                Status Kebenaran: <strong id="admin-reg-status-text" class="text-white">Dibenarkan</strong>
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500" id="admin-reg-status-dot"></span>
+                                Status Kebenaran: <strong id="admin-reg-status-text" class="text-rose-400 font-bold">Ditutup / Disekat</strong>
                             </p>
                             <p id="admin-reg-time-remaining" class="text-slate-400 font-mono text-[11px] flex items-center gap-1.5">
-                                <i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i>
-                                <span>Kebenaran: Sentiasa Buka</span>
+                                <i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i>
+                                <span>Kebenaran: Ditutup sepenuhnya</span>
                             </p>
                         </div>
 
@@ -505,6 +505,7 @@
                             <div class="space-y-1.5">
                                 <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Tetapkan Julat Masa Daftar Masuk</label>
                                 <select id="reg-duration-select" class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                    <option value="tutup" selected>Tutup Akses (Lalai)</option>
                                     <option value="sentiasa">Sentiasa Buka</option>
                                     <option value="15">15 Minit</option>
                                     <option value="30">30 Minit</option>
@@ -767,9 +768,9 @@
         let deleteTargetId = null; 
         let isFirebaseActive = false; 
 
-        // System Settings State (Locks & Timer parameters)
+        // System Settings State (Locks & Timer parameters) - Lalai diletakkan enabled: false (Sentiasa ditutup secara lalai)
         let systemSettings = {
-            enabled: true,
+            enabled: false,
             expiresAt: null
         };
 
@@ -923,8 +924,8 @@
                 if (snap.exists()) {
                     systemSettings = snap.data();
                 } else {
-                    // Initialize default database configuration if not present
-                    const defaultSettings = { enabled: true, expiresAt: null };
+                    // Lalai diletakkan enabled: false (Sentiasa ditutup secara lalai)
+                    const defaultSettings = { enabled: false, expiresAt: null };
                     setDoc(ref, defaultSettings);
                     systemSettings = defaultSettings;
                 }
@@ -1021,10 +1022,11 @@
                 if (local) {
                     systemSettings = JSON.parse(local);
                 } else {
-                    systemSettings = { enabled: true, expiresAt: null };
+                    // Lalai diletakkan enabled: false (Sentiasa ditutup secara lalai)
+                    systemSettings = { enabled: false, expiresAt: null };
                 }
             } catch (e) {
-                systemSettings = { enabled: true, expiresAt: null };
+                systemSettings = { enabled: false, expiresAt: null };
             }
             updateRegistrationAccessUI();
         };
@@ -1180,7 +1182,11 @@
                 dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
                 text.textContent = "Disekat / Ditutup";
                 text.className = "text-rose-400 font-bold";
-                timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i><span>Had Masa Pendaftaran Tamat</span>`;
+                if (systemSettings.enabled === false && !systemSettings.expiresAt) {
+                    timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i><span>Kebenaran: Ditutup sepenuhnya</span>`;
+                } else {
+                    timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i><span>Had Masa Pendaftaran Tamat</span>`;
+                }
             }
             lucide.createIcons();
         };
@@ -1238,7 +1244,7 @@
                         </div>
                         <div class="min-w-0">
                             <h4 class="text-xs font-bold text-slate-100 truncate">${toTitleCase(item.nama || 'Tiada Nama')}</h4>
-                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jabatan || '-'}</span></p>
+                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jawatan || '-'}</span></p>
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0 ml-2">
@@ -1684,7 +1690,10 @@
             let expiresAt = null;
             let enabled = true;
 
-            if (durationSelect === 'sentiasa') {
+            if (durationSelect === 'tutup') {
+                expiresAt = null;
+                enabled = false;
+            } else if (durationSelect === 'sentiasa') {
                 expiresAt = null;
                 enabled = true;
             } else {
