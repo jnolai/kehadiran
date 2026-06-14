@@ -513,7 +513,7 @@
         </div>
 
         <!-- SECTION 3: ADMIN PANEL -->
-        <div id="section-admin" class="w-full space-y-6 hidden animate-fade-in">
+        <div id="section-admin" class="w-full space-y-6 max-w-4xl mx-auto hidden animate-fade-in">
             
             <!-- Admin Login Gate -->
             <div id="admin-login-view" class="max-w-md mx-auto space-y-6 py-4 sm:py-6">
@@ -541,7 +541,7 @@
             </div>
 
             <!-- Admin Live Dashboard Controls -->
-            <div id="admin-dashboard-view" class="space-y-6 hidden w-full">
+            <div id="admin-dashboard-view" class="space-y-6 hidden w-full animate-fade-in">
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800/80 pb-5">
                     <div>
                         <h2 class="text-2xl font-bold text-white flex items-center gap-2">
@@ -671,7 +671,7 @@
                         </table>
 
                         <!-- Mobile List Cards View -->
-                        <div id="admin-cards-container" class="p-4 space-y-4 md:hidden">
+                        <div id="admin-cards-container" class="p-4 space-y-4 md:hidden animate-fade-in">
                             <!-- Dynamic Cards -->
                         </div>
                     </div>
@@ -911,9 +911,9 @@
         let deleteTargetId = null; 
         let isFirebaseActive = false; 
 
-        // System Settings State (Locks & Timer parameters) - Lalai diletakkan enabled: false (Sentiasa ditutup secara lalai)
+        // Sistem Settings State: Tetapkan lalai kepada enabled: true (Terbuka secara lalai pada peranti mobile baharu untuk mengelakkan lockout ralat)
         let systemSettings = {
-            enabled: false,
+            enabled: true,
             expiresAt: null
         };
 
@@ -1084,8 +1084,7 @@
                 if (snap.exists()) {
                     systemSettings = snap.data();
                 } else {
-                    // Lalai diletakkan enabled: false (Sentiasa ditutup secara lalai)
-                    const defaultSettings = { enabled: false, expiresAt: null };
+                    const defaultSettings = { enabled: true, expiresAt: null };
                     setDoc(ref, defaultSettings);
                     systemSettings = defaultSettings;
                 }
@@ -1163,9 +1162,19 @@
 
             try {
                 const response = await fetch(`${gasTargetUrl}?t=${Date.now()}`, {
-                    method: 'GET'
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 });
                 if (response.ok) {
+                    // Ekstrak tarikh pelayan Google secara dinamik untuk mengelakkan ralat desinkronisasi jam!
+                    const serverDateHeader = response.headers.get('Date');
+                    if (serverDateHeader) {
+                        const serverTime = new Date(serverDateHeader).getTime();
+                        window.clientClockOffset = serverTime - Date.now();
+                    }
+
                     const result = await response.json();
                     if (result && result.status === "success" && Array.isArray(result.data)) {
                         return result.data;
@@ -1183,11 +1192,10 @@
                 if (local) {
                     systemSettings = JSON.parse(local);
                 } else {
-                    // Lalai diletakkan enabled: false (Sentiasa ditutup secara lalai)
-                    systemSettings = { enabled: false, expiresAt: null };
+                    systemSettings = { enabled: true, expiresAt: null };
                 }
             } catch (e) {
-                systemSettings = { enabled: false, expiresAt: null };
+                systemSettings = { enabled: true, expiresAt: null };
             }
             updateRegistrationAccessUI();
         };
@@ -1412,13 +1420,13 @@
             if (filtered.length === 0) {
                 if (query) {
                     container.innerHTML = `
-                        <div class="text-center py-12 text-slate-500">
+                        <div class="text-center py-12 text-slate-500 animate-fade-in">
                             <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
                             <p class="text-xs font-semibold">Tiada keputusan carian ditemui.</p>
                         </div>`;
                 } else {
                     container.innerHTML = `
-                        <div class="text-center py-12 text-slate-500">
+                        <div class="text-center py-12 text-slate-500 animate-fade-in">
                             <i data-lucide="users" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
                             <p class="text-xs font-semibold">Tiada pendaftaran dikesan buat masa ini.</p>
                             <p class="text-[10px] text-slate-600 mt-1">Jadilah pendaftar pertama hari ini!</p>
@@ -2404,8 +2412,12 @@
 
             // SEGERAK LATAR BELAKANG AUTOMATIK: Menyegerakkan had akses terkini ke semua peranti mudah alih setiap 12 saat
             setInterval(() => {
-                if (!isFirebaseActive) {
-                    loadLocalAndSheetsData(false); // Proses berjalan senyap tanpa popup pemberitahuan mengganggu
+                try {
+                    if (!isFirebaseActive) {
+                        loadLocalAndSheetsData(false); // Proses berjalan senyap tanpa popup pemberitahuan mengganggu
+                    }
+                } catch (e) {
+                    console.error("Gagal menyegerak di latar belakang:", e);
                 }
             }, 12000);
         });
