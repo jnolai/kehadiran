@@ -74,8 +74,23 @@
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .step-transition {
-            transition: all 0.3s ease-in-out;
+        /* Ticket design with side notches */
+        .ticket-notch-left, .ticket-notch-right {
+            position: absolute;
+            top: 50%;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #0f172a; /* matches the gradientbg base */
+            z-index: 10;
+        }
+        .ticket-notch-left {
+            left: -8px;
+            transform: translateY(-50%);
+        }
+        .ticket-notch-right {
+            right: -8px;
+            transform: translateY(-50%);
         }
         /* Ticket scanning effect */
         .scan-line {
@@ -154,6 +169,21 @@
         <!-- SECTION 1: REGISTER -->
         <div id="section-register" class="w-full space-y-6 max-w-xl mx-auto">
             
+            <!-- STEP LOCKED: REGISTRATION CLOSED -->
+            <div id="step-locked" class="w-full space-y-6 hidden animate-fade-in py-8 text-center">
+                <div class="inline-flex p-4 bg-rose-500/10 rounded-full border border-rose-500/20 mb-2">
+                    <i data-lucide="lock" class="text-rose-400 w-10 h-10 animate-pulse"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-white tracking-tight uppercase">Pendaftaran Ditutup</h2>
+                <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                    Maaf, sesi pendaftaran masuk mesyuarat telah ditutup atau masa kebenaran daftar masuk telah tamat. Sila hubungi urus setia mesyuarat untuk bantuan lanjut.
+                </p>
+                <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-xl max-w-sm mx-auto space-y-1.5 backdrop-blur-sm">
+                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Status Kebenaran</span>
+                    <span class="text-xs text-rose-400 font-bold bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20 inline-block">Tamat Masa / Disekat</span>
+                </div>
+            </div>
+
             <!-- STEP 1: EMAIL ENTRY -->
             <div id="step-login" class="w-full space-y-6 animate-fade-in py-4 sm:py-6">
                 <div class="text-center space-y-2">
@@ -272,8 +302,12 @@
                     <p class="text-xs text-slate-400">Kehadiran anda telah berjaya direkodkan secara langsung ke dalam simpanan pelayan awan.</p>
                 </div>
 
-                <!-- Digital Ticket Pass -->
+                <!-- Digital Ticket Pass with Real Notch Aesthetics -->
                 <div class="relative bg-gradient-to-b from-corporate-card to-slate-950 rounded-2xl p-5 border border-slate-800 shadow-2xl space-y-4 overflow-hidden">
+                    <!-- Ticket side notches -->
+                    <div class="ticket-notch-left"></div>
+                    <div class="ticket-notch-right"></div>
+
                     <div class="flex justify-between items-center border-b border-slate-800 pb-3 gap-2">
                         <div>
                             <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">PAS MASUK MESYUARAT</p>
@@ -285,7 +319,7 @@
                     </div>
 
                     <!-- User Information on Ticket -->
-                    <div class="space-y-3.5 text-xs sm:text-sm">
+                    <div class="space-y-3.5 text-xs sm:text-sm relative z-20">
                         <div>
                             <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Nama Penuh</span>
                             <span id="resit-nama" class="font-bold text-slate-100 block truncate">-</span>
@@ -309,7 +343,7 @@
                     </div>
 
                     <!-- QR Code & Unique ID -->
-                    <div class="pt-4 border-t border-dashed border-slate-800 flex flex-col items-center gap-3">
+                    <div class="pt-4 border-t border-dashed border-slate-800/80 flex flex-col items-center gap-3 relative z-20">
                         <div class="relative p-3 bg-white rounded-xl shadow-lg flex items-center justify-center overflow-hidden">
                             <div class="absolute inset-x-0 top-0 scan-line pointer-events-none"></div>
                             <div id="qrcode" class="w-32 h-32"></div>
@@ -441,6 +475,58 @@
                     </div>
                 </div>
 
+                <!-- Kawalan Akses Daftar Masuk (Timer Lock Control) -->
+                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl backdrop-blur-sm">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="shield-alert" class="text-brand-400 w-5 h-5"></i>
+                            <span>Kawalan Kebenaran Daftar Masuk</span>
+                        </h3>
+                        <span id="admin-reg-status-badge" class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20">
+                            AKTIF
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Status & Info -->
+                        <div class="space-y-3 text-xs text-slate-300 bg-slate-900/40 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-center">
+                            <p class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" id="admin-reg-status-dot"></span>
+                                Status Kebenaran: <strong id="admin-reg-status-text" class="text-white">Dibenarkan</strong>
+                            </p>
+                            <p id="admin-reg-time-remaining" class="text-slate-400 font-mono text-[11px] flex items-center gap-1.5">
+                                <i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i>
+                                <span>Kebenaran: Sentiasa Buka</span>
+                            </p>
+                        </div>
+
+                        <!-- Control Inputs -->
+                        <div class="space-y-3.5">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Tetapkan Julat Masa Daftar Masuk</label>
+                                <select id="reg-duration-select" class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                    <option value="sentiasa">Sentiasa Buka</option>
+                                    <option value="15">15 Minit</option>
+                                    <option value="30">30 Minit</option>
+                                    <option value="60">1 Jam (60 Minit)</option>
+                                    <option value="120">2 Jam (120 Minit)</option>
+                                    <option value="custom">Pilihan Sendiri (Minit)</option>
+                                </select>
+                            </div>
+
+                            <div id="custom-minutes-container" class="space-y-1.5 hidden">
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Minit Pilihan Anda</label>
+                                <input type="number" id="custom-minutes-input" min="1" value="45" class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            </div>
+
+                            <button id="btn-trigger-lock-settings" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-2.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 active:scale-[0.98] min-h-[40px]">
+                                <i data-lucide="key-round" class="w-4 h-4"></i>
+                                <span>Kemaskini Had Akses</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Quick Domain Analytics Widget -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="p-3.5 bg-slate-900/50 rounded-xl border border-slate-800/70">
@@ -505,7 +591,32 @@
 
     </main>
 
-    <!-- GOOGLE SHEETS SETUP AUTH MODAL (jnolai2026 password screen) -->
+    <!-- LOCK ACCESS AUTH MODAL (Password umkb13813 verify) -->
+    <div id="lock-auth-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
+        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
+                    <i data-lucide="shield-check" class="text-brand-400 w-6 h-6 animate-pulse"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Sahkan Kebenaran</h3>
+                <p class="text-xs text-slate-400 leading-relaxed font-sans">Sila masukkan kata laluan keselamatan untuk membolehkan atau memotong akses Daftar Masuk mesyuarat.</p>
+            </div>
+            <div class="space-y-1.5">
+                <input type="password" id="lock-auth-password" placeholder="••••••••" 
+                    class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            </div>
+            <div class="flex gap-3">
+                <button id="btn-cancel-lock-auth" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">
+                    Batal
+                </button>
+                <button id="btn-confirm-lock-auth" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">
+                    Sahkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GOOGLE SHEETS SETUP AUTH MODAL -->
     <div id="setup-auth-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
             <div class="text-center space-y-2">
@@ -576,7 +687,7 @@
         </div>
     </div>
 
-    <!-- CUSTOM CONFIRMATION DELETE DIALOG (Anti Browser-Alert Pattern) -->
+    <!-- CUSTOM CONFIRMATION DELETE DIALOG -->
     <div id="delete-confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
             <div class="text-center space-y-2">
@@ -656,6 +767,12 @@
         let deleteTargetId = null; 
         let isFirebaseActive = false; 
 
+        // System Settings State (Locks & Timer parameters)
+        let systemSettings = {
+            enabled: true,
+            expiresAt: null
+        };
+
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "",
             authDomain: "meet-attendance-app.firebaseapp.com",
@@ -733,10 +850,12 @@
             setInterval(() => {
                 const now = new Date();
                 clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+                // Check and update registration status state in real-time
+                updateRegistrationAccessUI();
             }, 1000);
         };
 
-        // Run Secure Authentication Process
+        // Run Secure Authentication Process (Rule 3)
         const runSecureAuth = async () => {
             if (!auth || !isFirebaseActive) {
                 updateSyncBadge();
@@ -760,12 +879,11 @@
             updateSyncBadge();
         };
 
-        // Update Connection Status UI (Green Pulse with Interactive Ping Radar for Success, Solid Red for Failed)
+        // Update Connection Status UI
         const updateSyncBadge = () => {
             const badge = document.getElementById('sync-status-badge');
             if (!badge) return;
 
-            // Semak sama ada integrasi Firebase AKTIF, atau integrasi Google Sheets AKTIF
             const hasGoogleSheets = URL_GOOGLE_APPS_SCRIPT && URL_GOOGLE_APPS_SCRIPT !== "TAMPAL_URL_APPS_SCRIPT_DI_SINI" && URL_GOOGLE_APPS_SCRIPT !== "";
             const hasLocalCustomSheets = !!localStorage.getItem('gas_sheets_url');
             const isIntegrated = (isFirebaseActive && currentUser) || hasGoogleSheets || hasLocalCustomSheets;
@@ -796,7 +914,27 @@
             });
         };
 
-        // Set up Realtime Firestore Listener (Rule 3 Compliant)
+        // Realtime Firestore System Settings Listener (Rule 1 & Rule 3 Compliant)
+        const listenToSettingsRealtime = () => {
+            if (!db || !currentUser || !isFirebaseActive) return;
+            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'tetapan', 'sistem');
+
+            onSnapshot(ref, (snap) => {
+                if (snap.exists()) {
+                    systemSettings = snap.data();
+                } else {
+                    // Initialize default database configuration if not present
+                    const defaultSettings = { enabled: true, expiresAt: null };
+                    setDoc(ref, defaultSettings);
+                    systemSettings = defaultSettings;
+                }
+                updateRegistrationAccessUI();
+            }, (error) => {
+                console.error("Gagal mendapatkan tetapan kawalan akses:", error);
+            });
+        };
+
+        // Set up Realtime Firestore Listener (Rule 1, Rule 2, Rule 3 Compliant)
         const listenToAttendeesRealtime = () => {
             if (!db || !currentUser || !isFirebaseActive) return;
             const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
@@ -836,6 +974,7 @@
                     currentUser = user;
                     updateSyncBadge();
                     listenToAttendeesRealtime();
+                    listenToSettingsRealtime();
                 }
             });
         }
@@ -876,6 +1015,20 @@
             return null;
         };
 
+        const loadSettings = () => {
+            try {
+                const local = localStorage.getItem('system_settings');
+                if (local) {
+                    systemSettings = JSON.parse(local);
+                } else {
+                    systemSettings = { enabled: true, expiresAt: null };
+                }
+            } catch (e) {
+                systemSettings = { enabled: true, expiresAt: null };
+            }
+            updateRegistrationAccessUI();
+        };
+
         const loadLocalAndSheetsData = async (showNotification = false) => {
             let localData = [];
             try {
@@ -886,6 +1039,10 @@
 
             allAttendees = [...localData];
             updateAttendeesUI();
+
+            if (!isFirebaseActive) {
+                loadSettings();
+            }
 
             let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
             if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
@@ -948,6 +1105,84 @@
             return str.toLowerCase().split(' ').map(function (word) {
                 return (word.charAt(0).toUpperCase() + word.slice(1));
             }).join(' ');
+        };
+
+        // Evaluation of check-in permissions lock
+        const isRegistrationAllowed = () => {
+            if (!systemSettings || systemSettings.enabled === false) {
+                return false;
+            }
+            if (systemSettings.expiresAt !== null && systemSettings.expiresAt !== undefined) {
+                if (Date.now() >= systemSettings.expiresAt) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        // UI state lock synchronization
+        const updateRegistrationAccessUI = () => {
+            const stepLogin = document.getElementById('step-login');
+            const stepDetails = document.getElementById('step-details');
+            const stepSuccess = document.getElementById('step-success');
+            const stepLocked = document.getElementById('step-locked');
+            
+            const allowed = isRegistrationAllowed();
+            const isCurrentlyShowingSuccess = !stepSuccess.classList.contains('hidden');
+            
+            if (!allowed && !isCurrentlyShowingSuccess) {
+                stepLogin.classList.add('hidden');
+                stepDetails.classList.add('hidden');
+                stepLocked.classList.remove('hidden');
+            } else {
+                stepLocked.classList.add('hidden');
+                if (stepDetails.classList.contains('hidden') && stepSuccess.classList.contains('hidden')) {
+                    stepLogin.classList.remove('hidden');
+                }
+            }
+
+            updateAdminSettingsControlsUI();
+        };
+
+        // Live admin settings feedback controls
+        const updateAdminSettingsControlsUI = () => {
+            const badge = document.getElementById('admin-reg-status-badge');
+            const dot = document.getElementById('admin-reg-status-dot');
+            const text = document.getElementById('admin-reg-status-text');
+            const timeRemaining = document.getElementById('admin-reg-time-remaining');
+
+            if (!badge || !dot || !text || !timeRemaining) return;
+
+            const allowed = isRegistrationAllowed();
+
+            if (allowed) {
+                badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20";
+                badge.textContent = "AKTIF";
+                dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                text.textContent = "Dibenarkan";
+                text.className = "text-white font-bold";
+
+                if (systemSettings.expiresAt) {
+                    const diffMs = systemSettings.expiresAt - Date.now();
+                    if (diffMs > 0) {
+                        const mins = Math.floor(diffMs / 60000);
+                        const secs = Math.floor((diffMs % 60000) / 1000);
+                        timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i><span>Masa Tamat: ${mins}m ${secs}s</span>`;
+                    } else {
+                        timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i><span>Masa Tamat</span>`;
+                    }
+                } else {
+                    timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i><span>Kebenaran: Sentiasa Buka</span>`;
+                }
+            } else {
+                badge.className = "bg-rose-500/10 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-rose-500/20 animate-pulse";
+                badge.textContent = "DITUTUP";
+                dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+                text.textContent = "Disekat / Ditutup";
+                text.className = "text-rose-400 font-bold";
+                timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i><span>Had Masa Pendaftaran Tamat</span>`;
+            }
+            lucide.createIcons();
         };
 
         const updateAttendeesUI = () => {
@@ -1260,6 +1495,7 @@
 
             if (isFirebaseActive && db && currentUser) {
                 try {
+                    // Rule 1 Compliance
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'kehadiran', deleteTargetId);
                     await deleteDoc(docRef);
                     showToast("Rekod pendaftaran mesyuarat berjaya dipadam secara kekal!", 'success');
@@ -1392,6 +1628,7 @@
             if (tabName === 'register') {
                 btnReg.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
                 secReg.classList.remove('hidden');
+                updateRegistrationAccessUI();
             } else if (tabName === 'list') {
                 btnList.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
                 secList.classList.remove('hidden');
@@ -1412,6 +1649,82 @@
                 } else {
                     document.getElementById('admin-login-view').classList.remove('hidden');
                     document.getElementById('admin-dashboard-view').classList.add('hidden');
+                }
+            }
+        };
+
+        // Verification security methods for check-in permissions block
+        const openLockAuthModal = () => {
+            document.getElementById('lock-auth-password').value = "";
+            const modal = document.getElementById('lock-auth-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-95');
+            modal.querySelector('div').classList.add('scale-100');
+            document.getElementById('lock-auth-password').focus();
+        };
+
+        const closeLockAuthModal = () => {
+            const modal = document.getElementById('lock-auth-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+        };
+
+        const executeLockSettingsUpdate = async () => {
+            const passwordInput = document.getElementById('lock-auth-password');
+            if (passwordInput.value.trim() !== 'umkb13813') {
+                showToast("Kata laluan salah! Kemaskini had akses ditolak.", "error");
+                passwordInput.focus();
+                return;
+            }
+
+            closeLockAuthModal();
+
+            const durationSelect = document.getElementById('reg-duration-select').value;
+            let expiresAt = null;
+            let enabled = true;
+
+            if (durationSelect === 'sentiasa') {
+                expiresAt = null;
+                enabled = true;
+            } else {
+                let minutes = 0;
+                if (durationSelect === 'custom') {
+                    minutes = parseInt(document.getElementById('custom-minutes-input').value) || 0;
+                } else {
+                    minutes = parseInt(durationSelect) || 0;
+                }
+
+                if (minutes <= 0) {
+                    showToast("Sila masukkan nilai minit yang sah.", "error");
+                    return;
+                }
+
+                expiresAt = Date.now() + (minutes * 60000);
+                enabled = true;
+            }
+
+            const updatedSettings = { enabled, expiresAt };
+
+            // Persist check-in permissions configuration
+            if (isFirebaseActive && db && currentUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tetapan', 'sistem');
+                    await setDoc(docRef, updatedSettings);
+                    showToast("Tetapan pendaftaran berjaya dikemaskini!", "success");
+                } catch (e) {
+                    console.error("Gagal mengemaskini tetapan di Firebase:", e);
+                    showToast("Ralat pelayan: Gagal menyimpan tetapan ke awan.", "error");
+                }
+            } else {
+                try {
+                    localStorage.setItem('system_settings', JSON.stringify(updatedSettings));
+                    systemSettings = updatedSettings;
+                    updateRegistrationAccessUI();
+                    showToast("Tetapan disimpan secara peranti tempatan.", "success");
+                } catch (e) {
+                    console.error(e);
+                    showToast("Gagal menyimpan tetapan tempatan.", "error");
                 }
             }
         };
@@ -1536,6 +1849,7 @@
 
             if (isFirebaseActive && currentUser && db) {
                 try {
+                    // Rule 1 Compliance
                     const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
                     await addDoc(ref, payload);
                 } catch (fsError) {
@@ -1645,6 +1959,7 @@
             document.getElementById('step-login').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             lucide.createIcons();
+            updateRegistrationAccessUI();
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
@@ -1701,6 +2016,23 @@
             document.getElementById('btn-confirm-csv').addEventListener('click', executeExportToCSV);
             document.getElementById('csv-download-password').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') executeExportToCSV();
+            });
+
+            // Timed lock settings configuration triggers
+            document.getElementById('reg-duration-select').addEventListener('change', (e) => {
+                const customContainer = document.getElementById('custom-minutes-container');
+                if (e.target.value === 'custom') {
+                    customContainer.classList.remove('hidden');
+                } else {
+                    customContainer.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('btn-trigger-lock-settings').addEventListener('click', openLockAuthModal);
+            document.getElementById('btn-cancel-lock-auth').addEventListener('click', closeLockAuthModal);
+            document.getElementById('btn-confirm-lock-auth').addEventListener('click', executeLockSettingsUpdate);
+            document.getElementById('lock-auth-password').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') executeLockSettingsUpdate();
             });
         });
 
