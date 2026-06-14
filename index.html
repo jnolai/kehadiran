@@ -694,18 +694,18 @@
         };
 
         // Custom Premium Toast Notification System
-        const showToast = function(message, type = 'info') {
+        const showToast = function(message, textType = 'info') {
             const toast = document.getElementById('toast');
             const msgEl = document.getElementById('toast-message');
             const iconContainer = document.getElementById('toast-icon-container');
             
             msgEl.textContent = message;
 
-            if (type === 'success') {
+            if (textType === 'success') {
                 toast.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-emerald-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800";
                 iconContainer.className = "p-1 rounded-full bg-emerald-500/10";
                 iconContainer.innerHTML = `<i data-lucide="check" class="text-emerald-400 w-4 h-4 flex-shrink-0"></i>`;
-            } else if (type === 'error') {
+            } else if (textType === 'error') {
                 toast.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-rose-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800";
                 iconContainer.className = "p-1 rounded-full bg-rose-500/10";
                 iconContainer.innerHTML = `<i data-lucide="alert-circle" class="text-rose-400 w-4 h-4 flex-shrink-0"></i>`;
@@ -765,7 +765,12 @@
             const badge = document.getElementById('sync-status-badge');
             if (!badge) return;
 
-            if (isFirebaseActive && currentUser) {
+            // Semak sama ada integrasi Firebase AKTIF, atau integrasi Google Sheets AKTIF
+            const hasGoogleSheets = URL_GOOGLE_APPS_SCRIPT && URL_GOOGLE_APPS_SCRIPT !== "TAMPAL_URL_APPS_SCRIPT_DI_SINI" && URL_GOOGLE_APPS_SCRIPT !== "";
+            const hasLocalCustomSheets = !!localStorage.getItem('gas_sheets_url');
+            const isIntegrated = (isFirebaseActive && currentUser) || hasGoogleSheets || hasLocalCustomSheets;
+
+            if (isIntegrated) {
                 badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-2 animate-fade-in";
                 badge.innerHTML = `
                     <span class="relative flex h-2 w-2">
@@ -889,7 +894,11 @@
 
             // Set to interactive green blinking when syncing
             const badge = document.getElementById('sync-status-badge');
-            if (badge && isFirebaseActive && currentUser) {
+            const hasGoogleSheets = URL_GOOGLE_APPS_SCRIPT && URL_GOOGLE_APPS_SCRIPT !== "TAMPAL_URL_APPS_SCRIPT_DI_SINI" && URL_GOOGLE_APPS_SCRIPT !== "";
+            const hasLocalCustomSheets = !!localStorage.getItem('gas_sheets_url');
+            const isIntegrated = (isFirebaseActive && currentUser) || hasGoogleSheets || hasLocalCustomSheets;
+
+            if (badge && isIntegrated) {
                 badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-2 animate-fade-in";
                 badge.innerHTML = `
                     <span class="relative flex h-2 w-2">
