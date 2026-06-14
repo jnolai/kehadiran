@@ -847,6 +847,45 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // SISTEM SINKRONISASI WAKTU GLOBAL (NTP OFFSET HACK) UNTUK DESKTOP & MOBILE
+        window.clientClockOffset = 0;
+        window.getSyncedNow = () => Date.now() + (window.clientClockOffset || 0);
+
+        const syncClockOffset = async () => {
+            const start = Date.now();
+            // Redundant NTP standard APIs
+            const apis = [
+                'https://timeapi.io/api/time/current/zone?timeZone=Asia/Kuala_Lumpur',
+                'https://worldtimeapi.org/api/timezone/Asia/Kuala_Lumpur'
+            ];
+
+            for (const url of apis) {
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        let officialTime = 0;
+                        if (data.dateTime) {
+                            officialTime = new Date(data.dateTime).getTime();
+                        } else if (data.datetime) {
+                            officialTime = new Date(data.datetime).getTime();
+                        }
+                        
+                        if (officialTime) {
+                            const end = Date.now();
+                            const latency = (end - start) / 2;
+                            window.clientClockOffset = (officialTime + latency) - end;
+                            return; // Keluar dari loop jika berjaya menyegerakkan masa
+                        }
+                    }
+                } catch (err) {
+                    // Cuba kaedah fallback seterusnya
+                }
+            }
+        };
+        // Mulakan penyegerakan masa global serta merta
+        syncClockOffset();
+
         // Fungsi Penyahsulit Hexadecimal untuk melindungi pembolehubah sensitif dengan kestabilan maksimum
         const _dec = (hex) => {
             let str = '';
@@ -960,35 +999,45 @@
             const clockEl = document.getElementById('live-clock');
             if (!clockEl) return;
             setInterval(() => {
-                const now = new Date();
+                const now = new Date(window.getSyncedNow());
                 clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
                 // Check and update registration status state in real-time
                 updateRegistrationAccessUI();
             }, 1000);
         };
 
-        // Run Secure Authentication Process (Rule 3)
+        // Run Secure Authentication Process (Rule 3) with Exponential Backoff Retries for Mobile Stability
         const runSecureAuth = async () => {
             if (!auth || !isFirebaseActive) {
                 updateSyncBadge();
                 return;
             }
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Proses pengesahan Firebase terganggu: ", err);
+            
+            let attempts = 0;
+            const maxAttempts = 5;
+            let delay = 1000;
+
+            while (attempts < maxAttempts) {
                 try {
-                    await signInAnonymously(auth);
-                } catch (anonErr) {
-                    console.error("Gagal melakukan fallback pengesahan tanpa nama:", anonErr);
-                    isFirebaseActive = false;
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    updateSyncBadge();
+                    return; // Berjaya keluar
+                } catch (err) {
+                    attempts++;
+                    if (attempts >= maxAttempts) {
+                        console.error("Semua percubaan pengesahan Firebase gagal:", err);
+                        isFirebaseActive = false;
+                        updateSyncBadge();
+                        return;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; // Exponential backoff: 1s, 2s, 4s, 8s
                 }
             }
-            updateSyncBadge();
         };
 
         // Update Connection Status UI
@@ -1016,7 +1065,7 @@
 
         // Get elements registered today
         const getTodayList = () => {
-            const today = new Date();
+            const today = new Date(window.getSyncedNow());
             return allAttendees.filter(item => {
                 if (!item.timestamp) return false;
                 const d = new Date(item.timestamp);
@@ -1220,13 +1269,23 @@
             }).join(' ');
         };
 
-        // Evaluation of check-in permissions lock
+        // Fungsi pembantu untuk parsing Timestamp Firestore vs integer milisaat secara selamat
+        const getExpiresAtMs = (val) => {
+            if (!val) return null;
+            if (typeof val === 'number') return val;
+            if (val.seconds) return val.seconds * 1000;
+            if (typeof val.toDate === 'function') return val.toDate().getTime();
+            return new Date(val).getTime();
+        };
+
+        // Evaluation of check-in permissions lock (Merujuk kepada waktu rasmi global)
         const isRegistrationAllowed = () => {
             if (!systemSettings || systemSettings.enabled === false) {
                 return false;
             }
-            if (systemSettings.expiresAt !== null && systemSettings.expiresAt !== undefined) {
-                if (Date.now() >= systemSettings.expiresAt) {
+            const expiresAtMs = getExpiresAtMs(systemSettings.expiresAt);
+            if (expiresAtMs !== null && expiresAtMs !== undefined) {
+                if (window.getSyncedNow() >= expiresAtMs) {
                     return false;
                 }
             }
@@ -1260,7 +1319,7 @@
             updateAdminSettingsControlsUI();
         };
 
-        // Live admin settings feedback controls
+        // Live admin settings feedback controls (Merujuk kepada getSyncedNow)
         const updateAdminSettingsControlsUI = () => {
             const badge = document.getElementById('admin-reg-status-badge');
             const dot = document.getElementById('admin-reg-status-dot');
@@ -1279,8 +1338,9 @@
                 text.textContent = "Dibenarkan";
                 text.className = "text-white font-bold";
 
-                if (systemSettings.expiresAt) {
-                    const diffMs = systemSettings.expiresAt - Date.now();
+                const expiresAtMs = getExpiresAtMs(systemSettings.expiresAt);
+                if (expiresAtMs) {
+                    const diffMs = expiresAtMs - window.getSyncedNow();
                     if (diffMs > 0) {
                         const mins = Math.floor(diffMs / 60000);
                         const secs = Math.floor((diffMs % 60000) / 1000);
@@ -1360,7 +1420,7 @@
                         </div>
                         <div class="min-w-0">
                             <h4 class="text-xs font-bold text-slate-100 truncate">${toTitleCase(item.nama || 'Tiada Nama')}</h4>
-                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jabatan || '-'}</span></p>
+                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jawatan || '-'}</span></p>
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0 ml-2">
@@ -1877,7 +1937,7 @@
                     return;
                 }
 
-                expiresAt = Date.now() + (minutes * 60000);
+                expiresAt = window.getSyncedNow() + (minutes * 60000);
                 enabled = true;
             }
 
@@ -2044,7 +2104,7 @@
             attendanceRecord.jabatan = guestDeptEl ? guestDeptEl.value.trim() : '';
             attendanceRecord.catatan = guestNoteEl ? guestNoteEl.value.trim() : '';
 
-            const timestamp = Date.now();
+            const timestamp = window.getSyncedNow();
             const uniqueId = 'reg-' + timestamp + '-' + Math.floor(Math.random() * 100000);
             
             const payload = {
@@ -2108,7 +2168,7 @@
             if (resitJabatanEl) resitJabatanEl.textContent = record.jabatan;
             if (resitEmelEl) resitEmelEl.textContent = record.email;
             
-            const timeNow = new Date();
+            const timeNow = new Date(window.getSyncedNow());
             if (ticketTimeEl) ticketTimeEl.textContent = `Masa: ${timeNow.toLocaleDateString('ms-MY')} | ${timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
             
             const randomRef = 'REG-' + Math.floor(100000 + Math.random() * 900000);
