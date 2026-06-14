@@ -40,17 +40,71 @@
             }
         });
 
-        // Loop debugger aktif bagi melumpuhkan panel konsol pembakar kod (DevTools Protection)
-        setInterval(function() {
-            try {
-                (function() {
-                    return function(inst) {
-                        inst = inst || function() {};
-                        return inst.constructor('debugger')();
-                    }
-                })()();
-            } catch (e) {}
-        }, 100);
+        // SISTEM KESELAMATAN ANTI-DEVELOPER TOOLS TEGAR (PELBAGAI BROWSER)
+        (function() {
+            // Fungsi pengesanan jika sistem dimuatkan di dalam iframe sandbox (seperti pratonton Canvas)
+            const isIframe = () => {
+                try {
+                    return window.self !== window.top;
+                } catch (e) {
+                    return true;
+                }
+            };
+
+            // Jika berjalan di dalam persekitaran iframe/pratonton, pintas pengesanan aktif untuk mengelakkan false-positives
+            if (isIframe()) {
+                return;
+            }
+
+            const blockAccess = () => {
+                document.body.innerHTML = `
+                    <div class="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-slate-100 p-6 text-center animate-fade-in">
+                        <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-full mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-rose-500 mb-2 uppercase tracking-wide">Akses Disekat Secara Automatik</h1>
+                        <p class="text-xs text-slate-400 max-w-sm leading-relaxed">
+                            Sistem mengesan cubaan membuka Developer Tools atau panel pemeriksaan kod. Penggunaan alat pengembang dilarang sama sekali demi keselamatan data mesyuarat.
+                        </p>
+                        <button onclick="window.location.reload()" class="mt-6 bg-brand-500 hover:bg-brand-400 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition duration-150">
+                            Muat Semula Halaman
+                        </button>
+                    </div>
+                `;
+                throw new Error("Akses disekat kerana memulakan Developer Tools.");
+            };
+
+            // Teknik 1: Mengesan 'getter' ID pada objek Konsol (Sesuai untuk Chrome, Edge & Opera)
+            const element = new Image();
+            Object.defineProperty(element, 'id', {
+                get: function() {
+                    blockAccess();
+                }
+            });
+
+            // Teknik 2: Pengesanan Pemasaan Nyahpepijat (Debugger Timing Hack)
+            setInterval(function() {
+                const startTime = performance.now();
+                debugger; // Thread hanya akan berhenti sekiranya DevTools dibuka
+                const endTime = performance.now();
+                if (endTime - startTime > 100) {
+                    blockAccess();
+                }
+                // Menghantar objek pengesan ke konsol secara berterusan
+                console.log(element);
+                console.clear();
+            }, 500);
+
+            // Teknik 3: Pengesanan Perubahan Saiz Dimensi Window (Untuk DevTools jenis Docked)
+            const threshold = 160;
+            setInterval(function() {
+                const widthDiff = window.outerWidth - window.innerWidth;
+                const heightDiff = window.outerHeight - window.innerHeight;
+                if (widthDiff > threshold || heightDiff > threshold) {
+                    blockAccess();
+                }
+            }, 500);
+        })();
     </script>
 
     <script>
@@ -368,7 +422,7 @@
                             </div>
                             <div>
                                 <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jabatan</span>
-                                <span id="resit-jawatan" class="text-xs font-semibold text-slate-300 block truncate">-</span>
+                                <span id="resit-jabatan" class="text-xs font-semibold text-slate-300 block truncate">-</span>
                             </div>
                         </div>
                         
@@ -760,7 +814,7 @@
                     <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                         <i data-lucide="heading" class="w-3.5 h-3.5 text-brand-400"></i> Tajuk Mesyuarat / Perkara
                     </label>
-                    <input type="text" id="csv-meeting-title" placeholder="Contoh: Mesyuarat Ahli Jawatankuasa IT Bil. 1/2026" 
+                    <input type="text" id="csv-meeting-title" placeholder="Contoh: Mesyuarat Ahli Jawatankuaka IT Bil. 1/2026" 
                         class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
                 </div>
                 <div class="space-y-1.5">
@@ -864,23 +918,30 @@
         // Custom Premium Toast Notification System
         const showToast = function(message, textType = 'info') {
             const toast = document.getElementById('toast');
+            if (!toast) return;
             const msgEl = document.getElementById('toast-message');
             const iconContainer = document.getElementById('toast-icon-container');
             
-            msgEl.textContent = message;
+            if (msgEl) msgEl.textContent = message;
 
             if (textType === 'success') {
                 toast.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-emerald-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800";
-                iconContainer.className = "p-1 rounded-full bg-emerald-500/10";
-                iconContainer.innerHTML = `<i data-lucide="check" class="text-emerald-400 w-4 h-4 flex-shrink-0"></i>`;
+                if (iconContainer) {
+                    iconContainer.className = "p-1 rounded-full bg-emerald-500/10";
+                    iconContainer.innerHTML = `<i data-lucide="check" class="text-emerald-400 w-4 h-4 flex-shrink-0"></i>`;
+                }
             } else if (textType === 'error') {
                 toast.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-rose-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800";
-                iconContainer.className = "p-1 rounded-full bg-rose-500/10";
-                iconContainer.innerHTML = `<i data-lucide="alert-circle" class="text-rose-400 w-4 h-4 flex-shrink-0"></i>`;
+                if (iconContainer) {
+                    iconContainer.className = "p-1 rounded-full bg-rose-500/10";
+                    iconContainer.innerHTML = `<i data-lucide="alert-circle" class="text-rose-400 w-4 h-4 flex-shrink-0"></i>`;
+                }
             } else {
                 toast.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-brand-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800";
-                iconContainer.className = "p-1 rounded-full bg-brand-500/10";
-                iconContainer.innerHTML = `<i data-lucide="info" class="text-brand-400 w-4 h-4 flex-shrink-0"></i>`;
+                if (iconContainer) {
+                    iconContainer.className = "p-1 rounded-full bg-brand-500/10";
+                    iconContainer.innerHTML = `<i data-lucide="info" class="text-brand-400 w-4 h-4 flex-shrink-0"></i>`;
+                }
             }
             
             lucide.createIcons();
@@ -1179,6 +1240,9 @@
             const stepSuccess = document.getElementById('step-success');
             const stepLocked = document.getElementById('step-locked');
             
+            // Tambah pengadang sekiranya elemen DOM belum siap dimuat sepenuhnya
+            if (!stepLogin || !stepDetails || !stepSuccess || !stepLocked) return;
+
             const allowed = isRegistrationAllowed();
             const isCurrentlyShowingSuccess = !stepSuccess.classList.contains('hidden');
             
@@ -1203,6 +1267,7 @@
             const text = document.getElementById('admin-reg-status-text');
             const timeRemaining = document.getElementById('admin-reg-time-remaining');
 
+            // Pengadang keselamatan rujukan null
             if (!badge || !dot || !text || !timeRemaining) return;
 
             const allowed = isRegistrationAllowed();
@@ -1250,10 +1315,11 @@
 
             const todayList = getTodayList();
 
-            totalCountBadge.textContent = todayList.length;
-            totalStatsEl.textContent = todayList.length;
+            if (totalCountBadge) totalCountBadge.textContent = todayList.length;
+            if (totalStatsEl) totalStatsEl.textContent = todayList.length;
 
-            const query = document.getElementById('search-attendees').value.trim().toLowerCase();
+            const queryInput = document.getElementById('search-attendees');
+            const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
             const filtered = todayList.filter(item => {
                 if (!query) return true;
                 const name = (item.nama || '').toLowerCase();
@@ -1294,7 +1360,7 @@
                         </div>
                         <div class="min-w-0">
                             <h4 class="text-xs font-bold text-slate-100 truncate">${toTitleCase(item.nama || 'Tiada Nama')}</h4>
-                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jawatan || '-'}</span></p>
+                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jabatan || '-'}</span></p>
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0 ml-2">
@@ -1313,7 +1379,10 @@
             const tableBody = document.getElementById('admin-table-body');
             const cardsContainer = document.getElementById('admin-cards-container');
 
-            const query = document.getElementById('search-admin-attendees').value.trim().toLowerCase();
+            if (!tableBody || !cardsContainer) return;
+
+            const queryInput = document.getElementById('search-admin-attendees');
+            const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
             const filtered = list.filter(item => {
                 if (!query) return true;
                 const nama = (item.nama || '').toLowerCase();
@@ -1336,8 +1405,10 @@
                 }
             });
 
-            document.getElementById('stat-gov-count').textContent = govCount;
-            document.getElementById('stat-other-count').textContent = otherCount;
+            const govCountEl = document.getElementById('stat-gov-count');
+            const otherCountEl = document.getElementById('stat-other-count');
+            if (govCountEl) govCountEl.textContent = govCount;
+            if (otherCountEl) otherCountEl.textContent = otherCount;
 
             if (filtered.length === 0) {
                 const emptyMarkup = `
@@ -1441,7 +1512,8 @@
             } else {
                 selectedAttendeeIds.add(id);
             }
-            const query = document.getElementById('search-admin-attendees').value.trim().toLowerCase();
+            const queryInput = document.getElementById('search-admin-attendees');
+            const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
             const filtered = allAttendees.filter(item => {
                 if (!query) return true;
                 const nama = (item.nama || '').toLowerCase();
@@ -1456,7 +1528,8 @@
         };
 
         window.toggleSelectAll = (checked) => {
-            const query = document.getElementById('search-admin-attendees').value.trim().toLowerCase();
+            const queryInput = document.getElementById('search-admin-attendees');
+            const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
             const filtered = allAttendees.filter(item => {
                 if (!query) return true;
                 const nama = (item.nama || '').toLowerCase();
@@ -1504,6 +1577,7 @@
 
         const verifyAdminPassword = () => {
             const input = document.getElementById('admin-password-input');
+            if (!input) return;
             const password = input.value.trim();
 
             // Membaca kata laluan yang disulitkan secara dinamik
@@ -1523,7 +1597,8 @@
         const logoutAdmin = () => {
             isAdminAuthenticated = false;
             selectedAttendeeIds.clear(); 
-            document.getElementById('admin-password-input').value = "";
+            const input = document.getElementById('admin-password-input');
+            if (input) input.value = "";
             showToast("Log keluar dari portal pentadbir berjaya.", 'info');
             switchTab('register');
         };
@@ -1531,17 +1606,25 @@
         window.triggerDeleteConfirmation = (id) => {
             deleteTargetId = id;
             const modal = document.getElementById('delete-confirm-modal');
+            if (!modal) return;
             modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-95');
-            modal.querySelector('div').classList.add('scale-100');
+            const container = modal.querySelector('div');
+            if (container) {
+                container.classList.remove('scale-95');
+                container.classList.add('scale-100');
+            }
         };
 
         const closeDeleteModal = () => {
             deleteTargetId = null;
             const modal = document.getElementById('delete-confirm-modal');
+            if (!modal) return;
             modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
+            const container = modal.querySelector('div');
+            if (container) {
+                container.classList.remove('scale-100');
+                container.classList.add('scale-95');
+            }
         };
 
         const executeDelete = async () => {
@@ -1588,21 +1671,31 @@
                 return;
             }
 
-            document.getElementById('csv-meeting-title').value = "";
-            document.getElementById('csv-download-password').value = "";
+            const titleInput = document.getElementById('csv-meeting-title');
+            const passInput = document.getElementById('csv-download-password');
+            if (titleInput) titleInput.value = "";
+            if (passInput) passInput.value = "";
 
             const modal = document.getElementById('download-csv-modal');
+            if (!modal) return;
             modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-95');
-            modal.querySelector('div').classList.add('scale-100');
+            const container = modal.querySelector('div');
+            if (container) {
+                container.classList.remove('scale-95');
+                container.classList.add('scale-100');
+            }
             lucide.createIcons();
         };
 
         const closeCSVModal = () => {
             const modal = document.getElementById('download-csv-modal');
+            if (!modal) return;
             modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
+            const container = modal.querySelector('div');
+            if (container) {
+                container.classList.remove('scale-100');
+                container.classList.add('scale-95');
+            }
         };
 
         const executeExportToCSV = () => {
@@ -1612,8 +1705,10 @@
                 return;
             }
 
-            const meetingTitle = document.getElementById('csv-meeting-title').value.trim();
-            const passwordVal = document.getElementById('csv-download-password').value.trim();
+            const meetingTitleInput = document.getElementById('csv-meeting-title');
+            const passwordValInput = document.getElementById('csv-download-password');
+            const meetingTitle = meetingTitleInput ? meetingTitleInput.value.trim() : '';
+            const passwordVal = passwordValInput ? passwordValInput.value.trim() : '';
 
             if (!meetingTitle) {
                 showToast("Sila masukkan tajuk mesyuarat sebelum muat turun.", 'error');
@@ -1678,18 +1773,22 @@
             const secList = document.getElementById('section-list');
             const secAdmin = document.getElementById('section-admin');
 
-            [btnReg, btnList, btnAdmin].forEach(btn => {
-                btn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200 min-h-[40px]";
-            });
-            [secReg, secList, secAdmin].forEach(sec => sec.classList.add('hidden'));
+            if (btnReg && btnList && btnAdmin) {
+                [btnReg, btnList, btnAdmin].forEach(btn => {
+                    btn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200 min-h-[40px]";
+                });
+            }
+            if (secReg && secList && secAdmin) {
+                [secReg, secList, secAdmin].forEach(sec => sec.classList.add('hidden'));
+            }
 
             if (tabName === 'register') {
-                btnReg.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
-                secReg.classList.remove('hidden');
+                if (btnReg) btnReg.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
+                if (secReg) secReg.classList.remove('hidden');
                 updateRegistrationAccessUI();
             } else if (tabName === 'list') {
-                btnList.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
-                secList.classList.remove('hidden');
+                if (btnList) btnList.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
+                if (secList) secList.classList.remove('hidden');
                 
                 if (!isFirebaseActive) {
                     loadLocalAndSheetsData();
@@ -1697,39 +1796,53 @@
                     updateAttendeesUI();
                 }
             } else if (tabName === 'admin') {
-                btnAdmin.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
-                secAdmin.classList.remove('hidden');
+                if (btnAdmin) btnAdmin.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
+                if (secAdmin) secAdmin.classList.remove('hidden');
                 
-                if (isAdminAuthenticated) {
-                    document.getElementById('admin-login-view').classList.add('hidden');
-                    document.getElementById('admin-dashboard-view').classList.remove('hidden');
-                    updateAdminUI(allAttendees);
-                } else {
-                    document.getElementById('admin-login-view').classList.remove('hidden');
-                    document.getElementById('admin-dashboard-view').classList.add('hidden');
+                const loginView = document.getElementById('admin-login-view');
+                const dashboardView = document.getElementById('admin-dashboard-view');
+                if (loginView && dashboardView) {
+                    if (isAdminAuthenticated) {
+                        loginView.classList.add('hidden');
+                        dashboardView.classList.remove('hidden');
+                        updateAdminUI(allAttendees);
+                    } else {
+                        loginView.classList.remove('hidden');
+                        dashboardView.classList.add('hidden');
+                    }
                 }
             }
         };
 
         // Verification security methods for check-in permissions block
         const openLockAuthModal = () => {
-            document.getElementById('lock-auth-password').value = "";
+            const passInput = document.getElementById('lock-auth-password');
+            if (passInput) passInput.value = "";
             const modal = document.getElementById('lock-auth-modal');
+            if (!modal) return;
             modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-95');
-            modal.querySelector('div').classList.add('scale-100');
-            document.getElementById('lock-auth-password').focus();
+            const container = modal.querySelector('div');
+            if (container) {
+                container.classList.remove('scale-95');
+                container.classList.add('scale-100');
+            }
+            if (passInput) passInput.focus();
         };
 
         const closeLockAuthModal = () => {
             const modal = document.getElementById('lock-auth-modal');
+            if (!modal) return;
             modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
+            const container = modal.querySelector('div');
+            if (container) {
+                container.classList.remove('scale-100');
+                container.classList.add('scale-95');
+            }
         };
 
         const executeLockSettingsUpdate = async () => {
             const passwordInput = document.getElementById('lock-auth-password');
+            if (!passwordInput) return;
             // Membaca kata laluan yang disulitkan secara dinamik
             if (passwordInput.value.trim() !== _dec(_ob_p1)) {
                 showToast("Kata laluan salah! Kemaskini had akses ditolak.", "error");
@@ -1739,7 +1852,8 @@
 
             closeLockAuthModal();
 
-            const durationSelect = document.getElementById('reg-duration-select').value;
+            const durationSelectEl = document.getElementById('reg-duration-select');
+            const durationSelect = durationSelectEl ? durationSelectEl.value : 'tutup';
             let expiresAt = null;
             let enabled = true;
 
@@ -1752,7 +1866,8 @@
             } else {
                 let minutes = 0;
                 if (durationSelect === 'custom') {
-                    minutes = parseInt(document.getElementById('custom-minutes-input').value) || 0;
+                    const customMinutesInput = document.getElementById('custom-minutes-input');
+                    minutes = customMinutesInput ? (parseInt(customMinutesInput.value) || 0) : 0;
                 } else {
                     minutes = parseInt(durationSelect) || 0;
                 }
@@ -1793,23 +1908,33 @@
 
         // Google Sheets Access Restriction Integration
         const openSetupAuthModal = () => {
-            document.getElementById('setup-auth-password').value = "";
+            const passInput = document.getElementById('setup-auth-password');
+            if (passInput) passInput.value = "";
             const modal = document.getElementById('setup-auth-modal');
+            if (!modal) return;
             modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-95');
-            modal.querySelector('div').classList.add('scale-100');
-            document.getElementById('setup-auth-password').focus();
+            const container = modal.querySelector('div');
+            if (container) {
+                container.classList.remove('scale-95');
+                container.classList.add('scale-100');
+            }
+            if (passInput) passInput.focus();
         };
 
         const closeSetupAuthModal = () => {
             const modal = document.getElementById('setup-auth-modal');
+            if (!modal) return;
             modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.remove('scale-100');
-            modal.querySelector('div').classList.add('scale-95');
+            const container = modal.querySelector('div');
+            if (container) {
+                container.classList.remove('scale-100');
+                container.classList.add('scale-95');
+            }
         };
 
         const verifySetupPassword = () => {
             const passwordInput = document.getElementById('setup-auth-password');
+            if (!passwordInput) return;
             // Membaca kata laluan yang disulitkan secara dinamik
             if (passwordInput.value.trim() === _dec(_ob_p2)) {
                 closeSetupAuthModal();
@@ -1823,19 +1948,23 @@
 
         const toggleSetupPanel = function() {
             const panel = document.getElementById('setup-panel');
+            if (!panel) return;
+            const container = panel.querySelector('div');
+            if (!container) return;
             if (panel.classList.contains('opacity-0')) {
                 panel.classList.remove('opacity-0', 'pointer-events-none');
-                panel.querySelector('div').classList.remove('translate-y-full');
-                panel.querySelector('div').classList.add('translate-y-0');
+                container.classList.remove('translate-y-full');
+                container.classList.add('translate-y-0');
             } else {
                 panel.classList.add('opacity-0', 'pointer-events-none');
-                panel.querySelector('div').classList.remove('translate-y-0');
-                panel.querySelector('div').classList.add('translate-y-full');
+                container.classList.remove('translate-y-0');
+                container.classList.add('translate-y-full');
             }
         };
 
         const saveSetupConfig = function() {
-            const urlVal = document.getElementById('gas-url').value.trim();
+            const urlInput = document.getElementById('gas-url');
+            const urlVal = urlInput ? urlInput.value.trim() : '';
             if (urlVal && !urlVal.startsWith('http')) {
                 showToast("Sila pastikan URL Google Apps Script dimasukkan dengan betul.", 'error');
                 return;
@@ -1849,7 +1978,8 @@
         };
 
         const submitManualEmail = function() {
-            const val = document.getElementById('input-email-manual').value.trim();
+            const emailInput = document.getElementById('input-email-manual');
+            const val = emailInput ? emailInput.value.trim() : '';
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!val || !emailRegex.test(val)) {
                 showToast("Sila masukkan alamat emel rasmi yang sah.", 'error');
@@ -1860,29 +1990,37 @@
         };
 
         function proceedToDetailsForm() {
-            document.getElementById('display-user-email').textContent = attendanceRecord.email;
+            const displayEmail = document.getElementById('display-user-email');
+            if (displayEmail) displayEmail.textContent = attendanceRecord.email;
             
             try {
                 const localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
                 const match = localData.find(item => item.email.toLowerCase() === attendanceRecord.email.toLowerCase());
                 if (match) {
-                    document.getElementById('guest-name').value = match.nama || "";
-                    document.getElementById('guest-designation').value = match.jawatan || "";
-                    document.getElementById('guest-department').value = match.jabatan || "";
+                    const guestNameEl = document.getElementById('guest-name');
+                    const guestDesigEl = document.getElementById('guest-designation');
+                    const guestDeptEl = document.getElementById('guest-department');
+                    if (guestNameEl) guestNameEl.value = match.nama || "";
+                    if (guestDesigEl) guestDesigEl.value = match.jawatan || "";
+                    if (guestDeptEl) guestDeptEl.value = match.jabatan || "";
                 }
             } catch(e) {
                 console.warn(e);
             }
 
-            document.getElementById('step-login').classList.add('hidden');
-            document.getElementById('step-details').classList.remove('hidden');
+            const loginStep = document.getElementById('step-login');
+            const detailsStep = document.getElementById('step-details');
+            if (loginStep) loginStep.classList.add('hidden');
+            if (detailsStep) detailsStep.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             showToast("Sila lengkapkan maklumat peribadi kehadiran.", 'info');
         }
 
         const goBackToLogin = function() {
-            document.getElementById('step-details').classList.add('hidden');
-            document.getElementById('step-login').classList.remove('hidden');
+            const detailsStep = document.getElementById('step-details');
+            const loginStep = document.getElementById('step-login');
+            if (detailsStep) detailsStep.classList.add('hidden');
+            if (loginStep) loginStep.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
@@ -1890,14 +2028,21 @@
             e.preventDefault();
             
             const btn = document.getElementById('btn-submit-kehadiran');
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>Merekodkan Kehadiran...</span>`;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>Merekodkan Kehadiran...</span>`;
+            }
             lucide.createIcons();
 
-            attendanceRecord.nama = document.getElementById('guest-name').value.trim();
-            attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
-            attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
-            attendanceRecord.catatan = document.getElementById('guest-note').value.trim();
+            const guestNameEl = document.getElementById('guest-name');
+            const guestDesigEl = document.getElementById('guest-designation');
+            const guestDeptEl = document.getElementById('guest-department');
+            const guestNoteEl = document.getElementById('guest-note');
+
+            attendanceRecord.nama = guestNameEl ? guestNameEl.value.trim() : '';
+            attendanceRecord.jawatan = guestDesigEl ? guestDesigEl.value.trim() : '';
+            attendanceRecord.jabatan = guestDeptEl ? guestDeptEl.value.trim() : '';
+            attendanceRecord.catatan = guestNoteEl ? guestNoteEl.value.trim() : '';
 
             const timestamp = Date.now();
             const uniqueId = 'reg-' + timestamp + '-' + Math.floor(Math.random() * 100000);
@@ -1948,31 +2093,42 @@
         };
 
         function showSuccessScreen(record) {
-            document.getElementById('step-details').classList.add('hidden');
+            const detailsStep = document.getElementById('step-details');
+            if (detailsStep) detailsStep.classList.add('hidden');
             
-            document.getElementById('resit-nama').textContent = toTitleCase(record.nama);
-            document.getElementById('resit-jawatan').textContent = record.jawatan;
-            document.getElementById('resit-jabatan').textContent = record.jabatan;
-            document.getElementById('resit-emel').textContent = record.email;
+            const resitNamaEl = document.getElementById('resit-nama');
+            const resitJawatanEl = document.getElementById('resit-jawatan');
+            const resitJabatanEl = document.getElementById('resit-jabatan');
+            const resitEmelEl = document.getElementById('resit-emel');
+            const ticketTimeEl = document.getElementById('ticket-time');
+            const uniqueIdEl = document.getElementById('unique-id');
+
+            if (resitNamaEl) resitNamaEl.textContent = toTitleCase(record.nama);
+            if (resitJawatanEl) resitJawatanEl.textContent = record.jawatan;
+            if (resitJabatanEl) resitJabatanEl.textContent = record.jabatan;
+            if (resitEmelEl) resitEmelEl.textContent = record.email;
             
             const timeNow = new Date();
-            document.getElementById('ticket-time').textContent = `Masa: ${timeNow.toLocaleDateString('ms-MY')} | ${timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            if (ticketTimeEl) ticketTimeEl.textContent = `Masa: ${timeNow.toLocaleDateString('ms-MY')} | ${timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
             
             const randomRef = 'REG-' + Math.floor(100000 + Math.random() * 900000);
-            document.getElementById('unique-id').textContent = randomRef;
+            if (uniqueIdEl) uniqueIdEl.textContent = randomRef;
 
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-                text: `${randomRef}|${toTitleCase(record.nama)}|${record.email}|${record.jawatan}`,
-                width: 128,
-                height: 128,
-                colorDark : "#0F172A",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.M
-            });
+            const qrCodeContainer = document.getElementById('qrcode');
+            if (qrCodeContainer) {
+                qrCodeContainer.innerHTML = "";
+                new QRCode(qrCodeContainer, {
+                    text: `${randomRef}|${toTitleCase(record.nama)}|${record.email}|${record.jawatan}`,
+                    width: 128,
+                    height: 128,
+                    colorDark : "#0F172A",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+            }
 
             const successStep = document.getElementById('step-success');
-            successStep.classList.remove('hidden');
+            if (successStep) successStep.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             confetti({
@@ -1999,12 +2155,19 @@
         };
 
         const resetSystem = function() {
-            document.getElementById('input-email-manual').value = "";
-            document.getElementById('guest-name').value = "";
-            document.getElementById('guest-designation').value = "";
-            document.getElementById('guest-department').value = "";
-            document.getElementById('guest-note').value = "";
-            document.getElementById('policy-check').checked = false;
+            const emailInput = document.getElementById('input-email-manual');
+            const guestNameEl = document.getElementById('guest-name');
+            const guestDesigEl = document.getElementById('guest-designation');
+            const guestDeptEl = document.getElementById('guest-department');
+            const guestNoteEl = document.getElementById('guest-note');
+            const policyCheckEl = document.getElementById('policy-check');
+
+            if (emailInput) emailInput.value = "";
+            if (guestNameEl) guestNameEl.value = "";
+            if (guestDesigEl) guestDesigEl.value = "";
+            if (guestDeptEl) guestDeptEl.value = "";
+            if (guestNoteEl) guestNoteEl.value = "";
+            if (policyCheckEl) policyCheckEl.checked = false;
             
             attendanceRecord = {
                 email: "",
@@ -2015,14 +2178,26 @@
             };
 
             const btn = document.getElementById('btn-submit-kehadiran');
-            btn.disabled = false;
-            btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>Sahkan & Hantar Kehadiran</span>`;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>Sahkan & Hantar Kehadiran</span>`;
+            }
 
-            document.getElementById('step-success').classList.add('hidden');
-            document.getElementById('step-login').classList.remove('hidden');
+            const successStep = document.getElementById('step-success');
+            const loginStep = document.getElementById('step-login');
+            if (successStep) successStep.classList.add('hidden');
+            if (loginStep) loginStep.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             lucide.createIcons();
             updateRegistrationAccessUI();
+        };
+
+        // Fungsi penyambung pengikatan selamat bagi mengelakkan ralat null pointer
+        const safeBind = (id, event, callback) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener(event, callback);
+            }
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
@@ -2034,69 +2209,92 @@
 
             const cachedGasUrl = localStorage.getItem('gas_sheets_url');
             if (cachedGasUrl) {
-                document.getElementById('gas-url').value = cachedGasUrl;
+                const gasUrlInput = document.getElementById('gas-url');
+                if (gasUrlInput) gasUrlInput.value = cachedGasUrl;
             }
 
             // Google Sheets Access Restriction Integration
-            document.getElementById('btn-open-setup').addEventListener('click', openSetupAuthModal);
-            document.getElementById('btn-open-setup-mobile').addEventListener('click', openSetupAuthModal);
-            document.getElementById('btn-cancel-setup-auth').addEventListener('click', closeSetupAuthModal);
-            document.getElementById('btn-confirm-setup-auth').addEventListener('click', verifySetupPassword);
-            document.getElementById('setup-auth-password').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') verifySetupPassword();
-            });
+            safeBind('btn-open-setup', 'click', openSetupAuthModal);
+            safeBind('btn-open-setup-mobile', 'click', openSetupAuthModal);
+            safeBind('btn-cancel-setup-auth', 'click', closeSetupAuthModal);
+            safeBind('btn-confirm-setup-auth', 'click', verifySetupPassword);
+            
+            const setupAuthPass = document.getElementById('setup-auth-password');
+            if (setupAuthPass) {
+                setupAuthPass.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') verifySetupPassword();
+                });
+            }
 
-            document.getElementById('btn-close-setup').addEventListener('click', toggleSetupPanel);
-            document.getElementById('btn-save-setup').addEventListener('click', saveSetupConfig);
+            safeBind('btn-close-setup', 'click', toggleSetupPanel);
+            safeBind('btn-save-setup', 'click', saveSetupConfig);
             
-            document.getElementById('tab-btn-register').addEventListener('click', () => switchTab('register'));
-            document.getElementById('tab-btn-list').addEventListener('click', () => switchTab('list'));
-            document.getElementById('tab-btn-admin').addEventListener('click', () => switchTab('admin'));
+            safeBind('tab-btn-register', 'click', () => switchTab('register'));
+            safeBind('tab-btn-list', 'click', () => switchTab('list'));
+            safeBind('tab-btn-admin', 'click', () => switchTab('admin'));
             
-            document.getElementById('btn-submit-email').addEventListener('click', submitManualEmail);
-            document.getElementById('btn-back-login').addEventListener('click', goBackToLogin);
-            document.getElementById('btn-share-attendance').addEventListener('click', shareAttendance);
-            document.getElementById('btn-reset-system').addEventListener('click', resetSystem);
+            safeBind('btn-submit-email', 'click', submitManualEmail);
+            safeBind('btn-back-login', 'click', goBackToLogin);
+            safeBind('btn-share-attendance', 'click', shareAttendance);
+            safeBind('btn-reset-system', 'click', resetSystem);
             
-            document.getElementById('details-form').addEventListener('submit', handleFormSubmission);
-            document.getElementById('search-attendees').addEventListener('input', updateAttendeesUI);
-            document.getElementById('btn-refresh-list').addEventListener('click', () => {
+            safeBind('details-form', 'submit', handleFormSubmission);
+            safeBind('search-attendees', 'input', updateAttendeesUI);
+            safeBind('btn-refresh-list', 'click', () => {
                 loadLocalAndSheetsData(true);
             });
 
-            document.getElementById('btn-submit-admin-login').addEventListener('click', verifyAdminPassword);
-            document.getElementById('admin-password-input').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') verifyAdminPassword();
-            });
-            document.getElementById('btn-admin-logout').addEventListener('click', logoutAdmin);
-            document.getElementById('btn-export-csv').addEventListener('click', openCSVModal);
-            document.getElementById('search-admin-attendees').addEventListener('input', () => updateAdminUI(allAttendees));
+            safeBind('btn-submit-admin-login', 'click', verifyAdminPassword);
+            
+            const adminPassInput = document.getElementById('admin-password-input');
+            if (adminPassInput) {
+                adminPassInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') verifyAdminPassword();
+                });
+            }
+            
+            safeBind('btn-admin-logout', 'click', logoutAdmin);
+            safeBind('btn-export-csv', 'click', openCSVModal);
+            safeBind('search-admin-attendees', 'input', () => updateAdminUI(allAttendees));
 
-            document.getElementById('btn-cancel-delete').addEventListener('click', closeDeleteModal);
-            document.getElementById('btn-confirm-delete').addEventListener('click', executeDelete);
+            safeBind('btn-cancel-delete', 'click', closeDeleteModal);
+            safeBind('btn-confirm-delete', 'click', executeDelete);
 
-            document.getElementById('btn-cancel-csv').addEventListener('click', closeCSVModal);
-            document.getElementById('btn-confirm-csv').addEventListener('click', executeExportToCSV);
-            document.getElementById('csv-download-password').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') executeExportToCSV();
-            });
+            safeBind('btn-cancel-csv', 'click', closeCSVModal);
+            safeBind('btn-confirm-csv', 'click', executeExportToCSV);
+            
+            const csvDownloadPass = document.getElementById('csv-download-password');
+            if (csvDownloadPass) {
+                csvDownloadPass.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') executeExportToCSV();
+                });
+            }
 
             // Timed lock settings configuration triggers
-            document.getElementById('reg-duration-select').addEventListener('change', (e) => {
-                const customContainer = document.getElementById('custom-minutes-container');
-                if (e.target.value === 'custom') {
-                    customContainer.classList.remove('hidden');
-                } else {
-                    customContainer.classList.add('hidden');
-                }
-            });
+            const durationSelect = document.getElementById('reg-duration-select');
+            if (durationSelect) {
+                durationSelect.addEventListener('change', (e) => {
+                    const customContainer = document.getElementById('custom-minutes-container');
+                    if (customContainer) {
+                        if (e.target.value === 'custom') {
+                            customContainer.classList.remove('hidden');
+                        } else {
+                            customContainer.classList.add('hidden');
+                        }
+                    }
+                });
+            }
 
-            document.getElementById('btn-trigger-lock-settings').addEventListener('click', openLockAuthModal);
-            document.getElementById('btn-cancel-lock-auth').addEventListener('click', closeLockAuthModal);
-            document.getElementById('btn-confirm-lock-auth').addEventListener('click', executeLockSettingsUpdate);
-            document.getElementById('lock-auth-password').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') executeLockSettingsUpdate();
-            });
+            safeBind('btn-trigger-lock-settings', 'click', openLockAuthModal);
+            safeBind('btn-cancel-lock-auth', 'click', closeLockAuthModal);
+            safeBind('btn-confirm-lock-auth', 'click', executeLockSettingsUpdate);
+            
+            const lockAuthPass = document.getElementById('lock-auth-password');
+            if (lockAuthPass) {
+                lockAuthPass.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') executeLockSettingsUpdate();
+                });
+            }
         });
 
     </script>
