@@ -109,6 +109,15 @@
             height: 2px; background: linear-gradient(to right, transparent, #36a2fc, transparent); animation: scan 3s linear infinite;
         }
         @keyframes scan { 0% { transform: translateY(0); } 50% { transform: translateY(128px); } 100% { transform: translateY(0); } }
+        /* Styling untuk Signature Pad */
+        canvas.signature-pad {
+            touch-action: none;
+            width: 100%;
+            height: 140px;
+            background-color: #0B0F19;
+            border-radius: 0.75rem;
+            cursor: crosshair;
+        }
     </style>
 </head>
 <body class="gradient-bg text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
@@ -138,10 +147,6 @@
                 <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-400"></i>
                 <span id="live-clock" class="text-xs font-mono font-bold text-slate-300">00:00:00 AM</span>
             </div>
-
-            <button id="btn-open-setup-mobile" class="sm:hidden p-2.5 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 active:bg-slate-800 min-h-[44px] min-w-[44px] flex items-center justify-center" title="Konfigurasi">
-                <i data-lucide="settings" class="w-4 h-4"></i>
-            </button>
         </div>
 
         <div class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 w-full sm:w-auto">
@@ -158,10 +163,6 @@
                 <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
                 <span>Admin</span>
             </button>
-            
-            <button id="btn-open-setup" class="hidden sm:flex p-2 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 hover:bg-slate-800/50 min-h-[40px] min-w-[40px] items-center justify-center" title="Konfigurasi">
-                <i data-lucide="settings" class="w-4 h-4"></i>
-            </button>
         </div>
     </header>
 
@@ -176,9 +177,7 @@
                     <i data-lucide="lock" class="text-rose-400 w-10 h-10 animate-pulse"></i>
                 </div>
                 <h2 class="text-2xl font-extrabold text-white tracking-tight uppercase">Pendaftaran Ditutup</h2>
-                <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-                    Maaf, sesi pendaftaran masuk mesyuarat telah ditutup atau masa kebenaran daftar masuk telah tamat.
-                </p>
+                <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">Maaf, sesi pendaftaran masuk mesyuarat telah ditutup.</p>
             </div>
 
             <!-- STEP 1: EMAIL ENTRY -->
@@ -188,7 +187,7 @@
                         <i data-lucide="mail" class="text-brand-400 w-7 h-7"></i>
                     </div>
                     <h1 class="text-2xl font-extrabold tracking-tight text-white">KEHADIRAN MESYUARAT</h1>
-                    <p class="text-xs text-slate-400 max-w-xs mx-auto">Sila masukkan alamat emel rasmi anda untuk memulakan proses pendaftaran.</p>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">Sila masukkan alamat emel rasmi anda untuk memulakan pendaftaran.</p>
                 </div>
 
                 <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 shadow-xl backdrop-blur-sm">
@@ -206,14 +205,14 @@
                 </div>
             </div>
 
-            <!-- STEP 2: DETAILS FORM -->
+            <!-- STEP 2: DETAILS FORM WITH SIGNATURE -->
             <div id="step-details" class="w-full space-y-6 hidden animate-fade-in py-2 sm:py-4">
                 <div class="text-center space-y-2">
                     <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
                         <i data-lucide="user-plus" class="text-brand-400 w-7 h-7"></i>
                     </div>
-                    <h2 class="text-2xl font-bold text-white">Butiran Kehadiran</h2>
-                    <p class="text-xs text-slate-400">Sila pilih mesyuarat dan lengkapkan butiran anda.</p>
+                    <h2 class="text-2xl font-bold text-white">Butiran Kehadiran & Tandatangan</h2>
+                    <p class="text-xs text-slate-400">Sila lengkapkan maklumat dan tandatangan pada ruangan yang disediakan.</p>
                 </div>
 
                 <div class="bg-slate-800/30 border border-slate-800/80 rounded-xl p-3.5 flex items-center justify-between backdrop-blur-sm">
@@ -230,7 +229,6 @@
                 </div>
 
                 <form id="details-form" class="space-y-4">
-                    <!-- Meeting Selection Dynamic Dropdown -->
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                             <i data-lucide="layers" class="w-3.5 h-3.5 text-brand-400"></i> Pilih Mesyuarat Rasmi
@@ -268,6 +266,21 @@
                             class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
 
+                    <!-- RUANGAN TANDATANGAN DIGITAL -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                                <i data-lucide="pen-tool" class="w-3.5 h-3.5 text-brand-400"></i> Tandatangan Digital Peserta
+                            </label>
+                            <button type="button" id="btn-clear-signature" class="text-[10px] text-rose-400 hover:underline font-bold">Padam / Semula</button>
+                        </div>
+                        <div class="border border-slate-700 rounded-xl overflow-hidden bg-corporate-card relative">
+                            <canvas id="signature-canvas" class="signature-pad"></canvas>
+                            <div class="absolute bottom-2 right-3 pointer-events-none text-[9px] text-slate-600 font-mono">Tandatangan di sini</div>
+                        </div>
+                        <p class="text-[10px] text-slate-500">Sila gunakan tetikus atau jari anda pada skrin sentuh untuk melakar tandatangan.</p>
+                    </div>
+
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                             <i data-lucide="message-square" class="w-3.5 h-3.5 text-brand-400"></i> Catatan (Pilihan)
@@ -278,7 +291,7 @@
 
                     <div class="flex items-start gap-2.5 pt-2">
                         <input type="checkbox" id="policy-check" required class="rounded bg-slate-850 border-slate-750 text-brand-500 w-4.5 h-4.5 mt-0.5 cursor-pointer">
-                        <label for="policy-check" class="text-[10px] text-slate-400 leading-normal select-none cursor-pointer">Saya mengesahkan semua butiran di atas adalah betul dan bersetuju mendaftar.</label>
+                        <label for="policy-check" class="text-[10px] text-slate-400 leading-normal select-none cursor-pointer">Saya mengesahkan semua butiran dan tandatangan di atas adalah sah.</label>
                     </div>
 
                     <button type="submit" id="btn-submit-kehadiran" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 mt-6 min-h-[44px]">
@@ -295,7 +308,7 @@
                         <i data-lucide="badge-check" class="text-emerald-400 w-8 h-8 animate-bounce"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-white">Pendaftaran Selesai!</h2>
-                    <p class="text-xs text-slate-400">Kehadiran anda berjaya direkodkan.</p>
+                    <p class="text-xs text-slate-400">Kehadiran berserta tandatangan anda berjaya direkodkan.</p>
                 </div>
 
                 <div class="relative bg-gradient-to-b from-corporate-card to-slate-950 rounded-2xl p-5 border border-slate-800 shadow-2xl space-y-4 overflow-hidden">
@@ -317,6 +330,14 @@
                             <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Nama & Jawatan</span>
                             <span id="resit-nama" class="font-bold text-slate-100 block"> - </span>
                             <span id="resit-jawatan" class="text-slate-400 text-[11px]"> - </span>
+                        </div>
+
+                        <!-- Paparan Tandatangan pada Resit -->
+                        <div class="pt-2 border-t border-slate-800">
+                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider mb-1">Tandatangan Peserta</span>
+                            <div class="bg-white/5 p-2 rounded-xl border border-slate-800 inline-block">
+                                <img id="resit-signature-img" src="" alt="Tandatangan" class="h-12 max-w-[180px] object-contain filter invert opacity-90">
+                            </div>
                         </div>
                     </div>
 
@@ -384,7 +405,6 @@
                 </div>
             </div>
 
-            <!-- Admin Live Dashboard Controls -->
             <div id="admin-dashboard-view" class="space-y-6 hidden w-full animate-fade-in">
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-5">
                     <div>
@@ -392,7 +412,7 @@
                             <i data-lucide="shield" class="text-brand-400 w-6 h-6"></i>
                             <span>Pengurusan Mesyuarat & Kehadiran</span>
                         </h2>
-                        <p class="text-xs text-slate-400">Tambah jadual mesyuarat rasmi dan pantau rekod kehadiran peserta.</p>
+                        <p class="text-xs text-slate-400">Tambah jadual mesyuarat dan semak tandatangan peserta.</p>
                     </div>
                     <div class="flex items-center gap-2 w-full lg:w-auto justify-end">
                         <button id="btn-export-csv" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 min-h-[44px]">
@@ -402,7 +422,6 @@
                     </div>
                 </div>
 
-                <!-- FORM TAMBAH / URUS MESYUARAT RASMI -->
                 <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
                     <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
                         <i data-lucide="calendar-plus" class="text-brand-400 w-5 h-5"></i>
@@ -432,15 +451,12 @@
                     </form>
                 </div>
 
-                <!-- SENARAI MESYUARAT AKTIF -->
                 <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-xl">
                     <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
                         <i data-lucide="list" class="text-brand-400 w-5 h-5"></i>
                         <span>Senarai Mesyuarat Aktif Didaftarkan</span>
                     </h3>
-                    <div id="admin-meetings-list" class="space-y-2">
-                        <!-- Dynamic Meetings List -->
-                    </div>
+                    <div id="admin-meetings-list" class="space-y-2"></div>
                 </div>
 
                 <div class="relative">
@@ -454,9 +470,9 @@
                             <thead>
                                 <tr class="border-b border-slate-800 bg-slate-950/40 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                                     <th class="p-4">Tarikh Daftar</th>
-                                    <th class="p-4">Mesyuarat Dinhadrati</th>
+                                    <th class="p-4">Mesyuarat Dihadiri</th>
                                     <th class="p-4">Peserta & Emel</th>
-                                    <th class="p-4">Jawatan & Jabatan</th>
+                                    <th class="p-4">Tandatangan</th>
                                     <th class="p-4 text-right">Tindakan</th>
                                 </tr>
                             </thead>
@@ -471,24 +487,20 @@
 
     </main>
 
-    <!-- CUSTOM CONFIRMATION DELETE DIALOG -->
+    <!-- MODAL PADAM & CSV -->
     <div id="delete-confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-rose-500/10 rounded-full border border-rose-500/20 mb-1">
-                    <i data-lucide="trash-2" class="text-rose-400 w-6 h-6 animate-pulse"></i>
-                </div>
                 <h3 class="text-lg font-bold text-white">Padam Rekod</h3>
                 <p class="text-xs text-slate-400">Adakah anda pasti untuk memadam rekod ini?</p>
             </div>
             <div class="flex gap-3">
-                <button id="btn-cancel-delete" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
-                <button id="btn-confirm-delete" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs py-3 rounded-xl min-h-[44px]">Padam</button>
+                <button id="btn-cancel-delete" class="flex-1 bg-slate-800 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
+                <button id="btn-confirm-delete" class="flex-1 bg-rose-600 text-white text-xs py-3 rounded-xl min-h-[44px]">Padam</button>
             </div>
         </div>
     </div>
 
-    <!-- EXPORT CSV CONFIG DIALOG -->
     <div id="download-csv-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
@@ -504,7 +516,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="py-5 text-center text-[10px] text-slate-500 border-t border-slate-800/40 bg-slate-950/40 relative z-10">
         <p>© 2026 Sistem Kehadiran Mesyuarat Bersepadu. Jnol Ai.</p>
     </footer>
@@ -512,8 +523,8 @@
     <!-- Firebase & Main Script Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.clientClockOffset = 0;
         window.getSyncedNow = () => Date.now() + (window.clientClockOffset || 0);
@@ -526,8 +537,6 @@
 
         const _ob_p1 = "756d6b623133383133"; // 'umkb13813'
 
-        let firebaseApp, auth, db, appId;
-        let currentUser = null;
         let allAttendees = []; 
         let activeMeetings = [
             { id: 'm-1', title: 'Mesyuarat Jawatankuasa IT Bil. 1/2026', datetime: '20 Okt 2026, 9:30 Pagi', location: 'Bilik Mesyuarat Utama, Jabatan Kewangan' },
@@ -535,21 +544,74 @@
         ];
         let isAdminAuthenticated = false;
         let deleteTargetId = null; 
-        let isFirebaseActive = false; 
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "" };
-        appId = typeof __app_id !== 'undefined' ? __app_id : 'kehadiran-mesyuarat-app';
+        let attendanceRecord = { email: "", tajukMesyuarat: "", tarikhMasaMesyuarat: "", lokasiMesyuarat: "", nama: "", jawatan: "", jabatan: "", catatan: "", signature: "" };
 
-        try {
-            if (firebaseConfig && firebaseConfig.apiKey) {
-                firebaseApp = initializeApp(firebaseConfig);
-                auth = getAuth(firebaseApp);
-                db = getFirestore(firebaseApp);
-                isFirebaseActive = true;
-            }
-        } catch (e) { isFirebaseActive = false; }
+        // SIGNATURE PAD LOGIC
+        let canvas, ctx, isDrawing = false, hasSignature = false;
 
-        let attendanceRecord = { email: "", tajukMesyuarat: "", tarikhMasaMesyuarat: "", lokasiMesyuarat: "", nama: "", jawatan: "", jabatan: "", catatan: "" };
+        const initSignaturePad = () => {
+            canvas = document.getElementById('signature-canvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas resolution
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Mouse Events
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseleave', stopDraw);
+
+            // Touch Events for Mobile
+            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e.touches[0]); });
+            canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); });
+            canvas.addEventListener('touchend', stopDraw);
+
+            document.getElementById('btn-clear-signature').addEventListener('click', clearSignature);
+        };
+
+        const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        };
+
+        const startDraw = (e) => {
+            isDrawing = true;
+            hasSignature = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        };
+
+        const draw = (e) => {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        };
+
+        const stopDraw = () => {
+            isDrawing = false;
+        };
+
+        const clearSignature = () => {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasSignature = false;
+        };
 
         const showToast = function(message, textType = 'info') {
             const toast = document.getElementById('toast');
@@ -584,7 +646,6 @@
             });
             selectEl.innerHTML = html;
 
-            // Render list di admin dashboard
             const adminListEl = document.getElementById('admin-meetings-list');
             if (adminListEl) {
                 if (activeMeetings.length === 0) {
@@ -652,9 +713,12 @@
                     <div>
                         <span class="text-[10px] text-brand-400 font-bold block">${item.tajukMesyuarat}</span>
                         <h4 class="text-xs font-bold text-slate-100">${toTitleCase(item.nama)} (${item.jawatan || '-'})</h4>
-                        <p class="text-[10px] text-slate-400">${item.jabatan || '-'} &bull; ${item.lokasiMesyuarat || '-'}</p>
+                        <p class="text-[10px] text-slate-400">${item.jabatan || '-'}</p>
                     </div>
-                    <span class="bg-brand-500/10 text-brand-400 text-[9px] font-bold px-2 py-1 rounded-full">${timeStr}</span>
+                    <div class="text-right">
+                        ${item.signature ? `<img src="${item.signature}" class="h-8 max-w-[80px] object-contain filter invert opacity-90 inline-block bg-white/5 p-1 rounded" alt="Sign">` : ''}
+                        <span class="bg-brand-500/10 text-brand-400 text-[9px] font-bold px-2 py-0.5 rounded-full block mt-1">${timeStr}</span>
+                    </div>
                 </div>`;
             });
             container.innerHTML = html;
@@ -680,9 +744,11 @@
                 html += `
                 <tr class="border-b border-slate-800/40 hover:bg-slate-800/25">
                     <td class="p-4 font-mono text-[10px] text-slate-400">${timeStr}</td>
-                    <td class="p-4 font-bold text-brand-400">${item.tajukMesyuarat}<div class="text-[9px] text-slate-400 font-normal">📍 ${item.lokasiMesyuarat || '-'}</div></td>
+                    <td class="p-4 font-bold text-brand-400">${item.tajukMesyuarat}</td>
                     <td class="p-4"><div class="font-bold text-slate-200">${toTitleCase(item.nama)}</div><div class="text-[10px] text-slate-500 font-mono">${item.email}</div></td>
-                    <td class="p-4"><div class="text-slate-300">${item.jawatan}</div><div class="text-[10px] text-slate-400">${item.jabatan}</div></td>
+                    <td class="p-4">
+                        ${item.signature ? `<div class="bg-white/5 p-1 rounded inline-block border border-slate-700"><img src="${item.signature}" class="h-10 max-w-[100px] object-contain filter invert" alt="Tandatangan"></div>` : '<span class="text-[10px] text-slate-500">Tiada</span>'}
+                    </td>
                     <td class="p-4 text-right">
                         <button onclick="window.triggerDelete('${item.id}')" class="p-2 bg-rose-600/10 text-rose-400 rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </td>
@@ -724,7 +790,6 @@
             initLiveClock();
             loadMeetingsFromStorage();
 
-            // Muat data dari localStorage
             try {
                 allAttendees = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
             } catch(e) {}
@@ -733,7 +798,6 @@
             document.getElementById('tab-btn-list').addEventListener('click', () => switchTab('list'));
             document.getElementById('tab-btn-admin').addEventListener('click', () => switchTab('admin'));
 
-            // Papar info mesyuarat apabila dipilih
             document.getElementById('guest-meeting-select').addEventListener('change', (e) => {
                 const opt = e.target.selectedOptions[0];
                 const box = document.getElementById('meeting-info-box');
@@ -758,15 +822,25 @@
                 document.getElementById('display-user-email').textContent = email;
                 document.getElementById('step-login').classList.add('hidden');
                 document.getElementById('step-details').classList.remove('hidden');
+                
+                // Init signature pad selepas elemen dipaparkan
+                setTimeout(initSignaturePad, 150);
             });
 
             document.getElementById('details-form').addEventListener('submit', (e) => {
                 e.preventDefault();
+                
+                if (!hasSignature) {
+                    showToast("Sila buat tandatangan digital anda terlebih dahulu.", "error");
+                    return;
+                }
+
                 attendanceRecord.tajukMesyuarat = document.getElementById('guest-meeting-select').value;
                 attendanceRecord.nama = document.getElementById('guest-name').value.trim();
                 attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
                 attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
                 attendanceRecord.catatan = document.getElementById('guest-note').value.trim();
+                attendanceRecord.signature = canvas.toDataURL('image/png');
 
                 const payload = { id: 'reg-' + Date.now(), ...attendanceRecord, timestamp: Date.now() };
                 allAttendees.unshift(payload);
@@ -778,6 +852,7 @@
                 document.getElementById('resit-lokasi').textContent = payload.lokasiMesyuarat;
                 document.getElementById('resit-nama').textContent = toTitleCase(payload.nama);
                 document.getElementById('resit-jawatan').textContent = `${payload.jawatan} (${payload.jabatan})`;
+                document.getElementById('resit-signature-img').src = payload.signature;
                 document.getElementById('unique-id').textContent = 'REG-' + Math.floor(100000 + Math.random() * 900000);
 
                 const qrContainer = document.getElementById('qrcode');
@@ -786,10 +861,9 @@
 
                 document.getElementById('step-success').classList.remove('hidden');
                 confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
-                showToast("Kehadiran berjaya direkodkan!", "success");
+                showToast("Kehadiran berserta tandatangan direkodkan!", "success");
             });
 
-            // Admin Tambah Mesyuarat Baru
             document.getElementById('meeting-create-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const newMeeting = {
@@ -869,6 +943,7 @@
                 document.getElementById('step-success').classList.add('hidden');
                 document.getElementById('step-login').classList.remove('hidden');
                 document.getElementById('input-email-manual').value = "";
+                clearSignature();
             });
         });
     </script>
