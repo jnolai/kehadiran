@@ -16,8 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- SheetJS (XLSX Library untuk Sokongan Fail Excel Asli) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
     <!-- Skrip Perlindungan Keselamatan Berlapis -->
     <script>
@@ -113,6 +111,13 @@
         @keyframes scan { 0% { transform: translateY(0); } 50% { transform: translateY(128px); } 100% { transform: translateY(0); } }
         canvas.signature-pad {
             touch-action: none; width: 100%; height: 140px; background-color: #0B0F19; border-radius: 0.75rem; cursor: crosshair;
+        }
+
+        /* Styling Percetakan PDF Rasmi Templat */
+        @media print {
+            body * { visibility: hidden; }
+            #print-template-container, #print-template-container * { visibility: visible; }
+            #print-template-container { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; }
         }
     </style>
 </head>
@@ -419,8 +424,8 @@
                         <button id="btn-delete-selected" class="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs border border-rose-500/30 flex items-center gap-2 min-h-[44px]">
                             <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih (<span id="selected-count-badge">0</span>)
                         </button>
-                        <button id="btn-export-csv" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 min-h-[44px]">
-                            <i data-lucide="download" class="w-4 h-4"></i> Muat Turun Excel (.xlsx)
+                        <button id="btn-export-pdf" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 min-h-[44px]">
+                            <i data-lucide="printer" class="w-4 h-4"></i> Cetak / PDF Rasmi
                         </button>
                         <button id="btn-admin-logout" class="bg-rose-600/20 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs border border-rose-500/20 min-h-[44px]">Keluar</button>
                     </div>
@@ -494,7 +499,35 @@
 
     </main>
 
-    <!-- MODAL PADAM & EXCEL -->
+    <!-- HIDDEN TEMPLATE UNTUK CETAK PDF RASMI -->
+    <div id="print-template-container" class="hidden">
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: black; font-size: 12pt;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 16pt; font-weight: bold; text-transform: uppercase;">SENARAI KEHADIRAN MESYUARAT</h2>
+            </div>
+            <div style="margin-bottom: 15px; font-size: 11pt; line-height: 1.5;">
+                <div><strong>PERKARA</strong> : <span id="print-perkara">-</span></div>
+                <div><strong>TARIKH</strong> : <span id="print-tarikh">-</span></div>
+                <div><strong>LOKASI</strong> : <span id="print-lokasi">-</span></div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10pt;">
+                <thead>
+                    <tr style="background-color: #f2f2f2; border: 1px solid #000;">
+                        <th style="border: 1px solid #000; padding: 8px; width: 40px; text-align: center;">BIL</th>
+                        <th style="border: 1px solid #000; padding: 8px; text-align: left;">NAMA</th>
+                        <th style="border: 1px solid #000; padding: 8px; text-align: left; width: 140px;">JAWATAN</th>
+                        <th style="border: 1px solid #000; padding: 8px; text-align: left; width: 160px;">JABATAN/UNIT</th>
+                        <th style="border: 1px solid #000; padding: 8px; text-align: center; width: 120px;">TANDA TANGAN</th>
+                    </tr>
+                </thead>
+                <tbody id="print-table-body">
+                    <!-- Dynamic rows injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL PADAM & PDF -->
     <div id="delete-confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
@@ -508,28 +541,28 @@
         </div>
     </div>
 
-    <div id="download-csv-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
+    <div id="download-pdf-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
-                <h3 class="text-lg font-bold text-white">Muat Turun Laporan Excel (.xlsx)</h3>
+                <h3 class="text-lg font-bold text-white">Cetak / Muat Turun PDF Rasmi</h3>
                 <p class="text-xs text-slate-400">Pilih mesyuarat dan masukkan kata laluan pentadbir.</p>
             </div>
             <div class="space-y-3">
                 <div>
                     <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Pilih Mesyuarat</label>
-                    <select id="csv-meeting-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <option value="ALL">-- Semua Mesyuarat (Keseluruhan) --</option>
+                    <select id="pdf-meeting-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>
                     </select>
                 </div>
                 <div>
                     <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Kata Laluan Pentadbir</label>
-                    <input type="password" id="csv-download-password" placeholder="••••••••" 
+                    <input type="password" id="pdf-download-password" placeholder="••••••••" 
                         class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100">
                 </div>
             </div>
             <div class="flex gap-3 pt-2">
-                <button id="btn-cancel-csv" class="flex-1 bg-slate-800 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
-                <button id="btn-confirm-csv" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-3 rounded-xl min-h-[44px]">Download Excel</button>
+                <button id="btn-cancel-pdf" class="flex-1 bg-slate-800 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
+                <button id="btn-confirm-pdf" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-3 rounded-xl min-h-[44px]">Jana & Cetak PDF</button>
             </div>
         </div>
     </div>
@@ -646,21 +679,21 @@
         const populateMeetingDropdowns = () => {
             const selectEl = document.getElementById('guest-meeting-select');
             const filterSelectEl = document.getElementById('filter-meeting-select');
-            const csvSelectEl = document.getElementById('csv-meeting-select');
+            const pdfSelectEl = document.getElementById('pdf-meeting-select');
 
             let htmlOptions = '<option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>';
             let htmlFilterOptions = '<option value="ALL">-- Papar Semua Kehadiran --</option>';
-            let htmlCsvOptions = '<option value="ALL">-- Semua Mesyuarat (Keseluruhan) --</option>';
+            let htmlPdfOptions = '<option value="" disabled selected>-- Pilih Mesyuarat Untuk Cetak --</option>';
 
             activeMeetings.forEach(m => {
                 htmlOptions += `<option value="${m.title}" data-datetime="${m.datetime}" data-location="${m.location}">${m.title} (${m.datetime})</option>`;
                 htmlFilterOptions += `<option value="${m.title}">${m.title}</option>`;
-                htmlCsvOptions += `<option value="${m.title}">${m.title}</option>`;
+                htmlPdfOptions += `<option value="${m.title}">${m.title}</option>`;
             });
 
             if (selectEl) selectEl.innerHTML = htmlOptions;
             if (filterSelectEl) filterSelectEl.innerHTML = htmlFilterOptions;
-            if (csvSelectEl) csvSelectEl.innerHTML = htmlCsvOptions;
+            if (pdfSelectEl) pdfSelectEl.innerHTML = htmlPdfOptions;
 
             const adminListEl = document.getElementById('admin-meetings-list');
             if (adminListEl) {
@@ -968,59 +1001,68 @@
                 document.getElementById('delete-confirm-modal').classList.add('opacity-0', 'pointer-events-none');
             });
 
-            document.getElementById('btn-export-csv').addEventListener('click', () => {
-                document.getElementById('download-csv-modal').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('btn-export-pdf').addEventListener('click', () => {
+                document.getElementById('download-pdf-modal').classList.remove('opacity-0', 'pointer-events-none');
                 populateMeetingDropdowns();
             });
-            document.getElementById('btn-cancel-csv').addEventListener('click', () => {
-                document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('btn-cancel-pdf').addEventListener('click', () => {
+                document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
             });
             
-            // PROSES MUAT TURUN EXCEL (.XLSX) MENGGUNAKAN SHEETJS
-            document.getElementById('btn-confirm-csv').addEventListener('click', () => {
-                const pass = document.getElementById('csv-download-password').value.trim();
+            // PROSES JANA TEMPLAT RASMI DAN CETAK KE PDF
+            document.getElementById('btn-confirm-pdf').addEventListener('click', () => {
+                const pass = document.getElementById('pdf-download-password').value.trim();
                 if (pass !== _dec(_ob_p1)) {
                     showToast("Kata laluan salah!", "error");
                     return;
                 }
 
-                const selectedMeeting = document.getElementById('csv-meeting-select').value;
-                const targetList = selectedMeeting === 'ALL' ? allAttendees : allAttendees.filter(i => i.tajukMesyuarat === selectedMeeting);
-
-                if (targetList.length === 0) {
-                    showToast("Tiada rekod kehadiran bagi mesyuarat yang dipilih.", "error");
+                const selectedMeetingTitle = document.getElementById('pdf-meeting-select').value;
+                if (!selectedMeetingTitle) {
+                    showToast("Sila pilih mesyuarat terlebih dahulu.", "error");
                     return;
                 }
 
-                // Sediakan data array objek untuk SheetJS
-                const excelData = targetList.map((i, index) => ({
-                    "Bil": index + 1,
-                    "Tarikh & Masa Daftar": i.timestamp ? new Date(i.timestamp).toLocaleString('ms-MY') : '-',
-                    "Tajuk Mesyuarat": i.tajukMesyuarat || '-',
-                    "Tarikh & Masa Mesyuarat": i.tarikhMasaMesyuarat || '-',
-                    "Lokasi Mesyuarat": i.lokasiMesyuarat || '-',
-                    "Nama Penuh": toTitleCase(i.nama),
-                    "Alamat Emel": i.email,
-                    "Jawatan": i.jawatan,
-                    "Jabatan / Organisasi": i.jabatan,
-                    "Catatan": i.catatan || '-',
-                    "Tandatangan Digital (Base64)": i.signature || '-'
-                }));
+                const targetMeeting = activeMeetings.find(m => m.title === selectedMeetingTitle);
+                const targetList = allAttendees.filter(i => i.tajukMesyuarat === selectedMeetingTitle);
 
-                // Bina Workbook dan Worksheet
-                const worksheet = XLSX.utils.json_to_sheet(excelData);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Kehadiran Mesyuarat");
+                // Masukkan info ke templat cetakan
+                document.getElementById('print-perkara').textContent = selectedMeetingTitle;
+                document.getElementById('print-tarikh').textContent = targetMeeting ? targetMeeting.datetime : '-';
+                document.getElementById('print-lokasi').textContent = targetMeeting ? targetMeeting.location : '-';
 
-                // Auto-fit column widths untuk kemasan Excel
-                const max_width = excelData.reduce((w, r) => Math.max(w, r["Nama Penuh"].length), 10);
-                worksheet['!cols'] = [{wch: 5}, {wch: 20}, {wch: 35}, {wch: 22}, {wch: 25}, {wch: 25}, {wch: 25}, {wch: 20}, {wch: 25}, {wch: 15}, {wch: 30}];
+                const tbody = document.getElementById('print-table-body');
+                let rowsHtml = "";
 
-                const safeName = selectedMeeting === 'ALL' ? 'Semua_Mesyuarat' : selectedMeeting.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                XLSX.writeFile(workbook, `Laporan_Kehadiran_${safeName}_${new Date().toISOString().slice(0,10)}.xlsx`);
+                if (targetList.length === 0) {
+                    rowsHtml = `<tr><td colspan="5" style="border: 1px solid #000; padding: 15px; text-align: center;">Tiada rekod kehadiran bagi mesyuarat ini.</td></tr>`;
+                } else {
+                    targetList.forEach((i, idx) => {
+                        rowsHtml += `
+                        <tr style="border: 1px solid #000;">
+                            <td style="border: 1px solid #000; padding: 8px; text-align: center;">${idx + 1}.</td>
+                            <td style="border: 1px solid #000; padding: 8px; font-weight: bold;">${toTitleCase(i.nama)}<br><span style="font-size: 8pt; font-weight: normal; color: #555;">${i.email}</span></td>
+                            <td style="border: 1px solid #000; padding: 8px;">${i.jawatan || '-'}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">${i.jabatan || '-'}</td>
+                            <td style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: middle;">
+                                ${i.signature ? `<img src="${i.signature}" style="height: 35px; max-width: 100px; object-fit: contain;">` : ''}
+                            </td>
+                        </tr>`;
+                    });
+                }
+                tbody.innerHTML = rowsHtml;
 
-                document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
-                showToast("Fail Excel (.xlsx) berjaya dimuat turun!", "success");
+                document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
+                showToast("Menjana dokumen rasmi untuk dicetak...", "success");
+
+                // Paparkan bekas templat, cetak, kemudian sembunyikan semula
+                const container = document.getElementById('print-template-container');
+                container.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    window.print();
+                    container.classList.add('hidden');
+                }, 300);
             });
 
             document.getElementById('filter-meeting-select').addEventListener('change', updateAttendeesUI);
