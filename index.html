@@ -413,7 +413,10 @@
                         </h2>
                         <p class="text-xs text-slate-400">Tambah jadual mesyuarat dan semak tandatangan peserta.</p>
                     </div>
-                    <div class="flex items-center gap-2 w-full lg:w-auto justify-end">
+                    <div class="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap">
+                        <button id="btn-delete-selected" class="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs border border-rose-500/30 flex items-center gap-2 min-h-[44px]">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih (<span id="selected-count-badge">0</span>)
+                        </button>
                         <button id="btn-export-csv" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 min-h-[44px]">
                             <i data-lucide="download" class="w-4 h-4"></i> Muat Turun CSV
                         </button>
@@ -468,6 +471,9 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-800 bg-slate-950/40 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                    <th class="p-4 w-12 text-center">
+                                        <input type="checkbox" id="admin-select-all" class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5 cursor-pointer">
+                                    </th>
                                     <th class="p-4">Tarikh Daftar</th>
                                     <th class="p-4">Mesyuarat Dihadiri</th>
                                     <th class="p-4">Peserta & Emel</th>
@@ -486,12 +492,12 @@
 
     </main>
 
-    <!-- MODAL PADAM & CSV WITH MEETING SELECTION -->
+    <!-- MODAL PADAM & CSV -->
     <div id="delete-confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
                 <h3 class="text-lg font-bold text-white">Padam Rekod</h3>
-                <p class="text-xs text-slate-400">Adakah anda pasti untuk memadam rekod ini?</p>
+                <p id="delete-modal-text" class="text-xs text-slate-400">Adakah anda pasti untuk memadam rekod ini?</p>
             </div>
             <div class="flex gap-3">
                 <button id="btn-cancel-delete" class="flex-1 bg-slate-800 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
@@ -509,7 +515,6 @@
             <div class="space-y-3">
                 <div>
                     <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Pilih Mesyuarat</label>
-                    <!-- Perbaikan kelas CSS agar latar belakang dropdown kontras dan nampak jelas -->
                     <select id="csv-meeting-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                         <option value="ALL">-- Semua Mesyuarat (Keseluruhan) --</option>
                     </select>
@@ -545,12 +550,14 @@
         const _ob_p1 = "756d6b623133383133"; // 'umkb13813'
 
         let allAttendees = []; 
+        let selectedAttendeeIds = new Set();
         let activeMeetings = [
             { id: 'm-1', title: 'Mesyuarat Jawatankuasa IT Bil. 1/2026', datetime: '20 Okt 2026, 9:30 Pagi', location: 'Bilik Mesyuarat Utama, Jabatan Kewangan' },
             { id: 'm-2', title: 'Mesyuarat Penyelarasan Sistem eZpay', datetime: '22 Okt 2026, 2:30 Petang', location: 'Bilik Melati, Menara DBKL 1' }
         ];
         let isAdminAuthenticated = false;
         let deleteTargetId = null; 
+        let isBatchDelete = false;
 
         let attendanceRecord = { email: "", tajukMesyuarat: "", tarikhMasaMesyuarat: "", lokasiMesyuarat: "", nama: "", jawatan: "", jabatan: "", catatan: "", signature: "" };
 
@@ -743,7 +750,7 @@
             const filtered = list.filter(item => !query || (item.nama || '').toLowerCase().includes(query) || (item.tajukMesyuarat || '').toLowerCase().includes(query));
 
             if (filtered.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 text-xs">Tiada rekod.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 text-xs">Tiada rekod.</td></tr>`;
                 return;
             }
 
@@ -751,8 +758,13 @@
             filtered.forEach(item => {
                 const dateObj = item.timestamp ? new Date(item.timestamp) : null;
                 const timeStr = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
+                const isChecked = selectedAttendeeIds.has(item.id) ? 'checked' : '';
+
                 html += `
                 <tr class="border-b border-slate-800/40 hover:bg-slate-800/25">
+                    <td class="p-4 text-center">
+                        <input type="checkbox" onchange="window.toggleAttendeeSelect('${item.id}')" ${isChecked} class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5 cursor-pointer">
+                    </td>
                     <td class="p-4 font-mono text-[10px] text-slate-400">${timeStr}</td>
                     <td class="p-4 font-bold text-brand-400">${item.tajukMesyuarat}</td>
                     <td class="p-4"><div class="font-bold text-slate-200">${toTitleCase(item.nama)}</div><div class="text-[10px] text-slate-500 font-mono">${item.email}</div></td>
@@ -765,11 +777,20 @@
                 </tr>`;
             });
             tableBody.innerHTML = html;
+            document.getElementById('selected-count-badge').textContent = selectedAttendeeIds.size;
             lucide.createIcons();
         };
 
+        window.toggleAttendeeSelect = (id) => {
+            if (selectedAttendeeIds.has(id)) selectedAttendeeIds.delete(id);
+            else selectedAttendeeIds.add(id);
+            updateAdminUI(allAttendees);
+        };
+
         window.triggerDelete = (id) => {
+            isBatchDelete = false;
             deleteTargetId = id;
+            document.getElementById('delete-modal-text').textContent = "Adakah anda pasti untuk memadam rekod ini?";
             document.getElementById('delete-confirm-modal').classList.remove('opacity-0', 'pointer-events-none');
         };
 
@@ -807,6 +828,27 @@
             document.getElementById('tab-btn-register').addEventListener('click', () => switchTab('register'));
             document.getElementById('tab-btn-list').addEventListener('click', () => switchTab('list'));
             document.getElementById('tab-btn-admin').addEventListener('click', () => switchTab('admin'));
+
+            // Select All Checkbox Handler
+            document.getElementById('admin-select-all').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    allAttendees.forEach(i => selectedAttendeeIds.add(i.id));
+                } else {
+                    selectedAttendeeIds.clear();
+                }
+                updateAdminUI(allAttendees);
+            });
+
+            // Delete Selected Button Handler
+            document.getElementById('btn-delete-selected').addEventListener('click', () => {
+                if (selectedAttendeeIds.size === 0) {
+                    showToast("Sila pilih sekurang-kurangnya satu rekod untuk dipadam.", "error");
+                    return;
+                }
+                isBatchDelete = true;
+                document.getElementById('delete-modal-text').textContent = `Adakah anda pasti untuk memadam ${selectedAttendeeIds.size} rekod terpilih?`;
+                document.getElementById('delete-confirm-modal').classList.remove('opacity-0', 'pointer-events-none');
+            });
 
             document.getElementById('guest-meeting-select').addEventListener('change', (e) => {
                 const opt = e.target.selectedOptions[0];
@@ -906,13 +948,20 @@
             });
 
             document.getElementById('btn-confirm-delete').addEventListener('click', () => {
-                if (!deleteTargetId) return;
-                allAttendees = allAttendees.filter(item => item.id !== deleteTargetId);
+                if (isBatchDelete) {
+                    allAttendees = allAttendees.filter(item => !selectedAttendeeIds.has(item.id));
+                    selectedAttendeeIds.clear();
+                    showToast("Rekod terpilih berjaya dipadam.", "success");
+                } else {
+                    if (!deleteTargetId) return;
+                    allAttendees = allAttendees.filter(item => item.id !== deleteTargetId);
+                    selectedAttendeeIds.delete(deleteTargetId);
+                    showToast("Rekod dipadam.", "success");
+                }
                 localStorage.setItem('local_kehadiran', JSON.stringify(allAttendees));
                 updateAdminUI(allAttendees);
                 updateAttendeesUI();
                 document.getElementById('delete-confirm-modal').classList.add('opacity-0', 'pointer-events-none');
-                showToast("Rekod dipadam.", "success");
             });
 
             document.getElementById('btn-cancel-delete').addEventListener('click', () => {
@@ -921,7 +970,7 @@
 
             document.getElementById('btn-export-csv').addEventListener('click', () => {
                 document.getElementById('download-csv-modal').classList.remove('opacity-0', 'pointer-events-none');
-                populateMeetingDropdowns(); // Pastikan senarai mesyuarat dikemas kini semasa modal dibuka
+                populateMeetingDropdowns();
             });
             document.getElementById('btn-cancel-csv').addEventListener('click', () => {
                 document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
