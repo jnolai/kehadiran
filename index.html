@@ -16,6 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- SheetJS (XLSX Library untuk Sokongan Fail Excel Asli) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
     <!-- Skrip Perlindungan Keselamatan Berlapis -->
     <script>
@@ -418,7 +420,7 @@
                             <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih (<span id="selected-count-badge">0</span>)
                         </button>
                         <button id="btn-export-csv" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 min-h-[44px]">
-                            <i data-lucide="download" class="w-4 h-4"></i> Muat Turun CSV
+                            <i data-lucide="download" class="w-4 h-4"></i> Muat Turun Excel (.xlsx)
                         </button>
                         <button id="btn-admin-logout" class="bg-rose-600/20 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs border border-rose-500/20 min-h-[44px]">Keluar</button>
                     </div>
@@ -492,7 +494,7 @@
 
     </main>
 
-    <!-- MODAL PADAM & CSV -->
+    <!-- MODAL PADAM & EXCEL -->
     <div id="delete-confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
@@ -509,7 +511,7 @@
     <div id="download-csv-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
-                <h3 class="text-lg font-bold text-white">Muat Turun Laporan CSV</h3>
+                <h3 class="text-lg font-bold text-white">Muat Turun Laporan Excel (.xlsx)</h3>
                 <p class="text-xs text-slate-400">Pilih mesyuarat dan masukkan kata laluan pentadbir.</p>
             </div>
             <div class="space-y-3">
@@ -527,7 +529,7 @@
             </div>
             <div class="flex gap-3 pt-2">
                 <button id="btn-cancel-csv" class="flex-1 bg-slate-800 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
-                <button id="btn-confirm-csv" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-3 rounded-xl min-h-[44px]">Download</button>
+                <button id="btn-confirm-csv" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-3 rounded-xl min-h-[44px]">Download Excel</button>
             </div>
         </div>
     </div>
@@ -829,7 +831,6 @@
             document.getElementById('tab-btn-list').addEventListener('click', () => switchTab('list'));
             document.getElementById('tab-btn-admin').addEventListener('click', () => switchTab('admin'));
 
-            // Select All Checkbox Handler
             document.getElementById('admin-select-all').addEventListener('change', (e) => {
                 if (e.target.checked) {
                     allAttendees.forEach(i => selectedAttendeeIds.add(i.id));
@@ -839,7 +840,6 @@
                 updateAdminUI(allAttendees);
             });
 
-            // Delete Selected Button Handler
             document.getElementById('btn-delete-selected').addEventListener('click', () => {
                 if (selectedAttendeeIds.size === 0) {
                     showToast("Sila pilih sekurang-kurangnya satu rekod untuk dipadam.", "error");
@@ -976,6 +976,7 @@
                 document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
             });
             
+            // PROSES MUAT TURUN EXCEL (.XLSX) MENGGUNAKAN SHEETJS
             document.getElementById('btn-confirm-csv').addEventListener('click', () => {
                 const pass = document.getElementById('csv-download-password').value.trim();
                 if (pass !== _dec(_ob_p1)) {
@@ -991,22 +992,35 @@
                     return;
                 }
 
-                let csv = "\uFEFFTarikh,Tajuk Mesyuarat,Tarikh & Masa Mesyuarat,Lokasi,Nama,Emel,Jawatan,Jabatan\n";
-                targetList.forEach(i => {
-                    const dt = i.timestamp ? new Date(i.timestamp).toLocaleString('ms-MY') : '';
-                    csv += `"${dt}","${i.tajukMesyuarat}","${i.tarikhMasaMesyuarat}","${i.lokasiMesyuarat}","${i.nama}","${i.email}","${i.jawatan}","${i.jabatan}"\r\n`;
-                });
+                // Sediakan data array objek untuk SheetJS
+                const excelData = targetList.map((i, index) => ({
+                    "Bil": index + 1,
+                    "Tarikh & Masa Daftar": i.timestamp ? new Date(i.timestamp).toLocaleString('ms-MY') : '-',
+                    "Tajuk Mesyuarat": i.tajukMesyuarat || '-',
+                    "Tarikh & Masa Mesyuarat": i.tarikhMasaMesyuarat || '-',
+                    "Lokasi Mesyuarat": i.lokasiMesyuarat || '-',
+                    "Nama Penuh": toTitleCase(i.nama),
+                    "Alamat Emel": i.email,
+                    "Jawatan": i.jawatan,
+                    "Jabatan / Organisasi": i.jabatan,
+                    "Catatan": i.catatan || '-',
+                    "Tandatangan Digital (Base64)": i.signature || '-'
+                }));
 
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
+                // Bina Workbook dan Worksheet
+                const worksheet = XLSX.utils.json_to_sheet(excelData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Kehadiran Mesyuarat");
+
+                // Auto-fit column widths untuk kemasan Excel
+                const max_width = excelData.reduce((w, r) => Math.max(w, r["Nama Penuh"].length), 10);
+                worksheet['!cols'] = [{wch: 5}, {wch: 20}, {wch: 35}, {wch: 22}, {wch: 25}, {wch: 25}, {wch: 25}, {wch: 20}, {wch: 25}, {wch: 15}, {wch: 30}];
+
                 const safeName = selectedMeeting === 'ALL' ? 'Semua_Mesyuarat' : selectedMeeting.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                a.download = `Kehadiran_${safeName}_${new Date().toISOString().slice(0,10)}.csv`;
-                a.click();
+                XLSX.writeFile(workbook, `Laporan_Kehadiran_${safeName}_${new Date().toISOString().slice(0,10)}.xlsx`);
 
                 document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
-                showToast("Fail CSV berjaya dimuat turun!", "success");
+                showToast("Fail Excel (.xlsx) berjaya dimuat turun!", "success");
             });
 
             document.getElementById('filter-meeting-select').addEventListener('change', updateAttendeesUI);
