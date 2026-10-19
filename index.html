@@ -39,16 +39,9 @@
 
         (function() {
             const isIframe = () => {
-                try {
-                    return window.self !== window.top;
-                } catch (e) {
-                    return true;
-                }
+                try { return window.self !== window.top; } catch (e) { return true; }
             };
-
-            if (isIframe()) {
-                return;
-            }
+            if (isIframe()) return;
 
             const blockAccess = () => {
                 document.body.innerHTML = `
@@ -57,42 +50,28 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                         </div>
                         <h1 class="text-xl font-bold text-rose-500 mb-2 uppercase tracking-wide">Akses Disekat Secara Automatik</h1>
-                        <p class="text-xs text-slate-400 max-w-sm leading-relaxed">
-                            Sistem mengesan cubaan membuka Developer Tools atau panel pemeriksaan kod. Penggunaan alat pengembang dilarang sama sekali demi keselamatan data mesyuarat.
-                        </p>
-                        <button onclick="window.location.reload()" class="mt-6 bg-brand-500 hover:bg-brand-400 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition duration-150">
-                            Muat Semula Halaman
-                        </button>
+                        <p class="text-xs text-slate-400 max-w-sm leading-relaxed">Sistem mengesan cubaan membuka Developer Tools. Penggunaan alat pengembang dilarang sama sekali.</p>
+                        <button onclick="window.location.reload()" class="mt-6 bg-brand-500 hover:bg-brand-400 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition duration-150">Muat Semula Halaman</button>
                     </div>
                 `;
                 throw new Error("Akses disekat kerana memulakan Developer Tools.");
             };
 
             const element = new Image();
-            Object.defineProperty(element, 'id', {
-                get: function() {
-                    blockAccess();
-                }
-            });
+            Object.defineProperty(element, 'id', { get: function() { blockAccess(); } });
 
             setInterval(function() {
                 const startTime = performance.now();
                 debugger;
                 const endTime = performance.now();
-                if (endTime - startTime > 100) {
-                    blockAccess();
-                }
+                if (endTime - startTime > 100) blockAccess();
                 console.log(element);
                 console.clear();
             }, 500);
 
             const threshold = 160;
             setInterval(function() {
-                const widthDiff = window.outerWidth - window.innerWidth;
-                const heightDiff = window.outerHeight - window.innerHeight;
-                if (widthDiff > threshold || heightDiff > threshold) {
-                    blockAccess();
-                }
+                if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) blockAccess();
             }, 500);
         })();
     </script>
@@ -101,84 +80,35 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
                     colors: {
                         brand: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            200: '#b9ddfe',
-                            300: '#7cc2fd',
-                            400: '#36a2fc',
-                            500: '#0c85eb', 
-                            600: '#0266c9',
-                            700: '#0352a2',
-                            800: '#074685',
-                            900: '#0c3b6f',
+                            50: '#f0f7ff', 100: '#e0effe', 200: '#b9ddfe', 300: '#7cc2fd', 400: '#36a2fc',
+                            500: '#0c85eb', 600: '#0266c9', 700: '#0352a2', 800: '#074685', 900: '#0c3b6f',
                         },
-                        corporate: {
-                            dark: '#0B0F19',
-                            card: '#161F33',
-                            input: '#1E2942'
-                        }
+                        corporate: { dark: '#0B0F19', card: '#161F33', input: '#1E2942' }
                     }
                 }
             }
         }
     </script>
     <style>
-        .gradient-bg {
-            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.6);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(54, 162, 252, 0.3);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(54, 162, 252, 0.5);
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .gradient-bg { background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(54, 162, 252, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(54, 162, 252, 0.5); }
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .ticket-notch-left, .ticket-notch-right {
-            position: absolute;
-            top: 50%;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #0f172a;
-            z-index: 10;
+            position: absolute; top: 50%; width: 16px; height: 16px; border-radius: 50%; background: #0f172a; z-index: 10;
         }
-        .ticket-notch-left {
-            left: -8px;
-            transform: translateY(-50%);
-        }
-        .ticket-notch-right {
-            right: -8px;
-            transform: translateY(-50%);
-        }
+        .ticket-notch-left { left: -8px; transform: translateY(-50%); }
+        .ticket-notch-right { right: -8px; transform: translateY(-50%); }
         .scan-line {
-            height: 2px;
-            background: linear-gradient(to right, transparent, #36a2fc, transparent);
-            animation: scan 3s linear infinite;
+            height: 2px; background: linear-gradient(to right, transparent, #36a2fc, transparent); animation: scan 3s linear infinite;
         }
-        @keyframes scan {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(128px); }
-            100% { transform: translateY(0); }
-        }
+        @keyframes scan { 0% { transform: translateY(0); } 50% { transform: translateY(128px); } 100% { transform: translateY(0); } }
     </style>
 </head>
 <body class="gradient-bg text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
@@ -209,12 +139,11 @@
                 <span id="live-clock" class="text-xs font-mono font-bold text-slate-300">00:00:00 AM</span>
             </div>
 
-            <button id="btn-open-setup-mobile" class="sm:hidden p-2.5 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 active:bg-slate-800 min-h-[44px] min-w-[44px] flex items-center justify-center" title="Konfigurasi Google Sheets">
+            <button id="btn-open-setup-mobile" class="sm:hidden p-2.5 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 active:bg-slate-800 min-h-[44px] min-w-[44px] flex items-center justify-center" title="Konfigurasi">
                 <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
         </div>
 
-        <!-- Navigation Tabs -->
         <div class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 w-full sm:w-auto">
             <button id="tab-btn-register" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]">
                 <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
@@ -230,7 +159,7 @@
                 <span>Admin</span>
             </button>
             
-            <button id="btn-open-setup" class="hidden sm:flex p-2 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 hover:bg-slate-800/50 min-h-[40px] min-w-[40px] items-center justify-center" title="Konfigurasi Google Sheets">
+            <button id="btn-open-setup" class="hidden sm:flex p-2 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 hover:bg-slate-800/50 min-h-[40px] min-w-[40px] items-center justify-center" title="Konfigurasi">
                 <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
         </div>
@@ -248,12 +177,8 @@
                 </div>
                 <h2 class="text-2xl font-extrabold text-white tracking-tight uppercase">Pendaftaran Ditutup</h2>
                 <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-                    Maaf, sesi pendaftaran masuk mesyuarat telah ditutup atau masa kebenaran daftar masuk telah tamat. Sila hubungi urus setia mesyuarat untuk bantuan lanjut.
+                    Maaf, sesi pendaftaran masuk mesyuarat telah ditutup atau masa kebenaran daftar masuk telah tamat.
                 </p>
-                <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-xl max-w-sm mx-auto space-y-1.5 backdrop-blur-sm">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Status Kebenaran</span>
-                    <span class="text-xs text-rose-400 font-bold bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20 inline-block">Tamat Masa / Disekat</span>
-                </div>
             </div>
 
             <!-- STEP 1: EMAIL ENTRY -->
@@ -263,9 +188,7 @@
                         <i data-lucide="mail" class="text-brand-400 w-7 h-7"></i>
                     </div>
                     <h1 class="text-2xl font-extrabold tracking-tight text-white">KEHADIRAN MESYUARAT</h1>
-                    <p class="text-xs text-slate-400 max-w-xs mx-auto">
-                        Sila masukkan alamat emel rasmi anda untuk memulakan proses pendaftaran kehadiran mesyuarat.
-                    </p>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">Sila masukkan alamat emel rasmi anda untuk memulakan proses pendaftaran.</p>
                 </div>
 
                 <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 shadow-xl backdrop-blur-sm">
@@ -273,14 +196,10 @@
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                             <i data-lucide="at-sign" class="w-3.5 h-3.5 text-brand-400"></i> Alamat Emel Rasmi
                         </label>
-                        <div class="relative">
-                            <input type="email" id="input-email-manual" placeholder="contoh: nama@organisasi.gov.my" 
-                                class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-                        </div>
-                        <p class="text-[10px] text-slate-500">Sistem akan menyemak rekod pendaftaran terdahulu mengikut alamat emel anda.</p>
+                        <input type="email" id="input-email-manual" placeholder="contoh: nama@organisasi.gov.my" 
+                            class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
-
-                    <button id="btn-submit-email" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition-all duration-150 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/10 active:scale-[0.98] min-h-[44px]">
+                    <button id="btn-submit-email" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg min-h-[44px]">
                         <span>Seterusnya</span>
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </button>
@@ -294,7 +213,7 @@
                         <i data-lucide="user-plus" class="text-brand-400 w-7 h-7"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-white">Butiran Kehadiran</h2>
-                    <p class="text-xs text-slate-400">Sila lengkapkan butiran di bawah untuk tujuan catatan laporan minit mesyuarat rasmi.</p>
+                    <p class="text-xs text-slate-400">Sila pilih mesyuarat dan lengkapkan butiran anda.</p>
                 </div>
 
                 <div class="bg-slate-800/30 border border-slate-800/80 rounded-xl p-3.5 flex items-center justify-between backdrop-blur-sm">
@@ -307,68 +226,62 @@
                             <p id="display-user-email" class="text-xs font-semibold text-slate-300 truncate">emel@domain.my</p>
                         </div>
                     </div>
-                    <button id="btn-back-login" class="text-[10px] text-brand-400 hover:underline font-bold flex-shrink-0 pl-2 min-h-[30px]">Tukar</button>
+                    <button id="btn-back-login" class="text-[10px] text-brand-400 hover:underline font-bold flex-shrink-0 pl-2">Tukar</button>
                 </div>
 
-                <!-- Registration Form -->
                 <form id="details-form" class="space-y-4">
-                    <!-- Meeting Selection Dropdown (No. 2 Feature) -->
+                    <!-- Meeting Selection Dynamic Dropdown -->
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                            <i data-lucide="layers" class="w-3.5 h-3.5 text-brand-400"></i> Pilih Tajuk / Sesi Mesyuarat
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-brand-400"></i> Pilih Mesyuarat Rasmi
                         </label>
-                        <select id="guest-meeting-title" required class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                        <select id="guest-meeting-select" required class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                             <option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>
-                            <option value="Mesyuarat Jawatankuasa IT Bil. 1/2026">Mesyuarat Jawatankuasa IT Bil. 1/2026</option>
-                            <option value="Mesyuarat Penyelarasan Kewangan & Teknikal">Mesyuarat Penyelarasan Kewangan & Teknikal</option>
-                            <option value="Mesyuarat Khas Pengurusan Pembayaran Digital">Mesyuarat Khas Pengurusan Pembayaran Digital</option>
-                            <option value="Mesyuarat Projek Khas / Lain-lain">Mesyuarat Projek Khas / Lain-lain</option>
                         </select>
+                        <div id="meeting-info-box" class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-[11px] text-slate-300 space-y-1 hidden">
+                            <p class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-brand-400"></i> <span id="info-box-date">-</span></p>
+                            <p class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-400"></i> <span id="info-box-location">-</span></p>
+                        </div>
                     </div>
 
-                    <!-- Full Name -->
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                             <i data-lucide="user" class="w-3.5 h-3.5 text-brand-400"></i> Nama Penuh
                         </label>
                         <input type="text" id="guest-name" required placeholder="Masukkan nama penuh anda" 
-                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
 
-                    <!-- Designation -->
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                             <i data-lucide="briefcase" class="w-3.5 h-3.5 text-brand-400"></i> Jawatan
                         </label>
-                        <input type="text" id="guest-designation" required placeholder="Contoh: Pegawai Teknologi Maklumat / Penolong Pengarah" 
-                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                        <input type="text" id="guest-designation" required placeholder="Contoh: Pegawai Teknologi Maklumat" 
+                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
 
-                    <!-- Department/Organization -->
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                             <i data-lucide="building" class="w-3.5 h-3.5 text-brand-400"></i> Jabatan / Unit / Organisasi
                         </label>
-                        <input type="text" id="guest-department" required placeholder="Contoh: Bahagian Pengurusan Maklumat" 
-                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                        <input type="text" id="guest-department" required placeholder="Contoh: Jabatan Kewangan" 
+                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
 
-                    <!-- Note -->
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                             <i data-lucide="message-square" class="w-3.5 h-3.5 text-brand-400"></i> Catatan (Pilihan)
                         </label>
-                        <input type="text" id="guest-note" placeholder="Contoh: Hadir sebagai ahli pembentang / pemerhati" 
-                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                        <input type="text" id="guest-note" placeholder="Contoh: Hadir mewakili Ketua Jabatan" 
+                            class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
 
-                    <!-- Policy Checkbox -->
                     <div class="flex items-start gap-2.5 pt-2">
-                        <input type="checkbox" id="policy-check" required class="rounded bg-slate-850 border-slate-750 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5 mt-0.5 cursor-pointer">
-                        <label for="policy-check" class="text-[10px] text-slate-400 leading-normal select-none cursor-pointer">Saya mengesahkan semua butiran di atas adalah betul dan saya bersetuju untuk mendaftar kehadiran secara rasmi.</label>
+                        <input type="checkbox" id="policy-check" required class="rounded bg-slate-850 border-slate-750 text-brand-500 w-4.5 h-4.5 mt-0.5 cursor-pointer">
+                        <label for="policy-check" class="text-[10px] text-slate-400 leading-normal select-none cursor-pointer">Saya mengesahkan semua butiran di atas adalah betul dan bersetuju mendaftar.</label>
                     </div>
 
-                    <button type="submit" id="btn-submit-kehadiran" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 mt-6 active:scale-[0.98] min-h-[44px]">
+                    <button type="submit" id="btn-submit-kehadiran" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 mt-6 min-h-[44px]">
                         <i data-lucide="send" class="w-4 h-4"></i>
                         <span>Sahkan & Hantar Kehadiran</span>
                     </button>
@@ -382,7 +295,7 @@
                         <i data-lucide="badge-check" class="text-emerald-400 w-8 h-8 animate-bounce"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-white">Pendaftaran Selesai!</h2>
-                    <p class="text-xs text-slate-400">Kehadiran anda telah berjaya direkodkan secara langsung ke dalam simpanan pelayan awan.</p>
+                    <p class="text-xs text-slate-400">Kehadiran anda berjaya direkodkan.</p>
                 </div>
 
                 <div class="relative bg-gradient-to-b from-corporate-card to-slate-950 rounded-2xl p-5 border border-slate-800 shadow-2xl space-y-4 overflow-hidden">
@@ -392,53 +305,33 @@
                     <div class="flex justify-between items-center border-b border-slate-800 pb-3 gap-2">
                         <div>
                             <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">PAS MASUK MESYUARAT</p>
-                            <p class="text-xs text-slate-300 font-bold mt-0.5" id="resit-tajuk-mesyuarat">-</p>
+                            <p class="text-xs text-slate-200 font-bold mt-0.5" id="resit-tajuk-mesyuarat">-</p>
                         </div>
-                        <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex-shrink-0">
-                            BERJAYA
-                        </span>
+                        <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20">BERJAYA</span>
                     </div>
 
-                    <div class="space-y-3.5 text-xs sm:text-sm relative z-20">
+                    <div class="space-y-3 text-xs relative z-20">
+                        <p class="text-[11px] text-slate-300 flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-brand-400"></i> <span id="resit-tarikh-masa">-</span></p>
+                        <p class="text-[11px] text-slate-300 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-400"></i> <span id="resit-lokasi">-</span></p>
                         <div>
-                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Nama Penuh</span>
-                            <span id="resit-nama" class="font-bold text-slate-100 block truncate">-</span>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jawatan</span>
-                                <span id="resit-jawatan" class="text-xs font-semibold text-slate-300 block truncate">-</span>
-                            </div>
-                            <div>
-                                <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Jabatan</span>
-                                <span id="resit-jabatan" class="text-xs font-semibold text-slate-300 block truncate">-</span>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Alamat Emel</span>
-                            <span id="resit-emel" class="text-xs text-slate-400 font-mono block truncate">-</span>
+                            <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Nama & Jawatan</span>
+                            <span id="resit-nama" class="font-bold text-slate-100 block"> - </span>
+                            <span id="resit-jawatan" class="text-slate-400 text-[11px]"> - </span>
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-dashed border-slate-800/80 flex flex-col items-center gap-3 relative z-20">
-                        <div class="relative p-3 bg-white rounded-xl shadow-lg flex items-center justify-center overflow-hidden">
-                            <div class="absolute inset-x-0 top-0 scan-line pointer-events-none"></div>
-                            <div id="qrcode" class="w-32 h-32"></div>
-                        </div>
-                        <span class="text-[9px] text-slate-500 font-mono tracking-wider" id="unique-id">-</span>
+                    <div class="pt-4 border-t border-dashed border-slate-800 flex flex-col items-center gap-3 relative z-20">
+                        <div id="qrcode" class="w-28 h-28 bg-white p-2 rounded-xl"></div>
+                        <span class="text-[9px] text-slate-500 font-mono" id="unique-id">-</span>
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <button id="btn-share-attendance" class="w-full sm:flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3.5 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-slate-700 active:scale-[0.98] min-h-[44px]">
-                        <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i>
-                        <span>Salin Pas Rekod</span>
+                <div class="flex gap-3">
+                    <button id="btn-share-attendance" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-700 min-h-[44px]">
+                        <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i> Salin Pas
                     </button>
-                    <button id="btn-reset-system" class="w-full sm:flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 active:scale-[0.98] min-h-[44px]">
-                        <i data-lucide="user-plus" class="w-4 h-4"></i>
-                        <span>Daftar Baru</span>
+                    <button id="btn-reset-system" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 min-h-[44px]">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i> Daftar Baru
                     </button>
                 </div>
             </div>
@@ -451,26 +344,8 @@
                 <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
                     <i data-lucide="users" class="text-brand-400 w-7 h-7"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white">Senarai Kehadiran Hari Ini</h2>
-                <p class="text-xs text-slate-400">Senarai kehadiran masa nyata mengikut mesyuarat bagi pegawai yang mendaftar hari ini.</p>
-            </div>
-
-            <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-xl border border-slate-800/80 mb-2">
-                <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Status Integrasi:</span>
-                <span id="sync-status-badge" class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-2">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span>Menghubungkan Pelayan...</span>
-                </span>
-            </div>
-
-            <div>
-                <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-sm text-center">
-                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider block font-sans">Jumlah Kehadiran Keseluruhan</span>
-                    <div id="stats-total-count" class="text-2xl sm:text-3xl font-extrabold text-brand-400 mt-1 font-mono">0</div>
-                </div>
+                <h2 class="text-2xl font-bold text-white">Senarai Kehadiran Mesyuarat</h2>
+                <p class="text-xs text-slate-400">Senarai kehadiran masa nyata bagi pegawai yang telah mendaftar.</p>
             </div>
 
             <div class="flex gap-2">
@@ -478,20 +353,14 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
                     </div>
-                    <input type="text" id="search-attendees" placeholder="Cari nama, jawatan, atau jabatan..." 
-                        class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
+                    <input type="text" id="search-attendees" placeholder="Cari nama, jawatan, atau mesyuarat..." 
+                        class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500" />
                 </div>
-                <button id="btn-refresh-list" class="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-brand-400 hover:text-brand-300 transition-colors rounded-xl flex-shrink-0 flex items-center justify-center active:scale-[0.95] min-h-[44px] min-w-[44px]" title="Penyegerakan Manual">
-                    <i data-lucide="rotate-cw" class="w-4 h-4"></i>
-                </button>
             </div>
 
             <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-sm">
-                <div id="attendees-container" class="space-y-3 max-h-[350px] sm:max-h-[400px] overflow-y-auto pr-1">
-                    <div class="flex flex-col items-center justify-center py-10 text-slate-400 space-y-2">
-                        <i data-lucide="loader" class="w-8 h-8 animate-spin text-brand-400"></i>
-                        <span class="text-xs">Memuatkan data pendaftaran...</span>
-                    </div>
+                <div id="attendees-container" class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                    <div class="text-center py-10 text-slate-400"><i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto text-brand-400"></i></div>
                 </div>
             </div>
         </div>
@@ -499,153 +368,101 @@
         <!-- SECTION 3: ADMIN PANEL -->
         <div id="section-admin" class="w-full space-y-6 max-w-4xl mx-auto hidden animate-fade-in">
             
-            <div id="admin-login-view" class="max-w-md mx-auto space-y-6 py-4 sm:py-6">
+            <div id="admin-login-view" class="max-w-md mx-auto space-y-6 py-6">
                 <div class="text-center space-y-2">
                     <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
                         <i data-lucide="lock" class="text-brand-400 w-7 h-7"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-white">Log Masuk Pentadbir</h2>
-                    <p class="text-xs text-slate-400">Sila masukkan kata laluan keselamatan mesyuarat untuk mengakses kawalan pentadbiran data.</p>
+                    <p class="text-xs text-slate-400">Sila masukkan kata laluan keselamatan.</p>
                 </div>
 
-                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl backdrop-blur-sm">
-                    <div class="space-y-1.5">
-                        <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                            <i data-lucide="key-round" class="w-3.5 h-3.5 text-brand-400"></i> Kata Laluan Pengesahan
-                        </label>
-                        <input type="password" id="admin-password-input" placeholder="••••••••" 
-                            class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-                    </div>
-                    <button id="btn-submit-admin-login" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/10 active:scale-[0.98] min-h-[44px]">
-                        <i data-lucide="log-in" class="w-4 h-4"></i>
-                        <span>Sahkan Sesi</span>
-                    </button>
+                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+                    <input type="password" id="admin-password-input" placeholder="••••••••" 
+                        class="w-full bg-slate-800/40 border border-slate-700 rounded-xl px-4 py-3.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <button id="btn-submit-admin-login" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-3.5 rounded-xl text-xs min-h-[44px]">Sahkan Sesi</button>
                 </div>
             </div>
 
             <!-- Admin Live Dashboard Controls -->
             <div id="admin-dashboard-view" class="space-y-6 hidden w-full animate-fade-in">
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800/80 pb-5">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-5">
                     <div>
                         <h2 class="text-2xl font-bold text-white flex items-center gap-2">
                             <i data-lucide="shield" class="text-brand-400 w-6 h-6"></i>
-                            <span>Panel Pengurusan Kehadiran</span>
+                            <span>Pengurusan Mesyuarat & Kehadiran</span>
                         </h2>
-                        <p class="text-xs text-slate-400">Analisis penuh pengesahan rekod peserta, pembersihan data, dan muat turun borang kehadiran.</p>
+                        <p class="text-xs text-slate-400">Tambah jadual mesyuarat rasmi dan pantau rekod kehadiran peserta.</p>
                     </div>
-                    <div class="flex items-center gap-2 w-full lg:w-auto flex-wrap sm:flex-nowrap justify-end">
-                        <span id="selected-count-badge" class="bg-brand-500/15 text-brand-400 text-xs font-bold px-3 py-2.5 rounded-xl border border-brand-500/20 shadow-md">
-                            0 Terpilih
-                        </span>
-                        <button id="btn-export-csv" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] min-h-[44px]">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            <span>Muat Turun CSV</span>
+                    <div class="flex items-center gap-2 w-full lg:w-auto justify-end">
+                        <button id="btn-export-csv" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 min-h-[44px]">
+                            <i data-lucide="download" class="w-4 h-4"></i> Muat Turun CSV
                         </button>
-                        <button id="btn-admin-logout" class="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-rose-500/20 active:scale-[0.98] min-h-[44px]">
-                            <i data-lucide="log-out" class="w-4 h-4"></i>
-                            <span>Keluar Pentadbir</span>
-                        </button>
+                        <button id="btn-admin-logout" class="bg-rose-600/20 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs border border-rose-500/20 min-h-[44px]">Keluar</button>
                     </div>
                 </div>
 
-                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl backdrop-blur-sm">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
-                            <i data-lucide="shield-alert" class="text-brand-400 w-5 h-5"></i>
-                            <span>Kawalan Kebenaran Daftar Masuk</span>
-                        </h3>
-                        <span id="admin-reg-status-badge" class="bg-rose-500/10 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-rose-500/20">
-                            DITUTUP
-                        </span>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="space-y-3 text-xs text-slate-300 bg-slate-900/40 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-center">
-                            <p class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500" id="admin-reg-status-dot"></span>
-                                Status Kebenaran: <strong id="admin-reg-status-text" class="text-rose-400 font-bold">Ditutup / Disekat</strong>
-                            </p>
-                            <p id="admin-reg-time-remaining" class="text-slate-400 font-mono text-[11px] flex items-center gap-1.5">
-                                <i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i>
-                                <span>Kebenaran: Ditutup sepenuhnya</span>
-                            </p>
+                <!-- FORM TAMBAH / URUS MESYUARAT RASMI -->
+                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+                    <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                        <i data-lucide="calendar-plus" class="text-brand-400 w-5 h-5"></i>
+                        <span>Daftar / Tambah Jadual Mesyuarat Rasmi</span>
+                    </h3>
+                    <form id="meeting-create-form" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="space-y-1 md:col-span-3">
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tajuk Mesyuarat</label>
+                            <input type="text" id="admin-meeting-title" required placeholder="Contoh: Mesyuarat Jawatankuasa IT Bil. 1/2026" 
+                                class="w-full bg-slate-800/40 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:ring-2 focus:ring-brand-500">
                         </div>
-
-                        <div class="space-y-3.5">
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Tetapkan Julat Masa Daftar Masuk</label>
-                                <select id="reg-duration-select" class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                                    <option value="tutup" selected>Tutup Akses (Lalai)</option>
-                                    <option value="sentiasa">Sentiasa Buka</option>
-                                    <option value="15">15 Minit</option>
-                                    <option value="30">30 Minit</option>
-                                    <option value="60">1 Jam (60 Minit)</option>
-                                    <option value="120">2 Jam (120 Minit)</option>
-                                    <option value="custom">Pilihan Sendiri (Minit)</option>
-                                </select>
-                            </div>
-
-                            <div id="custom-minutes-container" class="space-y-1.5 hidden">
-                                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Minit Pilihan Anda</label>
-                                <input type="number" id="custom-minutes-input" min="1" value="45" class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                            </div>
-
-                            <button id="btn-trigger-lock-settings" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-2.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 active:scale-[0.98] min-h-[40px]">
-                                <i data-lucide="key-round" class="w-4 h-4"></i>
-                                <span>Kemaskini Had Akses</span>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tarikh & Masa</label>
+                            <input type="text" id="admin-meeting-datetime" required placeholder="Contoh: 20 Okt 2026, 9:00 Pagi" 
+                                class="w-full bg-slate-800/40 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Lokasi Mesyuarat</label>
+                            <input type="text" id="admin-meeting-location" required placeholder="Contoh: Bilik Melati, Menara DBKL 1" 
+                                class="w-full bg-slate-800/40 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full bg-brand-500 hover:bg-brand-400 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 min-h-[40px]">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah Mesyuarat
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div class="p-3.5 bg-slate-900/50 rounded-xl border border-slate-800/70">
-                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Kehadiran Gov.my</p>
-                        <p id="stat-gov-count" class="text-xl font-bold text-slate-200 mt-0.5">0</p>
-                    </div>
-                    <div class="p-3.5 bg-slate-900/50 rounded-xl border border-slate-800/70">
-                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Domain Swasta / Alternatif</p>
-                        <p id="stat-other-count" class="text-xl font-bold text-slate-200 mt-0.5">0</p>
+                <!-- SENARAI MESYUARAT AKTIF -->
+                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-xl">
+                    <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                        <i data-lucide="list" class="text-brand-400 w-5 h-5"></i>
+                        <span>Senarai Mesyuarat Aktif Didaftarkan</span>
+                    </h3>
+                    <div id="admin-meetings-list" class="space-y-2">
+                        <!-- Dynamic Meetings List -->
                     </div>
                 </div>
 
                 <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
-                    </div>
-                    <input type="text" id="search-admin-attendees" placeholder="Cari pendaftar (Nama, Emel, Jawatan, Jabatan, Tajuk Mesyuarat)..." 
-                        class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
+                    <input type="text" id="search-admin-attendees" placeholder="Cari rekod pendaftar..." 
+                        class="w-full bg-corporate-card/80 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-200 focus:ring-2 focus:ring-brand-500" />
                 </div>
 
-                <div class="p-3 bg-slate-950/40 border border-slate-800/80 rounded-xl md:hidden flex items-center justify-between text-xs">
-                    <label class="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" id="admin-select-all-mobile" onchange="window.toggleSelectAll(this.checked)" class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5">
-                        <span class="text-slate-300 font-semibold">Pilih Semua Rekod</span>
-                    </label>
-                    <span class="text-brand-400 font-bold" id="mobile-selected-count">0 Terpilih</span>
-                </div>
-
-                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm">
+                <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse hidden md:table">
+                        <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-800 bg-slate-950/40 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                    <th class="p-4 w-12 text-center">
-                                        <input type="checkbox" id="admin-select-all" onchange="window.toggleSelectAll(this.checked)" class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5">
-                                    </th>
-                                    <th class="p-4">Tarikh & Masa</th>
-                                    <th class="p-4">Tajuk Mesyuarat</th>
-                                    <th class="p-4">Nama & Emel</th>
-                                    <th class="p-4">Jawatan & Organisasi</th>
+                                    <th class="p-4">Tarikh Daftar</th>
+                                    <th class="p-4">Mesyuarat Dinhadrati</th>
+                                    <th class="p-4">Peserta & Emel</th>
+                                    <th class="p-4">Jawatan & Jabatan</th>
                                     <th class="p-4 text-right">Tindakan</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-table-body" class="divide-y divide-slate-800/60 text-xs">
                             </tbody>
                         </table>
-
-                        <div id="admin-cards-container" class="p-4 space-y-4 md:hidden animate-fade-in">
-                        </div>
                     </div>
                 </div>
             </div>
@@ -654,352 +471,154 @@
 
     </main>
 
-    <!-- LOCK ACCESS AUTH MODAL -->
-    <div id="lock-auth-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
-        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
-            <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
-                    <i data-lucide="shield-check" class="text-brand-400 w-6 h-6 animate-pulse"></i>
-                </div>
-                <h3 class="text-lg font-bold text-white">Sahkan Kebenaran</h3>
-                <p class="text-xs text-slate-400 leading-relaxed font-sans">Sila masukkan kata laluan keselamatan untuk membolehkan atau memotong akses Daftar Masuk mesyuarat.</p>
-            </div>
-            <div class="space-y-1.5">
-                <input type="password" id="lock-auth-password" placeholder="••••••••" 
-                    class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-            </div>
-            <div class="flex gap-3">
-                <button id="btn-cancel-lock-auth" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">Batal</button>
-                <button id="btn-confirm-lock-auth" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">Sahkan</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- GOOGLE SHEETS SETUP AUTH MODAL -->
-    <div id="setup-auth-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
-        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
-            <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
-                    <i data-lucide="shield-alert" class="text-brand-400 w-6 h-6 animate-pulse"></i>
-                </div>
-                <h3 class="text-lg font-bold text-white">Akses Konfigurasi Had</h3>
-                <p class="text-xs text-slate-400 leading-relaxed font-sans">Sila masukkan kata laluan keselamatan untuk mengakses tetapan integrasi Google Sheets.</p>
-            </div>
-            <div class="space-y-1.5">
-                <input type="password" id="setup-auth-password" placeholder="••••••••" 
-                    class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-            </div>
-            <div class="flex gap-3">
-                <button id="btn-cancel-setup-auth" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">Batal</button>
-                <button id="btn-confirm-setup-auth" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">Sahkan</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- GOOGLE SHEETS SETUP DRAWER -->
-    <div id="setup-panel" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-end md:items-center md:justify-center p-0 md:p-4">
-        <div class="w-full md:max-w-md bg-corporate-card rounded-t-3xl md:rounded-2xl border-t md:border border-slate-700/60 p-6 md:p-8 space-y-5 transform translate-y-full md:translate-y-4 transition-transform duration-300 shadow-2xl relative max-h-[92vh] overflow-y-auto">
-            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto md:hidden absolute top-3 left-1/2 -translate-x-1/2"></div>
-            <div class="text-center space-y-1 pt-2">
-                <h3 class="text-lg font-bold text-slate-100 flex items-center justify-center gap-2">
-                    <i data-lucide="database" class="text-brand-400 w-5 h-5"></i>
-                    <span>Konfigurasi Penyambung</span>
-                </h3>
-                <p class="text-xs text-slate-400">Pautkan borang ini dengan Google Sheet anda untuk proses penyegerakan automatik.</p>
-            </div>
-            <div class="space-y-3">
-                <label class="text-xs font-semibold text-slate-300 block">Google Web App URL:</label>
-                <input type="url" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" 
-                    class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500">
-            </div>
-            <div class="flex gap-3 pt-2">
-                <button id="btn-close-setup" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 min-h-[44px]">Batal</button>
-                <button id="btn-save-setup" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold text-xs py-3 rounded-xl transition duration-150 min-h-[44px]">Simpan Pautan</button>
-            </div>
-        </div>
-    </div>
-
     <!-- CUSTOM CONFIRMATION DELETE DIALOG -->
     <div id="delete-confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
-        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
+        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
                 <div class="inline-flex p-3 bg-rose-500/10 rounded-full border border-rose-500/20 mb-1">
                     <i data-lucide="trash-2" class="text-rose-400 w-6 h-6 animate-pulse"></i>
                 </div>
-                <h3 class="text-lg font-bold text-white">Padam Rekod Kehadiran</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">Sila pastikan tindakan anda. Data ini akan dipadamkan daripada pangkalan data secara kekal.</p>
+                <h3 class="text-lg font-bold text-white">Padam Rekod</h3>
+                <p class="text-xs text-slate-400">Adakah anda pasti untuk memadam rekod ini?</p>
             </div>
             <div class="flex gap-3">
-                <button id="btn-cancel-delete" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold min-h-[44px]">Batal</button>
-                <button id="btn-confirm-delete" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs py-3 rounded-xl transition duration-150 font-bold min-h-[44px]">Sah Padam</button>
+                <button id="btn-cancel-delete" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
+                <button id="btn-confirm-delete" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs py-3 rounded-xl min-h-[44px]">Padam</button>
             </div>
         </div>
     </div>
 
     <!-- EXPORT CSV CONFIG DIALOG -->
     <div id="download-csv-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
-        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
+        <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
-                <div class="inline-flex p-3 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-1">
-                    <i data-lucide="file-spreadsheet" class="text-emerald-400 w-6 h-6"></i>
-                </div>
-                <h3 class="text-lg font-bold text-white">Eksport Salinan CSV</h3>
-                <p class="text-xs text-slate-400 leading-relaxed font-sans">Sahkan kata laluan pentadbir untuk menjana salinan CSV rasmi mengikut pilihan mesyuarat.</p>
+                <h3 class="text-lg font-bold text-white">Muat Turun Laporan CSV</h3>
+                <p class="text-xs text-slate-400">Masukkan kata laluan pentadbir.</p>
             </div>
-            <div class="space-y-4">
-                <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="key-round" class="w-3.5 h-3.5 text-brand-400"></i> Kata Laluan Pentadbir
-                    </label>
-                    <input type="password" id="csv-download-password" placeholder="••••••••" 
-                        class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-                </div>
-            </div>
+            <input type="password" id="csv-download-password" placeholder="••••••••" 
+                class="w-full bg-slate-800/40 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100">
             <div class="flex gap-3 pt-2">
-                <button id="btn-cancel-csv" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">Batal</button>
-                <button id="btn-confirm-csv" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">Proses & Download</button>
+                <button id="btn-cancel-csv" class="flex-1 bg-slate-800 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
+                <button id="btn-confirm-csv" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-3 rounded-xl min-h-[44px]">Download</button>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="py-5 text-center text-[10px] text-slate-500 border-t border-slate-800/40 bg-slate-950/40 relative z-10">
-        <p>© 2026 Sistem Kehadiran Mesyuarat Bersepadu. Hak Cipta Terpelihara Jnol Ai.</p>
+        <p>© 2026 Sistem Kehadiran Mesyuarat Bersepadu. Jnol Ai.</p>
     </footer>
 
-    <!-- Firebase SDK Integration -->
+    <!-- Firebase & Main Script Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.clientClockOffset = 0;
         window.getSyncedNow = () => Date.now() + (window.clientClockOffset || 0);
 
-        const syncClockOffset = async () => {
-            const start = Date.now();
-            const apis = [
-                'https://timeapi.io/api/time/current/zone?timeZone=Asia/Kuala_Lumpur',
-                'https://worldtimeapi.org/api/timezone/Asia/Kuala_Lumpur'
-            ];
-            for (const url of apis) {
-                try {
-                    const response = await fetch(url);
-                    if (response.ok) {
-                        const data = await response.json();
-                        let officialTime = data.dateTime ? new Date(data.dateTime).getTime() : (data.datetime ? new Date(data.datetime).getTime() : 0);
-                        if (officialTime) {
-                            const end = Date.now();
-                            const latency = (end - start) / 2;
-                            window.clientClockOffset = (officialTime + latency) - end;
-                            return;
-                        }
-                    }
-                } catch (err) {}
-            }
-        };
-        syncClockOffset();
-
         const _dec = (hex) => {
             let str = '';
-            for (let i = 0; i < hex.length; i += 2) {
-                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-            }
+            for (let i = 0; i < hex.length; i += 2) str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
             return str;
         };
 
-        const _ob_gas = "68747470733a2f2f7363726970742e676f6f676c652e636f6d2f6d6163726f732f732f414b66796362776a3564694d4f5f7851414778636b4463416e766f465a7647714562534b644e2d475f35426a517a795061633556435a4d6a3439517142664a4b592d6e30703270682f65786563";
-        const _ob_p1 = "756d6b623133383133"; 
-        const _ob_p2 = "6a6e6f6c616932303236"; 
-
-        const URL_GOOGLE_APPS_SCRIPT = _dec(_ob_gas); 
+        const _ob_p1 = "756d6b623133383133"; // 'umkb13813'
 
         let firebaseApp, auth, db, appId;
         let currentUser = null;
         let allAttendees = []; 
-        let selectedAttendeeIds = new Set(); 
+        let activeMeetings = [
+            { id: 'm-1', title: 'Mesyuarat Jawatankuasa IT Bil. 1/2026', datetime: '20 Okt 2026, 9:30 Pagi', location: 'Bilik Mesyuarat Utama, Jabatan Kewangan' },
+            { id: 'm-2', title: 'Mesyuarat Penyelarasan Sistem eZpay', datetime: '22 Okt 2026, 2:30 Petang', location: 'Bilik Melati, Menara DBKL 1' }
+        ];
         let isAdminAuthenticated = false;
         let deleteTargetId = null; 
         let isFirebaseActive = false; 
 
-        let systemSettings = {
-            enabled: true,
-            expiresAt: null
-        };
-
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "",
-            authDomain: "meet-attendance-app.firebaseapp.com",
-            projectId: "meet-attendance-app",
-            storageBucket: "meet-attendance-app.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
-        };
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "" };
         appId = typeof __app_id !== 'undefined' ? __app_id : 'kehadiran-mesyuarat-app';
 
-        const isFirebaseConfigValid = () => {
-            return firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "";
-        };
-
         try {
-            if (isFirebaseConfigValid()) {
+            if (firebaseConfig && firebaseConfig.apiKey) {
                 firebaseApp = initializeApp(firebaseConfig);
                 auth = getAuth(firebaseApp);
                 db = getFirestore(firebaseApp);
                 isFirebaseActive = true;
-            } else {
-                isFirebaseActive = false;
             }
-        } catch (e) {
-            isFirebaseActive = false;
-        }
+        } catch (e) { isFirebaseActive = false; }
 
-        let attendanceRecord = {
-            email: "",
-            tajukMesyuarat: "",
-            nama: "",
-            jawatan: "",
-            jabatan: "",
-            catatan: ""
-        };
+        let attendanceRecord = { email: "", tajukMesyuarat: "", tarikhMasaMesyuarat: "", lokasiMesyuarat: "", nama: "", jawatan: "", jabatan: "", catatan: "" };
 
         const showToast = function(message, textType = 'info') {
             const toast = document.getElementById('toast');
             if (!toast) return;
-            const msgEl = document.getElementById('toast-message');
-            const iconContainer = document.getElementById('toast-icon-container');
-            
-            if (msgEl) msgEl.textContent = message;
-
-            if (textType === 'success') {
-                toast.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-emerald-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800";
-                if (iconContainer) {
-                    iconContainer.className = "p-1 rounded-full bg-emerald-500/10";
-                    iconContainer.innerHTML = `<i data-lucide="check" class="text-emerald-400 w-4 h-4 flex-shrink-0"></i>`;
-                }
-            } else if (textType === 'error') {
-                toast.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-rose-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800";
-                if (iconContainer) {
-                    iconContainer.className = "p-1 rounded-full bg-rose-500/10";
-                    iconContainer.innerHTML = `<i data-lucide="alert-circle" class="text-rose-400 w-4 h-4 flex-shrink-0"></i>`;
-                }
-            } else {
-                toast.className = "fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 border-brand-500 text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 transform opacity-0 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800";
-                if (iconContainer) {
-                    iconContainer.className = "p-1 rounded-full bg-brand-500/10";
-                    iconContainer.innerHTML = `<i data-lucide="info" class="text-brand-400 w-4 h-4 flex-shrink-0"></i>`;
-                }
-            }
-            
-            lucide.createIcons();
+            document.getElementById('toast-message').textContent = message;
+            toast.className = `fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border-l-4 ${textType==='success'?'border-emerald-500':textType==='error'?'border-rose-500':'border-brand-500'} text-slate-100 py-3.5 px-5 rounded-xl shadow-2xl transition-all duration-500 flex items-center gap-3 max-w-sm w-[92%] backdrop-blur-md border border-slate-800`;
             toast.classList.remove('opacity-0', '-translate-y-20');
             toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', '-translate-y-20'); }, 3500);
+        };
+
+        const loadMeetingsFromStorage = () => {
+            try {
+                const saved = localStorage.getItem('local_meetings');
+                if (saved) activeMeetings = JSON.parse(saved);
+            } catch(e) {}
+            populateMeetingDropdowns();
+        };
+
+        const saveMeetingsToStorage = () => {
+            localStorage.setItem('local_meetings', JSON.stringify(activeMeetings));
+            populateMeetingDropdowns();
+        };
+
+        const populateMeetingDropdowns = () => {
+            const selectEl = document.getElementById('guest-meeting-select');
+            if (!selectEl) return;
             
-            setTimeout(() => {
-                toast.classList.remove('opacity-100', 'translate-y-0');
-                toast.classList.add('opacity-0', '-translate-y-20');
-            }, 3500);
+            let html = '<option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>';
+            activeMeetings.forEach(m => {
+                html += `<option value="${m.title}" data-datetime="${m.datetime}" data-location="${m.location}">${m.title} (${m.datetime})</option>`;
+            });
+            selectEl.innerHTML = html;
+
+            // Render list di admin dashboard
+            const adminListEl = document.getElementById('admin-meetings-list');
+            if (adminListEl) {
+                if (activeMeetings.length === 0) {
+                    adminListEl.innerHTML = `<p class="text-xs text-slate-500">Tiada mesyuarat didaftarkan.</p>`;
+                    return;
+                }
+                let adminHtml = "";
+                activeMeetings.forEach(m => {
+                    adminHtml += `
+                    <div class="flex items-center justify-between p-3 bg-slate-900/40 rounded-xl border border-slate-800 text-xs">
+                        <div>
+                            <span class="font-bold text-slate-200 block">${m.title}</span>
+                            <span class="text-[10px] text-slate-400">📅 ${m.datetime} &bull; 📍 ${m.location}</span>
+                        </div>
+                        <button onclick="window.removeMeeting('${m.id}')" class="p-2 bg-rose-600/10 text-rose-400 rounded-lg hover:bg-rose-600/20"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>`;
+                });
+                adminListEl.innerHTML = adminHtml;
+                lucide.createIcons();
+            }
+        };
+
+        window.removeMeeting = (id) => {
+            activeMeetings = activeMeetings.filter(m => m.id !== id);
+            saveMeetingsToStorage();
+            showToast("Mesyuarat berjaya dibuang.", "success");
         };
 
         const initLiveClock = () => {
-            const clockEl = document.getElementById('live-clock');
-            if (!clockEl) return;
             setInterval(() => {
                 const now = new Date(window.getSyncedNow());
-                clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-                updateRegistrationAccessUI();
+                const clockEl = document.getElementById('live-clock');
+                if (clockEl) clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
             }, 1000);
-        };
-
-        const runSecureAuth = async () => {
-            if (!auth || !isFirebaseActive) return;
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                updateSyncBadge();
-            } catch (err) {
-                isFirebaseActive = false;
-                updateSyncBadge();
-            }
-        };
-
-        const updateSyncBadge = () => {
-            const badge = document.getElementById('sync-status-badge');
-            if (!badge) return;
-            badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-2 animate-fade-in";
-            badge.innerHTML = `<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span><span>Berjaya</span>`;
-        };
-
-        const getTodayList = () => {
-            const today = new Date(window.getSyncedNow());
-            return allAttendees.filter(item => {
-                if (!item.timestamp || item.email === "SYSTEM_SETTINGS") return false;
-                const d = new Date(item.timestamp);
-                return d.getDate() === today.getDate() &&
-                       d.getMonth() === today.getMonth() &&
-                       d.getFullYear() === today.getFullYear();
-            });
-        };
-
-        const listenToSettingsRealtime = () => {
-            if (!db || !currentUser || !isFirebaseActive) return;
-            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'tetapan', 'sistem');
-            onSnapshot(ref, (snap) => {
-                if (snap.exists()) {
-                    systemSettings = snap.data();
-                } else {
-                    const defaultSettings = { enabled: true, expiresAt: null };
-                    setDoc(ref, defaultSettings);
-                    systemSettings = defaultSettings;
-                }
-                updateRegistrationAccessUI();
-            });
-        };
-
-        const listenToAttendeesRealtime = () => {
-            if (!db || !currentUser || !isFirebaseActive) return;
-            const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
-            onSnapshot(ref, (snapshot) => {
-                const fetched = [];
-                snapshot.forEach((doc) => {
-                    fetched.push({ id: doc.id, ...doc.data() });
-                });
-                fetched.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                allAttendees = fetched.filter(item => item.email !== "SYSTEM_SETTINGS");
-                updateAttendeesUI();
-                if (isAdminAuthenticated) updateAdminUI(allAttendees);
-            });
-        };
-
-        if (auth && isFirebaseActive) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    updateSyncBadge();
-                    listenToAttendeesRealtime();
-                    listenToSettingsRealtime();
-                }
-            });
-        }
-
-        const saveToLocalCache = (record) => {
-            try {
-                let localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
-                localData.unshift(record);
-                localStorage.setItem('local_kehadiran', JSON.stringify(localData));
-            } catch (e) {}
-        };
-
-        const loadLocalAndSheetsData = async (showNotification = false) => {
-            let localData = [];
-            try {
-                localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
-            } catch (e) {}
-            allAttendees = localData.filter(item => item.email !== "SYSTEM_SETTINGS");
-            updateAttendeesUI();
         };
 
         const toTitleCase = (str) => {
@@ -1007,291 +626,84 @@
             return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         };
 
-        const getExpiresAtMs = (val) => {
-            if (!val) return null;
-            if (typeof val === 'number') return val;
-            if (val.seconds) return val.seconds * 1000;
-            return new Date(val).getTime();
-        };
-
-        const isRegistrationAllowed = () => {
-            if (!systemSettings || systemSettings.enabled === false) return false;
-            const expiresAtMs = getExpiresAtMs(systemSettings.expiresAt);
-            if (expiresAtMs !== null && window.getSyncedNow() >= expiresAtMs) return false;
-            return true;
-        };
-
-        const updateRegistrationAccessUI = () => {
-            const stepLogin = document.getElementById('step-login');
-            const stepDetails = document.getElementById('step-details');
-            const stepSuccess = document.getElementById('step-success');
-            const stepLocked = document.getElementById('step-locked');
-            if (!stepLogin || !stepDetails || !stepSuccess || !stepLocked) return;
-
-            const allowed = isRegistrationAllowed();
-            const isCurrentlyShowingSuccess = !stepSuccess.classList.contains('hidden');
-            
-            if (!allowed && !isCurrentlyShowingSuccess) {
-                stepLogin.classList.add('hidden');
-                stepDetails.classList.add('hidden');
-                stepLocked.classList.remove('hidden');
-            } else {
-                stepLocked.classList.add('hidden');
-                if (stepDetails.classList.contains('hidden') && stepSuccess.classList.contains('hidden')) {
-                    stepLogin.classList.remove('hidden');
-                }
-            }
-        };
-
         const updateAttendeesUI = () => {
             const container = document.getElementById('attendees-container');
             const totalCountBadge = document.getElementById('badge-total-attendees');
-            const totalStatsEl = document.getElementById('stats-total-count');
             if (!container) return;
 
-            const todayList = getTodayList();
-            if (totalCountBadge) totalCountBadge.textContent = todayList.length;
-            if (totalStatsEl) totalStatsEl.textContent = todayList.length;
+            if (totalCountBadge) totalCountBadge.textContent = allAttendees.length;
 
-            const queryInput = document.getElementById('search-attendees');
-            const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
-            const filtered = todayList.filter(item => {
+            const query = (document.getElementById('search-attendees')?.value || '').trim().toLowerCase();
+            const filtered = allAttendees.filter(item => {
                 if (!query) return true;
                 return (item.nama || '').toLowerCase().includes(query) || (item.tajukMesyuarat || '').toLowerCase().includes(query) || (item.jabatan || '').toLowerCase().includes(query);
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-500"><i data-lucide="users" class="w-8 h-8 mx-auto mb-2 opacity-40"></i><p class="text-xs font-semibold">Tiada pendaftaran dikesan.</p></div>`;
-                lucide.createIcons();
+                container.innerHTML = `<div class="text-center py-10 text-slate-500"><p class="text-xs">Tiada rekod kehadiran dijumpai.</p></div>`;
                 return;
             }
 
             let html = "";
-            filtered.forEach((item) => {
-                const initial = item.nama ? item.nama.charAt(0).toUpperCase() : '?';
+            filtered.forEach(item => {
                 const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
                 html += `
-                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/40 border border-slate-800/80 hover:bg-slate-800/60 transition-all">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center border border-brand-500/20 flex-shrink-0">
-                            <span class="text-brand-400 text-xs font-extrabold">${initial}</span>
-                        </div>
-                        <div class="min-w-0">
-                            <span class="text-[9px] text-brand-400 font-bold block truncate">${item.tajukMesyuarat || 'Mesyuarat Umum'}</span>
-                            <h4 class="text-xs font-bold text-slate-100 truncate">${toTitleCase(item.nama || 'Tiada Nama')}</h4>
-                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-slate-300 font-semibold">${item.jabatan || '-'}</span></p>
-                        </div>
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] text-brand-400 font-bold block">${item.tajukMesyuarat}</span>
+                        <h4 class="text-xs font-bold text-slate-100">${toTitleCase(item.nama)} (${item.jawatan || '-'})</h4>
+                        <p class="text-[10px] text-slate-400">${item.jabatan || '-'} &bull; ${item.lokasiMesyuarat || '-'}</p>
                     </div>
-                    <div class="text-right flex-shrink-0 ml-2">
-                        <span class="bg-brand-500/10 text-brand-400 text-[9px] font-bold px-2.5 py-0.5 rounded-full border border-brand-500/20">${timeStr}</span>
-                    </div>
+                    <span class="bg-brand-500/10 text-brand-400 text-[9px] font-bold px-2 py-1 rounded-full">${timeStr}</span>
                 </div>`;
             });
             container.innerHTML = html;
-            lucide.createIcons();
         };
 
         const updateAdminUI = (list) => {
             if (!isAdminAuthenticated) return;
             const tableBody = document.getElementById('admin-table-body');
-            const cardsContainer = document.getElementById('admin-cards-container');
-            if (!tableBody || !cardsContainer) return;
+            if (!tableBody) return;
 
-            const queryInput = document.getElementById('search-admin-attendees');
-            const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
-            const filtered = list.filter(item => {
-                if (!query) return true;
-                return (item.nama || '').toLowerCase().includes(query) || (item.tajukMesyuarat || '').toLowerCase().includes(query) || (item.email || '').toLowerCase().includes(query);
-            });
-
-            let govCount = 0, otherCount = 0;
-            list.forEach(item => {
-                const emel = (item.email || '').toLowerCase();
-                if (emel.endsWith('.gov.my') || emel.endsWith('.edu.my')) govCount++;
-                else if (emel) otherCount++;
-            });
-
-            document.getElementById('stat-gov-count').textContent = govCount;
-            document.getElementById('stat-other-count').textContent = otherCount;
+            const query = (document.getElementById('search-admin-attendees')?.value || '').trim().toLowerCase();
+            const filtered = list.filter(item => !query || (item.nama || '').toLowerCase().includes(query) || (item.tajukMesyuarat || '').toLowerCase().includes(query));
 
             if (filtered.length === 0) {
-                tableBody.innerHTML = `<tr class="text-slate-500"><td colspan="6" class="p-8 text-center"><p class="text-xs">Tiada rekod ditemui.</p></td></tr>`;
-                cardsContainer.innerHTML = `<div class="text-center py-8 text-slate-500"><p class="text-xs">Tiada rekod ditemui.</p></div>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 text-xs">Tiada rekod.</td></tr>`;
                 return;
             }
 
-            let tableHtml = "", cardsHtml = "";
+            let html = "";
             filtered.forEach(item => {
-                const id = item.id;
-                const nama = toTitleCase(item.nama || 'Tiada Nama');
-                const tajuk = item.tajukMesyuarat || 'Mesyuarat Umum';
                 const dateObj = item.timestamp ? new Date(item.timestamp) : null;
-                const dateFormatted = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
-                const isChecked = selectedAttendeeIds.has(id) ? 'checked' : '';
-
-                tableHtml += `
-                <tr class="border-b border-slate-800/40 hover:bg-slate-800/25 transition-all">
-                    <td class="p-4 text-center">
-                        <input type="checkbox" onchange="window.toggleAttendeeSelect('${id}')" ${isChecked} class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5 cursor-pointer">
-                    </td>
-                    <td class="p-4 font-mono text-[10px] text-slate-400">${dateFormatted}</td>
-                    <td class="p-4"><span class="text-brand-400 font-bold text-[11px] block">${tajuk}</span></td>
-                    <td class="p-4"><div class="font-bold text-slate-200">${nama}</div><div class="text-[10px] text-slate-500 font-mono">${item.email}</div></td>
-                    <td class="p-4"><div class="font-semibold text-slate-300">${item.jawatan}</div><div class="text-[10px] text-slate-400">${item.jabatan}</div></td>
+                const timeStr = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
+                html += `
+                <tr class="border-b border-slate-800/40 hover:bg-slate-800/25">
+                    <td class="p-4 font-mono text-[10px] text-slate-400">${timeStr}</td>
+                    <td class="p-4 font-bold text-brand-400">${item.tajukMesyuarat}<div class="text-[9px] text-slate-400 font-normal">📍 ${item.lokasiMesyuarat || '-'}</div></td>
+                    <td class="p-4"><div class="font-bold text-slate-200">${toTitleCase(item.nama)}</div><div class="text-[10px] text-slate-500 font-mono">${item.email}</div></td>
+                    <td class="p-4"><div class="text-slate-300">${item.jawatan}</div><div class="text-[10px] text-slate-400">${item.jabatan}</div></td>
                     <td class="p-4 text-right">
-                        <button onclick="window.triggerDeleteConfirmation('${id}')" class="p-2 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 rounded-lg border border-rose-500/20 transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="window.triggerDelete('${item.id}')" class="p-2 bg-rose-600/10 text-rose-400 rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </td>
                 </tr>`;
-
-                cardsHtml += `
-                <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-800/80 space-y-3">
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="flex items-start gap-3 min-w-0">
-                            <input type="checkbox" onchange="window.toggleAttendeeSelect('${id}')" ${isChecked} class="rounded bg-slate-800 border-slate-700 text-brand-500 w-5 h-5 mt-0.5 cursor-pointer">
-                            <div class="min-w-0">
-                                <span class="text-[10px] text-brand-400 font-bold block">${tajuk}</span>
-                                <h4 class="text-xs font-bold text-slate-100 truncate">${nama}</h4>
-                                <p class="text-[10px] text-slate-400 font-mono">${item.email}</p>
-                            </div>
-                        </div>
-                        <button onclick="window.triggerDeleteConfirmation('${id}')" class="p-2 bg-rose-600/10 text-rose-400 rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                    </div>
-                </div>`;
             });
-            tableBody.innerHTML = tableHtml;
-            cardsContainer.innerHTML = cardsHtml;
+            tableBody.innerHTML = html;
             lucide.createIcons();
-            updateSelectedBadge();
         };
 
-        window.toggleAttendeeSelect = (id) => {
-            if (selectedAttendeeIds.has(id)) selectedAttendeeIds.delete(id);
-            else selectedAttendeeIds.add(id);
-            updateSelectedBadge();
-        };
-
-        window.toggleSelectAll = (checked) => {
-            allAttendees.forEach(item => {
-                if (checked) selectedAttendeeIds.add(item.id);
-                else selectedAttendeeIds.delete(item.id);
-            });
-            updateAdminUI(allAttendees);
-        };
-
-        function updateSelectedBadge() {
-            document.getElementById('selected-count-badge').textContent = `${selectedAttendeeIds.size} Terpilih`;
-            document.getElementById('mobile-selected-count').textContent = `${selectedAttendeeIds.size} Terpilih`;
-        }
-
-        const verifyAdminPassword = () => {
-            const input = document.getElementById('admin-password-input');
-            if (input.value.trim() === _dec(_ob_p1)) {
-                isAdminAuthenticated = true;
-                input.value = "";
-                document.getElementById('admin-login-view').classList.add('hidden');
-                document.getElementById('admin-dashboard-view').classList.remove('hidden');
-                showToast("Log masuk pentadbir berjaya disahkan!", 'success');
-                updateAdminUI(allAttendees);
-            } else {
-                showToast("Kata laluan salah!", 'error');
-            }
-        };
-
-        const logoutAdmin = () => {
-            isAdminAuthenticated = false;
-            selectedAttendeeIds.clear();
-            switchTab('register');
-        };
-
-        window.triggerDeleteConfirmation = (id) => {
+        window.triggerDelete = (id) => {
             deleteTargetId = id;
             document.getElementById('delete-confirm-modal').classList.remove('opacity-0', 'pointer-events-none');
         };
 
-        const closeDeleteModal = () => {
-            deleteTargetId = null;
-            document.getElementById('delete-confirm-modal').classList.add('opacity-0', 'pointer-events-none');
-        };
-
-        const executeDelete = async () => {
-            if (!deleteTargetId) return;
-            if (isFirebaseActive && db && currentUser) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'kehadiran', deleteTargetId));
-                showToast("Rekod berjaya dipadam!", 'success');
-            } else {
-                let localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
-                localData = localData.filter(item => item.id !== deleteTargetId);
-                localStorage.setItem('local_kehadiran', JSON.stringify(localData));
-                allAttendees = allAttendees.filter(item => item.id !== deleteTargetId);
-                updateAttendeesUI();
-                if (isAdminAuthenticated) updateAdminUI(allAttendees);
-                showToast("Rekod dipadam dari peranti.", 'success');
-            }
-            closeDeleteModal();
-        };
-
-        const openCSVModal = () => {
-            if (selectedAttendeeIds.size === 0) {
-                showToast("Sila pilih sekurang-kurangnya satu rekod untuk dimuat turun.", 'error');
-                return;
-            }
-            document.getElementById('csv-download-password').value = "";
-            document.getElementById('download-csv-modal').classList.remove('opacity-0', 'pointer-events-none');
-        };
-
-        const closeCSVModal = () => {
-            document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
-        };
-
-        const executeExportToCSV = () => {
-            const selectedList = allAttendees.filter(item => selectedAttendeeIds.has(item.id));
-            const passwordVal = document.getElementById('csv-download-password').value.trim();
-
-            if (passwordVal !== _dec(_ob_p1)) {
-                showToast("Kata laluan pentadbir salah!", 'error');
-                return;
-            }
-
-            let csvContent = "\uFEFF";
-            csvContent += "Tarikh & Masa,Tajuk Mesyuarat,Nama Penuh,Alamat Emel,Jawatan,Jabatan/Organisasi,Catatan\n";
-
-            selectedList.forEach(item => {
-                const dateObj = item.timestamp ? new Date(item.timestamp) : null;
-                const timeStr = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
-                const row = [
-                    `"${timeStr}"`,
-                    `"${item.tajukMesyuarat || 'Mesyuarat Umum'}"`,
-                    `"${toTitleCase(item.nama)}"`,
-                    `"${item.email}"`,
-                    `"${item.jawatan}"`,
-                    `"${item.jabatan}"`,
-                    `"${item.catatan || '-'}"`
-                ].join(",");
-                csvContent += row + "\r\n";
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Laporan_Kehadiran_Mesyuarat_${new Date().toISOString().slice(0, 10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            closeCSVModal();
-            showToast("Fail CSV berjaya dimuat turun!", 'success');
-        };
-
         const switchTab = (tabName) => {
             ['section-register', 'section-list', 'section-admin'].forEach(s => document.getElementById(s).classList.add('hidden'));
-            ['tab-btn-register', 'tab-btn-list', 'tab-btn-admin'].forEach(b => {
-                document.getElementById(b).className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 min-h-[40px]";
-            });
+            ['tab-btn-register', 'tab-btn-list', 'tab-btn-admin'].forEach(b => document.getElementById(b).className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 min-h-[40px]");
 
             if (tabName === 'register') {
                 document.getElementById('tab-btn-register').className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold bg-brand-500 text-white shadow-md min-h-[40px]";
                 document.getElementById('section-register').classList.remove('hidden');
-                updateRegistrationAccessUI();
             } else if (tabName === 'list') {
                 document.getElementById('tab-btn-list').className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold bg-brand-500 text-white shadow-md min-h-[40px]";
                 document.getElementById('section-list').classList.remove('hidden');
@@ -1303,105 +715,161 @@
                     document.getElementById('admin-login-view').classList.add('hidden');
                     document.getElementById('admin-dashboard-view').classList.remove('hidden');
                     updateAdminUI(allAttendees);
-                } else {
-                    document.getElementById('admin-login-view').classList.remove('hidden');
-                    document.getElementById('admin-dashboard-view').classList.add('hidden');
                 }
             }
         };
 
-        const submitManualEmail = () => {
-            const val = document.getElementById('input-email-manual').value.trim();
-            if (!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-                showToast("Sila masukkan alamat emel rasmi yang sah.", 'error');
-                return;
-            }
-            attendanceRecord.email = val.toLowerCase();
-            document.getElementById('display-user-email').textContent = attendanceRecord.email;
-            document.getElementById('step-login').classList.add('hidden');
-            document.getElementById('step-details').classList.remove('hidden');
-        };
-
-        const handleFormSubmission = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-submit-kehadiran');
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>Merekodkan Kehadiran...</span>`;
-
-            attendanceRecord.tajukMesyuarat = document.getElementById('guest-meeting-title').value;
-            attendanceRecord.nama = document.getElementById('guest-name').value.trim();
-            attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
-            attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
-            attendanceRecord.catatan = document.getElementById('guest-note').value.trim();
-
-            const timestamp = window.getSyncedNow();
-            const payload = { id: 'reg-' + timestamp + '-' + Math.floor(Math.random() * 100000), ...attendanceRecord, timestamp };
-
-            saveToLocalCache(payload);
-            if (isFirebaseActive && currentUser && db) {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran'), payload);
-            }
-
-            document.getElementById('step-details').classList.add('hidden');
-            document.getElementById('resit-tajuk-mesyuarat').textContent = payload.tajukMesyuarat;
-            document.getElementById('resit-nama').textContent = toTitleCase(payload.nama);
-            document.getElementById('resit-jawatan').textContent = payload.jawatan;
-            document.getElementById('resit-jabatan').textContent = payload.jabatan;
-            document.getElementById('resit-emel').textContent = payload.email;
-            document.getElementById('unique-id').textContent = 'REG-' + Math.floor(100000 + Math.random() * 900000);
-
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = "";
-            new QRCode(qrContainer, { text: `${payload.tajukMesyuarat}|${payload.nama}|${payload.email}`, width: 128, height: 128 });
-
-            document.getElementById('step-success').classList.remove('hidden');
-            confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
-            showToast("Kehadiran berjaya direkodkan!", 'success');
-        };
-
-        const resetSystem = () => {
-            document.getElementById('input-email-manual').value = "";
-            document.getElementById('guest-meeting-title').selectedIndex = 0;
-            document.getElementById('guest-name').value = "";
-            document.getElementById('guest-designation').value = "";
-            document.getElementById('guest-department').value = "";
-            document.getElementById('guest-note').value = "";
-            document.getElementById('policy-check').checked = false;
-            
-            const btn = document.getElementById('btn-submit-kehadiran');
-            btn.disabled = false;
-            btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>Sahkan & Hantar Kehadiran</span>`;
-
-            document.getElementById('step-success').classList.add('hidden');
-            document.getElementById('step-login').classList.remove('hidden');
-        };
-
-        window.addEventListener('DOMContentLoaded', async () => {
+        window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             initLiveClock();
-            loadLocalAndSheetsData();
-            await runSecureAuth();
+            loadMeetingsFromStorage();
+
+            // Muat data dari localStorage
+            try {
+                allAttendees = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
+            } catch(e) {}
 
             document.getElementById('tab-btn-register').addEventListener('click', () => switchTab('register'));
             document.getElementById('tab-btn-list').addEventListener('click', () => switchTab('list'));
             document.getElementById('tab-btn-admin').addEventListener('click', () => switchTab('admin'));
-            
-            document.getElementById('btn-submit-email').addEventListener('click', submitManualEmail);
-            document.getElementById('btn-back-login').addEventListener('click', () => {
-                document.getElementById('step-details').classList.add('hidden');
-                document.getElementById('step-login').classList.remove('hidden');
+
+            // Papar info mesyuarat apabila dipilih
+            document.getElementById('guest-meeting-select').addEventListener('change', (e) => {
+                const opt = e.target.selectedOptions[0];
+                const box = document.getElementById('meeting-info-box');
+                if (opt && opt.value) {
+                    document.getElementById('info-box-date').textContent = opt.getAttribute('data-datetime');
+                    document.getElementById('info-box-location').textContent = opt.getAttribute('data-location');
+                    box.classList.remove('hidden');
+                    attendanceRecord.tarikhMasaMesyuarat = opt.getAttribute('data-datetime');
+                    attendanceRecord.lokasiMesyuarat = opt.getAttribute('data-location');
+                } else {
+                    box.classList.add('hidden');
+                }
             });
-            document.getElementById('details-form').addEventListener('submit', handleFormSubmission);
-            document.getElementById('btn-reset-system').addEventListener('click', resetSystem);
-            document.getElementById('btn-submit-admin-login').addEventListener('click', verifyAdminPassword);
-            document.getElementById('btn-admin-logout').addEventListener('click', logoutAdmin);
-            document.getElementById('btn-export-csv').addEventListener('click', openCSVModal);
-            document.getElementById('btn-confirm-csv').addEventListener('click', executeExportToCSV);
-            document.getElementById('btn-cancel-csv').addEventListener('click', closeCSVModal);
-            document.getElementById('btn-confirm-delete').addEventListener('click', executeDelete);
-            document.getElementById('btn-cancel-delete').addEventListener('click', closeDeleteModal);
+
+            document.getElementById('btn-submit-email').addEventListener('click', () => {
+                const email = document.getElementById('input-email-manual').value.trim();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showToast("Sila masukkan emel sah.", "error");
+                    return;
+                }
+                attendanceRecord.email = email.toLowerCase();
+                document.getElementById('display-user-email').textContent = email;
+                document.getElementById('step-login').classList.add('hidden');
+                document.getElementById('step-details').classList.remove('hidden');
+            });
+
+            document.getElementById('details-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                attendanceRecord.tajukMesyuarat = document.getElementById('guest-meeting-select').value;
+                attendanceRecord.nama = document.getElementById('guest-name').value.trim();
+                attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
+                attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
+                attendanceRecord.catatan = document.getElementById('guest-note').value.trim();
+
+                const payload = { id: 'reg-' + Date.now(), ...attendanceRecord, timestamp: Date.now() };
+                allAttendees.unshift(payload);
+                localStorage.setItem('local_kehadiran', JSON.stringify(allAttendees));
+
+                document.getElementById('step-details').classList.add('hidden');
+                document.getElementById('resit-tajuk-mesyuarat').textContent = payload.tajukMesyuarat;
+                document.getElementById('resit-tarikh-masa').textContent = payload.tarikhMasaMesyuarat;
+                document.getElementById('resit-lokasi').textContent = payload.lokasiMesyuarat;
+                document.getElementById('resit-nama').textContent = toTitleCase(payload.nama);
+                document.getElementById('resit-jawatan').textContent = `${payload.jawatan} (${payload.jabatan})`;
+                document.getElementById('unique-id').textContent = 'REG-' + Math.floor(100000 + Math.random() * 900000);
+
+                const qrContainer = document.getElementById('qrcode');
+                qrContainer.innerHTML = "";
+                new QRCode(qrContainer, { text: `${payload.tajukMesyuarat}|${payload.nama}|${payload.email}`, width: 110, height: 110 });
+
+                document.getElementById('step-success').classList.remove('hidden');
+                confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
+                showToast("Kehadiran berjaya direkodkan!", "success");
+            });
+
+            // Admin Tambah Mesyuarat Baru
+            document.getElementById('meeting-create-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newMeeting = {
+                    id: 'm-' + Date.now(),
+                    title: document.getElementById('admin-meeting-title').value.trim(),
+                    datetime: document.getElementById('admin-meeting-datetime').value.trim(),
+                    location: document.getElementById('admin-meeting-location').value.trim()
+                };
+                activeMeetings.push(newMeeting);
+                saveMeetingsToStorage();
+                e.target.reset();
+                showToast("Mesyuarat rasmi berjaya ditambah!", "success");
+            });
+
+            document.getElementById('btn-submit-admin-login').addEventListener('click', () => {
+                const pass = document.getElementById('admin-password-input').value.trim();
+                if (pass === _dec(_ob_p1)) {
+                    isAdminAuthenticated = true;
+                    document.getElementById('admin-login-view').classList.add('hidden');
+                    document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                    updateAdminUI(allAttendees);
+                    showToast("Log masuk admin berjaya.", "success");
+                } else {
+                    showToast("Kata laluan salah!", "error");
+                }
+            });
+
+            document.getElementById('btn-admin-logout').addEventListener('click', () => {
+                isAdminAuthenticated = false;
+                switchTab('register');
+            });
+
+            document.getElementById('btn-confirm-delete').addEventListener('click', () => {
+                if (!deleteTargetId) return;
+                allAttendees = allAttendees.filter(item => item.id !== deleteTargetId);
+                localStorage.setItem('local_kehadiran', JSON.stringify(allAttendees));
+                updateAdminUI(allAttendees);
+                updateAttendeesUI();
+                document.getElementById('delete-confirm-modal').classList.add('opacity-0', 'pointer-events-none');
+                showToast("Rekod dipadam.", "success");
+            });
+
+            document.getElementById('btn-cancel-delete').addEventListener('click', () => {
+                document.getElementById('delete-confirm-modal').classList.add('opacity-0', 'pointer-events-none');
+            });
+
+            document.getElementById('btn-export-csv').addEventListener('click', () => {
+                document.getElementById('download-csv-modal').classList.remove('opacity-0', 'pointer-events-none');
+            });
+            document.getElementById('btn-cancel-csv').addEventListener('click', () => {
+                document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
+            });
+            document.getElementById('btn-confirm-csv').addEventListener('click', () => {
+                const pass = document.getElementById('csv-download-password').value.trim();
+                if (pass !== _dec(_ob_p1)) {
+                    showToast("Kata laluan salah!", "error");
+                    return;
+                }
+                let csv = "\uFEFFTarikh,Tajuk Mesyuarat,Tarikh & Masa Mesyuarat,Lokasi,Nama,Emel,Jawatan,Jabatan\n";
+                allAttendees.forEach(i => {
+                    const dt = i.timestamp ? new Date(i.timestamp).toLocaleString('ms-MY') : '';
+                    csv += `"${dt}","${i.tajukMesyuarat}","${i.tarikhMasaMesyuarat}","${i.lokasiMesyuarat}","${i.nama}","${i.email}","${i.jawatan}","${i.jabatan}"\r\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Kehadiran_Mesyuarat_${new Date().toISOString().slice(0,10)}.csv`;
+                a.click();
+                document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
+                showToast("Fail CSV dimuat turun!", "success");
+            });
+
             document.getElementById('search-attendees').addEventListener('input', updateAttendeesUI);
             document.getElementById('search-admin-attendees').addEventListener('input', () => updateAdminUI(allAttendees));
+            document.getElementById('btn-reset-system').addEventListener('click', () => {
+                document.getElementById('step-success').classList.add('hidden');
+                document.getElementById('step-login').classList.remove('hidden');
+                document.getElementById('input-email-manual').value = "";
+            });
         });
     </script>
 </body>
