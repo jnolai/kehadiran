@@ -630,4 +630,319 @@
             const filterSelectEl = document.getElementById('filter-meeting-select');
 
             let htmlOptions = '<option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>';
-            let html
+            let htmlFilterOptions = '<option value="ALL">-- Papar Semua Kehadiran --</option>';
+
+            activeMeetings.forEach(m => {
+                htmlOptions += `<option value="${m.title}" data-datetime="${m.datetime}" data-location="${m.location}">${m.title} (${m.datetime})</option>`;
+                htmlFilterOptions += `<option value="${m.title}">${m.title}</option>`;
+            });
+
+            if (selectEl) selectEl.innerHTML = htmlOptions;
+            if (filterSelectEl) filterSelectEl.innerHTML = htmlFilterOptions;
+
+            const adminListEl = document.getElementById('admin-meetings-list');
+            if (adminListEl) {
+                if (activeMeetings.length === 0) {
+                    adminListEl.innerHTML = `<p class="text-xs text-slate-500">Tiada mesyuarat didaftarkan.</p>`;
+                    return;
+                }
+                let adminHtml = "";
+                activeMeetings.forEach(m => {
+                    adminHtml += `
+                    <div class="flex items-center justify-between p-3 bg-slate-900/40 rounded-xl border border-slate-800 text-xs">
+                        <div>
+                            <span class="font-bold text-slate-200 block">${m.title}</span>
+                            <span class="text-[10px] text-slate-400">📅 ${m.datetime} &bull; 📍 ${m.location}</span>
+                        </div>
+                        <button onclick="window.removeMeeting('${m.id}')" class="p-2 bg-rose-600/10 text-rose-400 rounded-lg hover:bg-rose-600/20"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>`;
+                });
+                adminListEl.innerHTML = adminHtml;
+                lucide.createIcons();
+            }
+        };
+
+        window.removeMeeting = (id) => {
+            activeMeetings = activeMeetings.filter(m => m.id !== id);
+            saveMeetingsToStorage();
+            showToast("Mesyuarat berjaya dibuang.", "success");
+        };
+
+        const initLiveClock = () => {
+            setInterval(() => {
+                const now = new Date(window.getSyncedNow());
+                const clockEl = document.getElementById('live-clock');
+                if (clockEl) clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            }, 1000);
+        };
+
+        const toTitleCase = (str) => {
+            if (!str) return '';
+            return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        };
+
+        const updateAttendeesUI = () => {
+            const container = document.getElementById('attendees-container');
+            const totalCountBadge = document.getElementById('badge-total-attendees');
+            if (!container) return;
+
+            if (totalCountBadge) totalCountBadge.textContent = allAttendees.length;
+
+            const selectedMeetingFilter = document.getElementById('filter-meeting-select')?.value || 'ALL';
+            const query = (document.getElementById('search-attendees')?.value || '').trim().toLowerCase();
+
+            const filtered = allAttendees.filter(item => {
+                const matchMeeting = (selectedMeetingFilter === 'ALL' || item.tajukMesyuarat === selectedMeetingFilter);
+                const matchQuery = !query || (item.nama || '').toLowerCase().includes(query) || (item.jabatan || '').toLowerCase().includes(query) || (item.jawatan || '').toLowerCase().includes(query);
+                return matchMeeting && matchQuery;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-500"><p class="text-xs">Tiada rekod kehadiran dijumpai bagi pilihan ini.</p></div>`;
+                return;
+            }
+
+            let html = "";
+            filtered.forEach(item => {
+                const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                html += `
+                <div class="p-3.5 rounded-xl bg-slate-800/40 border border-slate-800 flex justify-between items-center gap-3">
+                    <div class="min-w-0">
+                        <span class="text-[10px] text-brand-400 font-bold block truncate">${item.tajukMesyuarat}</span>
+                        <h4 class="text-xs font-bold text-slate-100 truncate">${toTitleCase(item.nama)} (${item.jawatan || '-'})</h4>
+                        <p class="text-[10px] text-slate-400 truncate">${item.jabatan || '-'}</p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        ${item.signature ? `<img src="${item.signature}" class="h-8 max-w-[80px] object-contain filter invert opacity-90 inline-block bg-white/5 p-1 rounded" alt="Sign">` : ''}
+                        <span class="bg-brand-500/10 text-brand-400 text-[9px] font-bold px-2 py-0.5 rounded-full block mt-1">${timeStr}</span>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        };
+
+        const updateAdminUI = (list) => {
+            if (!isAdminAuthenticated) return;
+            const tableBody = document.getElementById('admin-table-body');
+            if (!tableBody) return;
+
+            const query = (document.getElementById('search-admin-attendees')?.value || '').trim().toLowerCase();
+            const filtered = list.filter(item => !query || (item.nama || '').toLowerCase().includes(query) || (item.tajukMesyuarat || '').toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 text-xs">Tiada rekod.</td></tr>`;
+                return;
+            }
+
+            let html = "";
+            filtered.forEach(item => {
+                const dateObj = item.timestamp ? new Date(item.timestamp) : null;
+                const timeStr = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
+                html += `
+                <tr class="border-b border-slate-800/40 hover:bg-slate-800/25">
+                    <td class="p-4 font-mono text-[10px] text-slate-400">${timeStr}</td>
+                    <td class="p-4 font-bold text-brand-400">${item.tajukMesyuarat}</td>
+                    <td class="p-4"><div class="font-bold text-slate-200">${toTitleCase(item.nama)}</div><div class="text-[10px] text-slate-500 font-mono">${item.email}</div></td>
+                    <td class="p-4">
+                        ${item.signature ? `<div class="bg-white/5 p-1 rounded inline-block border border-slate-700"><img src="${item.signature}" class="h-10 max-w-[100px] object-contain filter invert" alt="Tandatangan"></div>` : '<span class="text-[10px] text-slate-500">Tiada</span>'}
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="window.triggerDelete('${item.id}')" class="p-2 bg-rose-600/10 text-rose-400 rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </td>
+                </tr>`;
+            });
+            tableBody.innerHTML = html;
+            lucide.createIcons();
+        };
+
+        window.triggerDelete = (id) => {
+            deleteTargetId = id;
+            document.getElementById('delete-confirm-modal').classList.remove('opacity-0', 'pointer-events-none');
+        };
+
+        const switchTab = (tabName) => {
+            ['section-register', 'section-list', 'section-admin'].forEach(s => document.getElementById(s).classList.add('hidden'));
+            ['tab-btn-register', 'tab-btn-list', 'tab-btn-admin'].forEach(b => document.getElementById(b).className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 min-h-[40px]");
+
+            if (tabName === 'register') {
+                document.getElementById('tab-btn-register').className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold bg-brand-500 text-white shadow-md min-h-[40px]";
+                document.getElementById('section-register').classList.remove('hidden');
+            } else if (tabName === 'list') {
+                document.getElementById('tab-btn-list').className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold bg-brand-500 text-white shadow-md min-h-[40px]";
+                document.getElementById('section-list').classList.remove('hidden');
+                updateAttendeesUI();
+            } else if (tabName === 'admin') {
+                document.getElementById('tab-btn-admin').className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold bg-brand-500 text-white shadow-md min-h-[40px]";
+                document.getElementById('section-admin').classList.remove('hidden');
+                if (isAdminAuthenticated) {
+                    document.getElementById('admin-login-view').classList.add('hidden');
+                    document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                    updateAdminUI(allAttendees);
+                }
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initLiveClock();
+            loadMeetingsFromStorage();
+
+            try {
+                allAttendees = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
+            } catch(e) {}
+
+            document.getElementById('tab-btn-register').addEventListener('click', () => switchTab('register'));
+            document.getElementById('tab-btn-list').addEventListener('click', () => switchTab('list'));
+            document.getElementById('tab-btn-admin').addEventListener('click', () => switchTab('admin'));
+
+            document.getElementById('guest-meeting-select').addEventListener('change', (e) => {
+                const opt = e.target.selectedOptions[0];
+                const box = document.getElementById('meeting-info-box');
+                if (opt && opt.value) {
+                    document.getElementById('info-box-date').textContent = opt.getAttribute('data-datetime');
+                    document.getElementById('info-box-location').textContent = opt.getAttribute('data-location');
+                    box.classList.remove('hidden');
+                    attendanceRecord.tarikhMasaMesyuarat = opt.getAttribute('data-datetime');
+                    attendanceRecord.lokasiMesyuarat = opt.getAttribute('data-location');
+                } else {
+                    box.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('btn-submit-email').addEventListener('click', () => {
+                const email = document.getElementById('input-email-manual').value.trim();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showToast("Sila masukkan emel sah.", "error");
+                    return;
+                }
+                attendanceRecord.email = email.toLowerCase();
+                document.getElementById('display-user-email').textContent = email;
+                document.getElementById('step-login').classList.add('hidden');
+                document.getElementById('step-details').classList.remove('hidden');
+                
+                setTimeout(initSignaturePad, 150);
+            });
+
+            document.getElementById('details-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                if (!hasSignature) {
+                    showToast("Sila buat tandatangan digital anda terlebih dahulu.", "error");
+                    return;
+                }
+
+                attendanceRecord.tajukMesyuarat = document.getElementById('guest-meeting-select').value;
+                attendanceRecord.nama = document.getElementById('guest-name').value.trim();
+                attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
+                attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
+                attendanceRecord.catatan = document.getElementById('guest-note').value.trim();
+                attendanceRecord.signature = canvas.toDataURL('image/png');
+
+                const payload = { id: 'reg-' + Date.now(), ...attendanceRecord, timestamp: Date.now() };
+                allAttendees.unshift(payload);
+                localStorage.setItem('local_kehadiran', JSON.stringify(allAttendees));
+
+                document.getElementById('step-details').classList.add('hidden');
+                document.getElementById('resit-tajuk-mesyuarat').textContent = payload.tajukMesyuarat;
+                document.getElementById('resit-tarikh-masa').textContent = payload.tarikhMasaMesyuarat;
+                document.getElementById('resit-lokasi').textContent = payload.lokasiMesyuarat;
+                document.getElementById('resit-nama').textContent = toTitleCase(payload.nama);
+                document.getElementById('resit-jawatan').textContent = `${payload.jawatan} (${payload.jabatan})`;
+                document.getElementById('resit-signature-img').src = payload.signature;
+                document.getElementById('unique-id').textContent = 'REG-' + Math.floor(100000 + Math.random() * 900000);
+
+                const qrContainer = document.getElementById('qrcode');
+                qrContainer.innerHTML = "";
+                new QRCode(qrContainer, { text: `${payload.tajukMesyuarat}|${payload.nama}|${payload.email}`, width: 110, height: 110 });
+
+                document.getElementById('step-success').classList.remove('hidden');
+                confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
+                showToast("Kehadiran berserta tandatangan direkodkan!", "success");
+            });
+
+            document.getElementById('meeting-create-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newMeeting = {
+                    id: 'm-' + Date.now(),
+                    title: document.getElementById('admin-meeting-title').value.trim(),
+                    datetime: document.getElementById('admin-meeting-datetime').value.trim(),
+                    location: document.getElementById('admin-meeting-location').value.trim()
+                };
+                activeMeetings.push(newMeeting);
+                saveMeetingsToStorage();
+                e.target.reset();
+                showToast("Mesyuarat rasmi berjaya ditambah!", "success");
+            });
+
+            document.getElementById('btn-submit-admin-login').addEventListener('click', () => {
+                const pass = document.getElementById('admin-password-input').value.trim();
+                if (pass === _dec(_ob_p1)) {
+                    isAdminAuthenticated = true;
+                    document.getElementById('admin-login-view').classList.add('hidden');
+                    document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                    updateAdminUI(allAttendees);
+                    showToast("Log masuk admin berjaya.", "success");
+                } else {
+                    showToast("Kata laluan salah!", "error");
+                }
+            });
+
+            document.getElementById('btn-admin-logout').addEventListener('click', () => {
+                isAdminAuthenticated = false;
+                switchTab('register');
+            });
+
+            document.getElementById('btn-confirm-delete').addEventListener('click', () => {
+                if (!deleteTargetId) return;
+                allAttendees = allAttendees.filter(item => item.id !== deleteTargetId);
+                localStorage.setItem('local_kehadiran', JSON.stringify(allAttendees));
+                updateAdminUI(allAttendees);
+                updateAttendeesUI();
+                document.getElementById('delete-confirm-modal').classList.add('opacity-0', 'pointer-events-none');
+                showToast("Rekod dipadam.", "success");
+            });
+
+            document.getElementById('btn-cancel-delete').addEventListener('click', () => {
+                document.getElementById('delete-confirm-modal').classList.add('opacity-0', 'pointer-events-none');
+            });
+
+            document.getElementById('btn-export-csv').addEventListener('click', () => {
+                document.getElementById('download-csv-modal').classList.remove('opacity-0', 'pointer-events-none');
+            });
+            document.getElementById('btn-cancel-csv').addEventListener('click', () => {
+                document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
+            });
+            document.getElementById('btn-confirm-csv').addEventListener('click', () => {
+                const pass = document.getElementById('csv-download-password').value.trim();
+                if (pass !== _dec(_ob_p1)) {
+                    showToast("Kata laluan salah!", "error");
+                    return;
+                }
+                let csv = "\uFEFFTarikh,Tajuk Mesyuarat,Tarikh & Masa Mesyuarat,Lokasi,Nama,Emel,Jawatan,Jabatan\n";
+                allAttendees.forEach(i => {
+                    const dt = i.timestamp ? new Date(i.timestamp).toLocaleString('ms-MY') : '';
+                    csv += `"${dt}","${i.tajukMesyuarat}","${i.tarikhMasaMesyuarat}","${i.lokasiMesyuarat}","${i.nama}","${i.email}","${i.jawatan}","${i.jabatan}"\r\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Kehadiran_Mesyuarat_${new Date().toISOString().slice(0,10)}.csv`;
+                a.click();
+                document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
+                showToast("Fail CSV dimuat turun!", "success");
+            });
+
+            document.getElementById('filter-meeting-select').addEventListener('change', updateAttendeesUI);
+            document.getElementById('search-attendees').addEventListener('input', updateAttendeesUI);
+            document.getElementById('search-admin-attendees').addEventListener('input', () => updateAdminUI(allAttendees));
+            document.getElementById('btn-reset-system').addEventListener('click', () => {
+                document.getElementById('step-success').classList.add('hidden');
+                document.getElementById('step-login').classList.remove('hidden');
+                document.getElementById('input-email-manual').value = "";
+                clearSignature();
+            });
+        });
+    </script>
+</body>
+</html>
