@@ -19,13 +19,10 @@
 
     <!-- Skrip Perlindungan Keselamatan Berlapis -->
     <script>
-        // Menghentikan sebarang klik kanan pada sistem
         document.addEventListener('contextmenu', e => e.preventDefault());
-        // Menghentikan fungsi drag and select teks untuk mengelakkan pencurian data struktur
         document.addEventListener('selectstart', e => e.preventDefault());
         document.addEventListener('dragstart', e => e.preventDefault());
         
-        // Menghentikan kekunci pintasan pengintip tegar (F12, View Source, Inspect Element)
         document.addEventListener('keydown', e => {
             const key = e.key.toUpperCase();
             if (
@@ -40,9 +37,7 @@
             }
         });
 
-        // SISTEM KESELAMATAN ANTI-DEVELOPER TOOLS TEGAR (PELBAGAI BROWSER)
         (function() {
-            // Fungsi pengesanan jika sistem dimuatkan di dalam iframe sandbox (seperti pratonton Canvas)
             const isIframe = () => {
                 try {
                     return window.self !== window.top;
@@ -51,7 +46,6 @@
                 }
             };
 
-            // Jika berjalan di dalam persekitaran iframe/pratonton, pintas pengesanan aktif untuk mengelakkan false-positives
             if (isIframe()) {
                 return;
             }
@@ -74,7 +68,6 @@
                 throw new Error("Akses disekat kerana memulakan Developer Tools.");
             };
 
-            // Teknik 1: Mengesan 'getter' ID pada objek Konsol (Sesuai untuk Chrome, Edge & Opera)
             const element = new Image();
             Object.defineProperty(element, 'id', {
                 get: function() {
@@ -82,20 +75,17 @@
                 }
             });
 
-            // Teknik 2: Pengesanan Pemasaan Nyahpepijat (Debugger Timing Hack)
             setInterval(function() {
                 const startTime = performance.now();
-                debugger; // Thread hanya akan berhenti sekiranya DevTools dibuka
+                debugger;
                 const endTime = performance.now();
                 if (endTime - startTime > 100) {
                     blockAccess();
                 }
-                // Menghantar objek pengesan ke konsol secara berterusan
                 console.log(element);
                 console.clear();
             }, 500);
 
-            // Teknik 3: Pengesanan Perubahan Saiz Dimensi Window (Untuk DevTools jenis Docked)
             const threshold = 160;
             setInterval(function() {
                 const widthDiff = window.outerWidth - window.innerWidth;
@@ -141,7 +131,6 @@
         .gradient-bg {
             background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
         }
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -156,7 +145,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(54, 162, 252, 0.5);
         }
-        /* Smooth transitions */
         .animate-fade-in {
             animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -164,14 +152,13 @@
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Ticket design with side notches */
         .ticket-notch-left, .ticket-notch-right {
             position: absolute;
             top: 50%;
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            background: #0f172a; /* matches the gradientbg base */
+            background: #0f172a;
             z-index: 10;
         }
         .ticket-notch-left {
@@ -182,7 +169,6 @@
             right: -8px;
             transform: translateY(-50%);
         }
-        /* Ticket scanning effect */
         .scan-line {
             height: 2px;
             background: linear-gradient(to right, transparent, #36a2fc, transparent);
@@ -218,13 +204,11 @@
                 </div>
             </div>
             
-            <!-- Realtime Clock Widget -->
             <div class="flex items-center gap-2 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800/50">
                 <i data-lucide="clock" class="w-3.5 h-3.5 text-brand-400"></i>
                 <span id="live-clock" class="text-xs font-mono font-bold text-slate-300">00:00:00 AM</span>
             </div>
 
-            <!-- Manual Sheet Config (Mobile) -->
             <button id="btn-open-setup-mobile" class="sm:hidden p-2.5 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 active:bg-slate-800 min-h-[44px] min-w-[44px] flex items-center justify-center" title="Konfigurasi Google Sheets">
                 <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
@@ -246,7 +230,6 @@
                 <span>Admin</span>
             </button>
             
-            <!-- Manual Sheet Config (Desktop) -->
             <button id="btn-open-setup" class="hidden sm:flex p-2 text-slate-400 hover:text-brand-400 transition-colors rounded-lg bg-slate-900 border border-slate-800/80 hover:bg-slate-800/50 min-h-[40px] min-w-[40px] items-center justify-center" title="Konfigurasi Google Sheets">
                 <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
@@ -259,7 +242,6 @@
         <!-- SECTION 1: REGISTER -->
         <div id="section-register" class="w-full space-y-6 max-w-xl mx-auto">
             
-            <!-- STEP LOCKED: REGISTRATION CLOSED -->
             <div id="step-locked" class="w-full space-y-6 hidden animate-fade-in py-8 text-center">
                 <div class="inline-flex p-4 bg-rose-500/10 rounded-full border border-rose-500/20 mb-2">
                     <i data-lucide="lock" class="text-rose-400 w-10 h-10 animate-pulse"></i>
@@ -286,7 +268,6 @@
                     </p>
                 </div>
 
-                <!-- Input Card -->
                 <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 shadow-xl backdrop-blur-sm">
                     <div class="space-y-2">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
@@ -316,7 +297,6 @@
                     <p class="text-xs text-slate-400">Sila lengkapkan butiran di bawah untuk tujuan catatan laporan minit mesyuarat rasmi.</p>
                 </div>
 
-                <!-- Active Email Info -->
                 <div class="bg-slate-800/30 border border-slate-800/80 rounded-xl p-3.5 flex items-center justify-between backdrop-blur-sm">
                     <div class="flex items-center gap-2.5 min-w-0">
                         <div class="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 flex-shrink-0">
@@ -332,6 +312,20 @@
 
                 <!-- Registration Form -->
                 <form id="details-form" class="space-y-4">
+                    <!-- Meeting Selection Dropdown (No. 2 Feature) -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-brand-400"></i> Pilih Tajuk / Sesi Mesyuarat
+                        </label>
+                        <select id="guest-meeting-title" required class="w-full bg-corporate-card border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                            <option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>
+                            <option value="Mesyuarat Jawatankuasa IT Bil. 1/2026">Mesyuarat Jawatankuasa IT Bil. 1/2026</option>
+                            <option value="Mesyuarat Penyelarasan Kewangan & Teknikal">Mesyuarat Penyelarasan Kewangan & Teknikal</option>
+                            <option value="Mesyuarat Khas Pengurusan Pembayaran Digital">Mesyuarat Khas Pengurusan Pembayaran Digital</option>
+                            <option value="Mesyuarat Projek Khas / Lain-lain">Mesyuarat Projek Khas / Lain-lain</option>
+                        </select>
+                    </div>
+
                     <!-- Full Name -->
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
@@ -374,7 +368,6 @@
                         <label for="policy-check" class="text-[10px] text-slate-400 leading-normal select-none cursor-pointer">Saya mengesahkan semua butiran di atas adalah betul dan saya bersetuju untuk mendaftar kehadiran secara rasmi.</label>
                     </div>
 
-                    <!-- Submit Button -->
                     <button type="submit" id="btn-submit-kehadiran" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 mt-6 active:scale-[0.98] min-h-[44px]">
                         <i data-lucide="send" class="w-4 h-4"></i>
                         <span>Sahkan & Hantar Kehadiran</span>
@@ -392,23 +385,20 @@
                     <p class="text-xs text-slate-400">Kehadiran anda telah berjaya direkodkan secara langsung ke dalam simpanan pelayan awan.</p>
                 </div>
 
-                <!-- Digital Ticket Pass with Real Notch Aesthetics -->
                 <div class="relative bg-gradient-to-b from-corporate-card to-slate-950 rounded-2xl p-5 border border-slate-800 shadow-2xl space-y-4 overflow-hidden">
-                    <!-- Ticket side notches -->
                     <div class="ticket-notch-left"></div>
                     <div class="ticket-notch-right"></div>
 
                     <div class="flex justify-between items-center border-b border-slate-800 pb-3 gap-2">
                         <div>
                             <p class="text-[9px] text-brand-400 font-bold uppercase tracking-widest">PAS MASUK MESYUARAT</p>
-                            <p class="text-xs text-slate-400" id="ticket-time">Tarikh: - </p>
+                            <p class="text-xs text-slate-300 font-bold mt-0.5" id="resit-tajuk-mesyuarat">-</p>
                         </div>
                         <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex-shrink-0">
                             BERJAYA
                         </span>
                     </div>
 
-                    <!-- User Information on Ticket -->
                     <div class="space-y-3.5 text-xs sm:text-sm relative z-20">
                         <div>
                             <span class="text-[9px] text-slate-500 uppercase block tracking-wider">Nama Penuh</span>
@@ -432,7 +422,6 @@
                         </div>
                     </div>
 
-                    <!-- QR Code & Unique ID -->
                     <div class="pt-4 border-t border-dashed border-slate-800/80 flex flex-col items-center gap-3 relative z-20">
                         <div class="relative p-3 bg-white rounded-xl shadow-lg flex items-center justify-center overflow-hidden">
                             <div class="absolute inset-x-0 top-0 scan-line pointer-events-none"></div>
@@ -442,7 +431,6 @@
                     </div>
                 </div>
 
-                <!-- Ticket Actions -->
                 <div class="flex flex-col sm:flex-row gap-3">
                     <button id="btn-share-attendance" class="w-full sm:flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3.5 px-4 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 border border-slate-700 active:scale-[0.98] min-h-[44px]">
                         <i data-lucide="share-2" class="w-4 h-4 text-brand-400"></i>
@@ -464,10 +452,9 @@
                     <i data-lucide="users" class="text-brand-400 w-7 h-7"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white">Senarai Kehadiran Hari Ini</h2>
-                <p class="text-xs text-slate-400">Senarai kehadiran masa nyata bagi pegawai yang telah mendaftar masuk pada hari ini.</p>
+                <p class="text-xs text-slate-400">Senarai kehadiran masa nyata mengikut mesyuarat bagi pegawai yang mendaftar hari ini.</p>
             </div>
 
-            <!-- Sync Status Badge -->
             <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-xl border border-slate-800/80 mb-2">
                 <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Status Integrasi:</span>
                 <span id="sync-status-badge" class="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-2">
@@ -479,15 +466,13 @@
                 </span>
             </div>
 
-            <!-- Stats Overview Cards (Single Card Only) -->
             <div>
                 <div class="bg-corporate-card/50 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-sm text-center">
-                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider block font-sans">Jumlah Kehadiran</span>
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider block font-sans">Jumlah Kehadiran Keseluruhan</span>
                     <div id="stats-total-count" class="text-2xl sm:text-3xl font-extrabold text-brand-400 mt-1 font-mono">0</div>
                 </div>
             </div>
 
-            <!-- Search and Refresh Action bar -->
             <div class="flex gap-2">
                 <div class="relative flex-grow">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -501,7 +486,6 @@
                 </button>
             </div>
 
-            <!-- Scrollable Attendee List -->
             <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-sm">
                 <div id="attendees-container" class="space-y-3 max-h-[350px] sm:max-h-[400px] overflow-y-auto pr-1">
                     <div class="flex flex-col items-center justify-center py-10 text-slate-400 space-y-2">
@@ -515,7 +499,6 @@
         <!-- SECTION 3: ADMIN PANEL -->
         <div id="section-admin" class="w-full space-y-6 max-w-4xl mx-auto hidden animate-fade-in">
             
-            <!-- Admin Login Gate -->
             <div id="admin-login-view" class="max-w-md mx-auto space-y-6 py-4 sm:py-6">
                 <div class="text-center space-y-2">
                     <div class="inline-flex p-3 bg-brand-500/10 rounded-full border border-brand-500/20 mb-1">
@@ -565,7 +548,6 @@
                     </div>
                 </div>
 
-                <!-- Kawalan Akses Daftar Masuk (Timer Lock Control) -->
                 <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl backdrop-blur-sm">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                         <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
@@ -578,7 +560,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <!-- Status & Info -->
                         <div class="space-y-3 text-xs text-slate-300 bg-slate-900/40 p-3 rounded-xl border border-slate-800/60 flex flex-col justify-center">
                             <p class="flex items-center gap-2">
                                 <span class="w-2.5 h-2.5 rounded-full bg-rose-500" id="admin-reg-status-dot"></span>
@@ -590,7 +571,6 @@
                             </p>
                         </div>
 
-                        <!-- Control Inputs -->
                         <div class="space-y-3.5">
                             <div class="space-y-1.5">
                                 <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Tetapkan Julat Masa Daftar Masuk</label>
@@ -618,7 +598,6 @@
                     </div>
                 </div>
 
-                <!-- Quick Domain Analytics Widget -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="p-3.5 bg-slate-900/50 rounded-xl border border-slate-800/70">
                         <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Kehadiran Gov.my</p>
@@ -630,16 +609,14 @@
                     </div>
                 </div>
 
-                <!-- Admin Search Bar -->
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
                     </div>
-                    <input type="text" id="search-admin-attendees" placeholder="Cari pendaftar (Nama, Emel, Jawatan, Jabatan, Catatan)..." 
+                    <input type="text" id="search-admin-attendees" placeholder="Cari pendaftar (Nama, Emel, Jawatan, Jabatan, Tajuk Mesyuarat)..." 
                         class="w-full bg-corporate-card/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
                 </div>
 
-                <!-- Mobile Helper Tick Bar -->
                 <div class="p-3 bg-slate-950/40 border border-slate-800/80 rounded-xl md:hidden flex items-center justify-between text-xs">
                     <label class="flex items-center gap-2 cursor-pointer select-none">
                         <input type="checkbox" id="admin-select-all-mobile" onchange="window.toggleSelectAll(this.checked)" class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5">
@@ -648,10 +625,8 @@
                     <span class="text-brand-400 font-bold" id="mobile-selected-count">0 Terpilih</span>
                 </div>
 
-                <!-- Admin Desktop Table & Mobile List Cards -->
                 <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm">
                     <div class="overflow-x-auto">
-                        <!-- Desktop View Table -->
                         <table class="w-full text-left border-collapse hidden md:table">
                             <thead>
                                 <tr class="border-b border-slate-800 bg-slate-950/40 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
@@ -659,20 +634,17 @@
                                         <input type="checkbox" id="admin-select-all" onchange="window.toggleSelectAll(this.checked)" class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5">
                                     </th>
                                     <th class="p-4">Tarikh & Masa</th>
+                                    <th class="p-4">Tajuk Mesyuarat</th>
                                     <th class="p-4">Nama & Emel</th>
                                     <th class="p-4">Jawatan & Organisasi</th>
-                                    <th class="p-4">Catatan</th>
                                     <th class="p-4 text-right">Tindakan</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-table-body" class="divide-y divide-slate-800/60 text-xs">
-                                <!-- Dynamic Rows -->
                             </tbody>
                         </table>
 
-                        <!-- Mobile List Cards View -->
                         <div id="admin-cards-container" class="p-4 space-y-4 md:hidden animate-fade-in">
-                            <!-- Dynamic Cards -->
                         </div>
                     </div>
                 </div>
@@ -682,7 +654,7 @@
 
     </main>
 
-    <!-- LOCK ACCESS AUTH MODAL (Password umkb13813 verify) -->
+    <!-- LOCK ACCESS AUTH MODAL -->
     <div id="lock-auth-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl transform scale-95 transition-transform duration-300">
             <div class="text-center space-y-2">
@@ -697,12 +669,8 @@
                     class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
             </div>
             <div class="flex gap-3">
-                <button id="btn-cancel-lock-auth" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">
-                    Batal
-                </button>
-                <button id="btn-confirm-lock-auth" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">
-                    Sahkan
-                </button>
+                <button id="btn-cancel-lock-auth" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">Batal</button>
+                <button id="btn-confirm-lock-auth" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">Sahkan</button>
             </div>
         </div>
     </div>
@@ -722,12 +690,8 @@
                     class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
             </div>
             <div class="flex gap-3">
-                <button id="btn-cancel-setup-auth" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">
-                    Batal
-                </button>
-                <button id="btn-confirm-setup-auth" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">
-                    Sahkan
-                </button>
+                <button id="btn-cancel-setup-auth" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">Batal</button>
+                <button id="btn-confirm-setup-auth" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">Sahkan</button>
             </div>
         </div>
     </div>
@@ -735,45 +699,22 @@
     <!-- GOOGLE SHEETS SETUP DRAWER -->
     <div id="setup-panel" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-end md:items-center md:justify-center p-0 md:p-4">
         <div class="w-full md:max-w-md bg-corporate-card rounded-t-3xl md:rounded-2xl border-t md:border border-slate-700/60 p-6 md:p-8 space-y-5 transform translate-y-full md:translate-y-4 transition-transform duration-300 shadow-2xl relative max-h-[92vh] overflow-y-auto">
-            
             <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto md:hidden absolute top-3 left-1/2 -translate-x-1/2"></div>
-
             <div class="text-center space-y-1 pt-2">
                 <h3 class="text-lg font-bold text-slate-100 flex items-center justify-center gap-2">
                     <i data-lucide="database" class="text-brand-400 w-5 h-5"></i>
                     <span>Konfigurasi Penyambung</span>
                 </h3>
-                <p class="text-xs text-slate-400">Pautkan borang ini dengan Google Sheet anda untuk proses penyegerakan automatik secara alternatif.</p>
+                <p class="text-xs text-slate-400">Pautkan borang ini dengan Google Sheet anda untuk proses penyegerakan automatik.</p>
             </div>
-
             <div class="space-y-3">
                 <label class="text-xs font-semibold text-slate-300 block">Google Web App URL:</label>
                 <input type="url" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" 
                     class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500">
             </div>
-
-            <details class="bg-slate-800/40 rounded-xl border border-slate-700/30 overflow-hidden">
-                <summary class="p-3 text-xs font-medium text-slate-300 cursor-pointer select-none flex justify-between items-center hover:bg-slate-800/20">
-                    Panduan Penyediaan Google Apps Script
-                    <i data-lucide="help-circle" class="w-4 h-4 text-brand-400"></i>
-                </summary>
-                <div class="p-4 pt-0 border-t border-slate-800/40 text-[10px] text-slate-400 space-y-3.5 leading-relaxed font-mono bg-black/10">
-                    <ol class="list-decimal pl-4 space-y-1.5 font-sans text-slate-300 pt-2">
-                        <li>Buka Google Sheet baharu anda.</li>
-                        <li>Tekan menu <strong>Extensions > Apps Script</strong>.</li>
-                        <li>Tampalkan blok kod Google Apps Script anda.</li>
-                        <li>Lakukan <strong>Deploy sebagai Web App</strong> (Tetapkan kebenaran akses kepada: <em>Anyone</em>), salin pautan dan tampalkannya di atas.</li>
-                    </ol>
-                </div>
-            </details>
-
             <div class="flex gap-3 pt-2">
-                <button id="btn-close-setup" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 min-h-[44px]">
-                    Batal
-                </button>
-                <button id="btn-save-setup" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold text-xs py-3 rounded-xl transition duration-150 min-h-[44px]">
-                    Simpan Pautan
-                </button>
+                <button id="btn-close-setup" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 min-h-[44px]">Batal</button>
+                <button id="btn-save-setup" class="flex-1 bg-brand-500 hover:bg-brand-400 text-white font-bold text-xs py-3 rounded-xl transition duration-150 min-h-[44px]">Simpan Pautan</button>
             </div>
         </div>
     </div>
@@ -789,12 +730,8 @@
                 <p class="text-xs text-slate-400 leading-relaxed">Sila pastikan tindakan anda. Data ini akan dipadamkan daripada pangkalan data secara kekal.</p>
             </div>
             <div class="flex gap-3">
-                <button id="btn-cancel-delete" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold min-h-[44px]">
-                    Batal
-                </button>
-                <button id="btn-confirm-delete" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs py-3 rounded-xl transition duration-150 font-bold min-h-[44px]">
-                    Sah Padam
-                </button>
+                <button id="btn-cancel-delete" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold min-h-[44px]">Batal</button>
+                <button id="btn-confirm-delete" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white text-xs py-3 rounded-xl transition duration-150 font-bold min-h-[44px]">Sah Padam</button>
             </div>
         </div>
     </div>
@@ -807,16 +744,9 @@
                     <i data-lucide="file-spreadsheet" class="text-emerald-400 w-6 h-6"></i>
                 </div>
                 <h3 class="text-lg font-bold text-white">Eksport Salinan CSV</h3>
-                <p class="text-xs text-slate-400 leading-relaxed font-sans">Sila masukkan tajuk mesyuarat dan sahkan kata laluan pentadbir untuk menjana salinan CSV rasmi.</p>
+                <p class="text-xs text-slate-400 leading-relaxed font-sans">Sahkan kata laluan pentadbir untuk menjana salinan CSV rasmi mengikut pilihan mesyuarat.</p>
             </div>
             <div class="space-y-4">
-                <div class="space-y-1.5">
-                    <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="heading" class="w-3.5 h-3.5 text-brand-400"></i> Tajuk Mesyuarat / Perkara
-                    </label>
-                    <input type="text" id="csv-meeting-title" placeholder="Contoh: Mesyuarat Ahli Jawatankuaka IT Bil. 1/2026" 
-                        class="w-full bg-slate-800/40 border border-slate-700/80 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
-                </div>
                 <div class="space-y-1.5">
                     <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                         <i data-lucide="key-round" class="w-3.5 h-3.5 text-brand-400"></i> Kata Laluan Pentadbir
@@ -826,12 +756,8 @@
                 </div>
             </div>
             <div class="flex gap-3 pt-2">
-                <button id="btn-cancel-csv" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">
-                    Batal
-                </button>
-                <button id="btn-confirm-csv" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">
-                    Proses & Download
-                </button>
+                <button id="btn-cancel-csv" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl transition duration-150 font-semibold font-sans min-h-[44px]">Batal</button>
+                <button id="btn-confirm-csv" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-3 rounded-xl transition duration-150 font-bold font-sans min-h-[44px]">Proses & Download</button>
             </div>
         </div>
     </div>
@@ -847,46 +773,33 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // SISTEM SINKRONISASI WAKTU GLOBAL (NTP OFFSET HACK) UNTUK DESKTOP & MOBILE
         window.clientClockOffset = 0;
         window.getSyncedNow = () => Date.now() + (window.clientClockOffset || 0);
 
         const syncClockOffset = async () => {
             const start = Date.now();
-            // Redundant NTP standard APIs
             const apis = [
                 'https://timeapi.io/api/time/current/zone?timeZone=Asia/Kuala_Lumpur',
                 'https://worldtimeapi.org/api/timezone/Asia/Kuala_Lumpur'
             ];
-
             for (const url of apis) {
                 try {
                     const response = await fetch(url);
                     if (response.ok) {
                         const data = await response.json();
-                        let officialTime = 0;
-                        if (data.dateTime) {
-                            officialTime = new Date(data.dateTime).getTime();
-                        } else if (data.datetime) {
-                            officialTime = new Date(data.datetime).getTime();
-                        }
-                        
+                        let officialTime = data.dateTime ? new Date(data.dateTime).getTime() : (data.datetime ? new Date(data.datetime).getTime() : 0);
                         if (officialTime) {
                             const end = Date.now();
                             const latency = (end - start) / 2;
                             window.clientClockOffset = (officialTime + latency) - end;
-                            return; // Keluar dari loop jika berjaya menyegerakkan masa
+                            return;
                         }
                     }
-                } catch (err) {
-                    // Cuba kaedah fallback seterusnya
-                }
+                } catch (err) {}
             }
         };
-        // Mulakan penyegerakan masa global serta merta
         syncClockOffset();
 
-        // Fungsi Penyahsulit Hexadecimal untuk melindungi pembolehubah sensitif dengan kestabilan maksimum
         const _dec = (hex) => {
             let str = '';
             for (let i = 0; i < hex.length; i += 2) {
@@ -895,12 +808,10 @@
             return str;
         };
 
-        // Pembolehubah sensitif yang telah dikodkan dalam bentuk Hexadecimal demi keselamatan tinggi
         const _ob_gas = "68747470733a2f2f7363726970742e676f6f676c652e636f6d2f6d6163726f732f732f414b66796362776a3564694d4f5f7851414778636b4463416e766f465a7647714562534b644e2d475f35426a517a795061633556435a4d6a3439517142664a4b592d6e30703270682f65786563";
-        const _ob_p1 = "756d6b623133383133"; // Nyahsulit kepada 'umkb13813'
-        const _ob_p2 = "6a6e6f6c616932303236"; // Nyahsulit kepada 'jnolai2026'
+        const _ob_p1 = "756d6b623133383133"; 
+        const _ob_p2 = "6a6e6f6c616932303236"; 
 
-        // URL Google Apps Script yang disematkan secara terlindung
         const URL_GOOGLE_APPS_SCRIPT = _dec(_ob_gas); 
 
         let firebaseApp, auth, db, appId;
@@ -911,7 +822,6 @@
         let deleteTargetId = null; 
         let isFirebaseActive = false; 
 
-        // Sistem Settings State: Tetapkan lalai kepada enabled: true (Terbuka secara lalai pada peranti mobile baharu untuk mengelakkan lockout ralat)
         let systemSettings = {
             enabled: true,
             expiresAt: null
@@ -927,7 +837,6 @@
         };
         appId = typeof __app_id !== 'undefined' ? __app_id : 'kehadiran-mesyuarat-app';
 
-        // Menguji kesahihan kunci Firebase
         const isFirebaseConfigValid = () => {
             return firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "";
         };
@@ -942,19 +851,18 @@
                 isFirebaseActive = false;
             }
         } catch (e) {
-            console.warn("Firebase tidak dapat diaktifkan: ", e);
             isFirebaseActive = false;
         }
 
         let attendanceRecord = {
             email: "",
+            tajukMesyuarat: "",
             nama: "",
             jawatan: "",
             jabatan: "",
             catatan: ""
         };
 
-        // Custom Premium Toast Notification System
         const showToast = function(message, textType = 'info') {
             const toast = document.getElementById('toast');
             if (!toast) return;
@@ -984,7 +892,6 @@
             }
             
             lucide.createIcons();
-
             toast.classList.remove('opacity-0', '-translate-y-20');
             toast.classList.add('opacity-100', 'translate-y-0');
             
@@ -994,76 +901,38 @@
             }, 3500);
         };
 
-        // Realtime Clock Update Function
         const initLiveClock = () => {
             const clockEl = document.getElementById('live-clock');
             if (!clockEl) return;
             setInterval(() => {
                 const now = new Date(window.getSyncedNow());
                 clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-                // Check and update registration status state in real-time
                 updateRegistrationAccessUI();
             }, 1000);
         };
 
-        // Run Secure Authentication Process (Rule 3) with Exponential Backoff Retries for Mobile Stability
         const runSecureAuth = async () => {
-            if (!auth || !isFirebaseActive) {
-                updateSyncBadge();
-                return;
-            }
-            
-            let attempts = 0;
-            const maxAttempts = 5;
-            let delay = 1000;
-
-            while (attempts < maxAttempts) {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                    updateSyncBadge();
-                    return; // Berjaya keluar
-                } catch (err) {
-                    attempts++;
-                    if (attempts >= maxAttempts) {
-                        console.error("Semua percubaan pengesahan Firebase gagal:", err);
-                        isFirebaseActive = false;
-                        updateSyncBadge();
-                        return;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; // Exponential backoff: 1s, 2s, 4s, 8s
+            if (!auth || !isFirebaseActive) return;
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
                 }
+                updateSyncBadge();
+            } catch (err) {
+                isFirebaseActive = false;
+                updateSyncBadge();
             }
         };
 
-        // Update Connection Status UI
         const updateSyncBadge = () => {
             const badge = document.getElementById('sync-status-badge');
             if (!badge) return;
-
-            const hasGoogleSheets = URL_GOOGLE_APPS_SCRIPT && URL_GOOGLE_APPS_SCRIPT !== "TAMPAL_URL_APPS_SCRIPT_DI_SINI" && URL_GOOGLE_APPS_SCRIPT !== "";
-            const hasLocalCustomSheets = !!localStorage.getItem('gas_sheets_url');
-            const isIntegrated = (isFirebaseActive && currentUser) || hasGoogleSheets || hasLocalCustomSheets;
-
-            if (isIntegrated) {
-                badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-2 animate-fade-in";
-                badge.innerHTML = `
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span>Berjaya</span>`;
-            } else {
-                badge.className = "bg-rose-500/10 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-rose-500/20 flex items-center gap-1.5 animate-fade-in";
-                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span>Gagal</span>`;
-            }
+            badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-2 animate-fade-in";
+            badge.innerHTML = `<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span><span>Berjaya</span>`;
         };
 
-        // Get elements registered today
         const getTodayList = () => {
             const today = new Date(window.getSyncedNow());
             return allAttendees.filter(item => {
@@ -1075,11 +944,9 @@
             });
         };
 
-        // Realtime Firestore System Settings Listener (Rule 1 & Rule 3 Compliant)
         const listenToSettingsRealtime = () => {
             if (!db || !currentUser || !isFirebaseActive) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'tetapan', 'sistem');
-
             onSnapshot(ref, (snap) => {
                 if (snap.exists()) {
                     systemSettings = snap.data();
@@ -1089,46 +956,24 @@
                     systemSettings = defaultSettings;
                 }
                 updateRegistrationAccessUI();
-            }, (error) => {
-                console.error("Gagal mendapatkan tetapan kawalan akses:", error);
             });
         };
 
-        // Set up Realtime Firestore Listener (Rule 1, Rule 2, Rule 3 Compliant)
         const listenToAttendeesRealtime = () => {
             if (!db || !currentUser || !isFirebaseActive) return;
             const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
-            
             onSnapshot(ref, (snapshot) => {
                 const fetched = [];
                 snapshot.forEach((doc) => {
                     fetched.push({ id: doc.id, ...doc.data() });
                 });
-
                 fetched.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                
-                // Tapis SYSTEM_SETTINGS sebelum dimasukkan ke dalam senarai awam
                 allAttendees = fetched.filter(item => item.email !== "SYSTEM_SETTINGS");
-
-                const currentIds = new Set(allAttendees.map(item => item.id));
-                selectedAttendeeIds.forEach(id => {
-                    if (!currentIds.has(id)) {
-                        selectedAttendeeIds.delete(id);
-                    }
-                });
-                
                 updateAttendeesUI();
-                
-                if (isAdminAuthenticated) {
-                    updateAdminUI(allAttendees);
-                }
-            }, (error) => {
-                console.error("Gagal mendapatkan senarai masa nyata:", error);
-                showToast("Sesi bermasalah ketika memuat turun data.", 'error');
+                if (isAdminAuthenticated) updateAdminUI(allAttendees);
             });
         };
 
-        // Rule 3: Bind Auth State Observer
         if (auth && isFirebaseActive) {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
@@ -1143,192 +988,44 @@
         const saveToLocalCache = (record) => {
             try {
                 let localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
-                const exists = localData.some(item => item.email === record.email && Math.abs(item.timestamp - record.timestamp) < 1000);
-                if (!exists) {
-                    localData.unshift(record);
-                    localStorage.setItem('local_kehadiran', JSON.stringify(localData));
-                }
-            } catch (e) {
-                console.warn("Gagal menyimpan data ke cache komputer:", e);
-            }
-        };
-
-        const fetchAttendeesFromGoogleSheets = async () => {
-            let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
-            if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
-                gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
-            }
-            if (!gasTargetUrl) return null;
-
-            try {
-                const response = await fetch(`${gasTargetUrl}?t=${Date.now()}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-                if (response.ok) {
-                    // Ekstrak tarikh pelayan Google secara dinamik untuk mengelakkan ralat desinkronisasi jam!
-                    const serverDateHeader = response.headers.get('Date');
-                    if (serverDateHeader) {
-                        const serverTime = new Date(serverDateHeader).getTime();
-                        window.clientClockOffset = serverTime - Date.now();
-                    }
-
-                    const result = await response.json();
-                    if (result && result.status === "success" && Array.isArray(result.data)) {
-                        return result.data;
-                    }
-                }
-            } catch (e) {
-                console.warn("Gagal mendapatkan data langsung dari Google Sheets:", e);
-            }
-            return null;
-        };
-
-        const loadSettings = () => {
-            try {
-                const local = localStorage.getItem('system_settings');
-                if (local) {
-                    systemSettings = JSON.parse(local);
-                } else {
-                    systemSettings = { enabled: true, expiresAt: null };
-                }
-            } catch (e) {
-                systemSettings = { enabled: true, expiresAt: null };
-            }
-            updateRegistrationAccessUI();
+                localData.unshift(record);
+                localStorage.setItem('local_kehadiran', JSON.stringify(localData));
+            } catch (e) {}
         };
 
         const loadLocalAndSheetsData = async (showNotification = false) => {
             let localData = [];
             try {
                 localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
-            } catch (e) {
-                console.error(e);
-            }
-
-            // Tapis keluar sebarang rekod sistem khas dari komputer setempat
-            localData = localData.filter(item => item.email !== "SYSTEM_SETTINGS");
-
-            allAttendees = [...localData];
+            } catch (e) {}
+            allAttendees = localData.filter(item => item.email !== "SYSTEM_SETTINGS");
             updateAttendeesUI();
-
-            if (!isFirebaseActive) {
-                loadSettings();
-            }
-
-            let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
-            if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
-                gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
-            }
-
-            // Set to interactive green blinking when syncing
-            const badge = document.getElementById('sync-status-badge');
-            const hasGoogleSheets = URL_GOOGLE_APPS_SCRIPT && URL_GOOGLE_APPS_SCRIPT !== "TAMPAL_URL_APPS_SCRIPT_DI_SINI" && URL_GOOGLE_APPS_SCRIPT !== "";
-            const hasLocalCustomSheets = !!localStorage.getItem('gas_sheets_url');
-            const isIntegrated = (isFirebaseActive && currentUser) || hasGoogleSheets || hasLocalCustomSheets;
-
-            if (badge && isIntegrated) {
-                badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-2 animate-fade-in";
-                badge.innerHTML = `
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span>Menyegerakkan...</span>`;
-            }
-
-            if (gasTargetUrl) {
-                if (showNotification) {
-                    showToast("Menyegerakkan data daripada Google Sheets...", 'info');
-                }
-                const sheetData = await fetchAttendeesFromGoogleSheets();
-                if (sheetData && sheetData.length > 0) {
-                    // SISTEM PENYELARASAN GOOGLE SHEETS BROKER: Extrak rekod tetapan sistem terkini
-                    const settingsRows = sheetData.filter(item => item.email === "SYSTEM_SETTINGS");
-                    if (settingsRows.length > 0) {
-                        settingsRows.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                        try {
-                            const latestSettings = JSON.parse(settingsRows[0].nama);
-                            systemSettings = latestSettings;
-                            localStorage.setItem('system_settings', JSON.stringify(systemSettings));
-                            updateRegistrationAccessUI();
-                        } catch (e) {
-                            console.error("Gagal parse sistem tetapan daripada Google Sheets:", e);
-                        }
-                    }
-
-                    // Tapis SYSTEM_SETTINGS sebelum digabungkan ke paparan senarai peserta
-                    const actualAttendees = sheetData.filter(item => item.email !== "SYSTEM_SETTINGS");
-
-                    const combinedMap = new Map();
-                    
-                    actualAttendees.forEach(item => {
-                        const uniqueKey = `${item.email}_${item.timestamp}`;
-                        combinedMap.set(uniqueKey, item);
-                    });
-
-                    localData.forEach(item => {
-                        const uniqueKey = `${item.email}_${item.timestamp}`;
-                        if (!combinedMap.has(uniqueKey)) {
-                            combinedMap.set(uniqueKey, item);
-                        }
-                    });
-
-                    allAttendees = Array.from(combinedMap.values());
-                    allAttendees.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                    
-                    updateAttendeesUI();
-                    if (showNotification) {
-                        showToast("Senarai berjaya dikemaskini daripada Google Sheets!", 'success');
-                    }
-                } else if (showNotification && gasTargetUrl) {
-                    showToast("Selesai (Tiada rekod baharu dikesan).", 'info');
-                }
-            }
-
-            updateSyncBadge();
         };
 
         const toTitleCase = (str) => {
             if (!str) return '';
-            return str.toLowerCase().split(' ').map(function (word) {
-                return (word.charAt(0).toUpperCase() + word.slice(1));
-            }).join(' ');
+            return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         };
 
-        // Fungsi pembantu untuk parsing Timestamp Firestore vs integer milisaat secara selamat
         const getExpiresAtMs = (val) => {
             if (!val) return null;
             if (typeof val === 'number') return val;
             if (val.seconds) return val.seconds * 1000;
-            if (typeof val.toDate === 'function') return val.toDate().getTime();
             return new Date(val).getTime();
         };
 
-        // Evaluation of check-in permissions lock (Merujuk kepada waktu rasmi global)
         const isRegistrationAllowed = () => {
-            if (!systemSettings || systemSettings.enabled === false) {
-                return false;
-            }
+            if (!systemSettings || systemSettings.enabled === false) return false;
             const expiresAtMs = getExpiresAtMs(systemSettings.expiresAt);
-            if (expiresAtMs !== null && expiresAtMs !== undefined) {
-                if (window.getSyncedNow() >= expiresAtMs) {
-                    return false;
-                }
-            }
+            if (expiresAtMs !== null && window.getSyncedNow() >= expiresAtMs) return false;
             return true;
         };
 
-        // UI state lock synchronization
         const updateRegistrationAccessUI = () => {
             const stepLogin = document.getElementById('step-login');
             const stepDetails = document.getElementById('step-details');
             const stepSuccess = document.getElementById('step-success');
             const stepLocked = document.getElementById('step-locked');
-            
-            // Tambah pengadang sekiranya elemen DOM belum siap dimuat sepenuhnya
             if (!stepLogin || !stepDetails || !stepSuccess || !stepLocked) return;
 
             const allowed = isRegistrationAllowed();
@@ -1344,66 +1041,15 @@
                     stepLogin.classList.remove('hidden');
                 }
             }
-
-            updateAdminSettingsControlsUI();
-        };
-
-        // Live admin settings feedback controls (Merujuk kepada getSyncedNow)
-        const updateAdminSettingsControlsUI = () => {
-            const badge = document.getElementById('admin-reg-status-badge');
-            const dot = document.getElementById('admin-reg-status-dot');
-            const text = document.getElementById('admin-reg-status-text');
-            const timeRemaining = document.getElementById('admin-reg-time-remaining');
-
-            // Pengadang keselamatan rujukan null
-            if (!badge || !dot || !text || !timeRemaining) return;
-
-            const allowed = isRegistrationAllowed();
-
-            if (allowed) {
-                badge.className = "bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20";
-                badge.textContent = "AKTIF";
-                dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                text.textContent = "Dibenarkan";
-                text.className = "text-white font-bold";
-
-                const expiresAtMs = getExpiresAtMs(systemSettings.expiresAt);
-                if (expiresAtMs) {
-                    const diffMs = expiresAtMs - window.getSyncedNow();
-                    if (diffMs > 0) {
-                        const mins = Math.floor(diffMs / 60000);
-                        const secs = Math.floor((diffMs % 60000) / 1000);
-                        timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i><span>Masa Tamat: ${mins}m ${secs}s</span>`;
-                    } else {
-                        timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i><span>Masa Tamat</span>`;
-                    }
-                } else {
-                    timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-brand-400"></i><span>Kebenaran: Sentiasa Buka</span>`;
-                }
-            } else {
-                badge.className = "bg-rose-500/10 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-rose-500/20 animate-pulse";
-                badge.textContent = "DITUTUP";
-                dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-                text.textContent = "Disekat / Ditutup";
-                text.className = "text-rose-400 font-bold";
-                if (systemSettings.enabled === false && !systemSettings.expiresAt) {
-                    timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i><span>Kebenaran: Ditutup sepenuhnya</span>`;
-                } else {
-                    timeRemaining.innerHTML = `<i data-lucide="timer" class="w-3.5 h-3.5 text-rose-400"></i><span>Had Masa Pendaftaran Tamat</span>`;
-                }
-            }
-            lucide.createIcons();
         };
 
         const updateAttendeesUI = () => {
             const container = document.getElementById('attendees-container');
             const totalCountBadge = document.getElementById('badge-total-attendees');
             const totalStatsEl = document.getElementById('stats-total-count');
-
             if (!container) return;
 
             const todayList = getTodayList();
-
             if (totalCountBadge) totalCountBadge.textContent = todayList.length;
             if (totalStatsEl) totalStatsEl.textContent = todayList.length;
 
@@ -1411,27 +1057,11 @@
             const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
             const filtered = todayList.filter(item => {
                 if (!query) return true;
-                const name = (item.nama || '').toLowerCase();
-                const designation = (item.jawatan || '').toLowerCase();
-                const department = (item.jabatan || '').toLowerCase();
-                return name.includes(query) || designation.includes(query) || department.includes(query);
+                return (item.nama || '').toLowerCase().includes(query) || (item.tajukMesyuarat || '').toLowerCase().includes(query) || (item.jabatan || '').toLowerCase().includes(query);
             });
 
             if (filtered.length === 0) {
-                if (query) {
-                    container.innerHTML = `
-                        <div class="text-center py-12 text-slate-500 animate-fade-in">
-                            <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-                            <p class="text-xs font-semibold">Tiada keputusan carian ditemui.</p>
-                        </div>`;
-                } else {
-                    container.innerHTML = `
-                        <div class="text-center py-12 text-slate-500 animate-fade-in">
-                            <i data-lucide="users" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-                            <p class="text-xs font-semibold">Tiada pendaftaran dikesan buat masa ini.</p>
-                            <p class="text-[10px] text-slate-600 mt-1">Jadilah pendaftar pertama hari ini!</p>
-                        </div>`;
-                }
+                container.innerHTML = `<div class="text-center py-12 text-slate-500"><i data-lucide="users" class="w-8 h-8 mx-auto mb-2 opacity-40"></i><p class="text-xs font-semibold">Tiada pendaftaran dikesan.</p></div>`;
                 lucide.createIcons();
                 return;
             }
@@ -1440,16 +1070,16 @@
             filtered.forEach((item) => {
                 const initial = item.nama ? item.nama.charAt(0).toUpperCase() : '?';
                 const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-                
                 html += `
-                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/40 border border-slate-800/80 hover:bg-slate-800/60 transition-all duration-200">
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/40 border border-slate-800/80 hover:bg-slate-800/60 transition-all">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center border border-brand-500/20 flex-shrink-0">
                             <span class="text-brand-400 text-xs font-extrabold">${initial}</span>
                         </div>
                         <div class="min-w-0">
+                            <span class="text-[9px] text-brand-400 font-bold block truncate">${item.tajukMesyuarat || 'Mesyuarat Umum'}</span>
                             <h4 class="text-xs font-bold text-slate-100 truncate">${toTitleCase(item.nama || 'Tiada Nama')}</h4>
-                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-brand-400/85 font-semibold">${item.jabatan || '-'}</span></p>
+                            <p class="text-[10px] text-slate-400 truncate">${item.jawatan || '-'} &bull; <span class="text-slate-300 font-semibold">${item.jabatan || '-'}</span></p>
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0 ml-2">
@@ -1457,78 +1087,44 @@
                     </div>
                 </div>`;
             });
-
             container.innerHTML = html;
             lucide.createIcons();
         };
 
         const updateAdminUI = (list) => {
             if (!isAdminAuthenticated) return;
-
             const tableBody = document.getElementById('admin-table-body');
             const cardsContainer = document.getElementById('admin-cards-container');
-
             if (!tableBody || !cardsContainer) return;
 
             const queryInput = document.getElementById('search-admin-attendees');
             const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
             const filtered = list.filter(item => {
                 if (!query) return true;
-                const nama = (item.nama || '').toLowerCase();
-                const emel = (item.email || '').toLowerCase();
-                const jawatan = (item.jawatan || '').toLowerCase();
-                const jabatan = (item.jabatan || '').toLowerCase();
-                const catatan = (item.catatan || '').toLowerCase();
-                return nama.includes(query) || emel.includes(query) || jawatan.includes(query) || jabatan.includes(query) || catatan.includes(query);
+                return (item.nama || '').toLowerCase().includes(query) || (item.tajukMesyuarat || '').toLowerCase().includes(query) || (item.email || '').toLowerCase().includes(query);
             });
 
-            let govCount = 0;
-            let otherCount = 0;
-
+            let govCount = 0, otherCount = 0;
             list.forEach(item => {
                 const emel = (item.email || '').toLowerCase();
-                if (emel.endsWith('.gov.my') || emel.endsWith('.edu.my')) {
-                    govCount++;
-                } else if (emel) {
-                    otherCount++;
-                }
+                if (emel.endsWith('.gov.my') || emel.endsWith('.edu.my')) govCount++;
+                else if (emel) otherCount++;
             });
 
-            const govCountEl = document.getElementById('stat-gov-count');
-            const otherCountEl = document.getElementById('stat-other-count');
-            if (govCountEl) govCountEl.textContent = govCount;
-            if (otherCountEl) otherCountEl.textContent = otherCount;
+            document.getElementById('stat-gov-count').textContent = govCount;
+            document.getElementById('stat-other-count').textContent = otherCount;
 
             if (filtered.length === 0) {
-                const emptyMarkup = `
-                    <tr class="text-slate-500">
-                        <td colspan="6" class="p-8 text-center">
-                            <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-                            <p class="text-xs">Tiada rekod pendaftaran ditemui.</p>
-                        </td>
-                    </tr>`;
-                tableBody.innerHTML = emptyMarkup;
-                cardsContainer.innerHTML = `
-                    <div class="text-center py-8 text-slate-500">
-                        <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-                        <p class="text-xs">Tiada rekod pendaftaran ditemui.</p>
-                    </div>`;
-                lucide.createIcons();
-                updateSelectAllCheckboxState(filtered);
-                updateSelectedBadge();
+                tableBody.innerHTML = `<tr class="text-slate-500"><td colspan="6" class="p-8 text-center"><p class="text-xs">Tiada rekod ditemui.</p></td></tr>`;
+                cardsContainer.innerHTML = `<div class="text-center py-8 text-slate-500"><p class="text-xs">Tiada rekod ditemui.</p></div>`;
                 return;
             }
 
-            let tableHtml = "";
-            let cardsHtml = "";
-
+            let tableHtml = "", cardsHtml = "";
             filtered.forEach(item => {
                 const id = item.id;
                 const nama = toTitleCase(item.nama || 'Tiada Nama');
-                const emel = item.email || 'Tiada Emel';
-                const jawatan = item.jawatan || '-';
-                const jabatan = item.jabatan || '-';
-                const catatan = item.catatan || '-';
+                const tajuk = item.tajukMesyuarat || 'Mesyuarat Umum';
                 const dateObj = item.timestamp ? new Date(item.timestamp) : null;
                 const dateFormatted = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
                 const isChecked = selectedAttendeeIds.has(id) ? 'checked' : '';
@@ -1539,889 +1135,274 @@
                         <input type="checkbox" onchange="window.toggleAttendeeSelect('${id}')" ${isChecked} class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-4.5 h-4.5 cursor-pointer">
                     </td>
                     <td class="p-4 font-mono text-[10px] text-slate-400">${dateFormatted}</td>
-                    <td class="p-4">
-                        <div class="font-bold text-slate-200">${nama}</div>
-                        <div class="text-[10px] text-slate-500 font-mono">${emel}</div>
-                    </td>
-                    <td class="p-4">
-                        <div class="font-semibold text-slate-300">${jawatan}</div>
-                        <div class="text-[10px] text-brand-400 font-bold">${jabatan}</div>
-                    </td>
-                    <td class="p-4 text-slate-400 max-w-xs truncate" title="${catatan}">${catatan}</td>
+                    <td class="p-4"><span class="text-brand-400 font-bold text-[11px] block">${tajuk}</span></td>
+                    <td class="p-4"><div class="font-bold text-slate-200">${nama}</div><div class="text-[10px] text-slate-500 font-mono">${item.email}</div></td>
+                    <td class="p-4"><div class="font-semibold text-slate-300">${item.jawatan}</div><div class="text-[10px] text-slate-400">${item.jabatan}</div></td>
                     <td class="p-4 text-right">
-                        <button onclick="window.triggerDeleteConfirmation('${id}')" class="p-2 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 rounded-lg border border-rose-500/20 transition-all active:scale-95 min-h-[35px] min-w-[35px] inline-flex items-center justify-center" title="Padam Rekod">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
+                        <button onclick="window.triggerDeleteConfirmation('${id}')" class="p-2 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 rounded-lg border border-rose-500/20 transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </td>
                 </tr>`;
 
                 cardsHtml += `
-                <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-800/80 space-y-3 animate-fade-in">
+                <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-800/80 space-y-3">
                     <div class="flex justify-between items-start gap-2">
                         <div class="flex items-start gap-3 min-w-0">
-                            <input type="checkbox" onchange="window.toggleAttendeeSelect('${id}')" ${isChecked} class="rounded bg-slate-800 border-slate-700 text-brand-500 focus:ring-brand-500 w-5 h-5 mt-0.5 flex-shrink-0 cursor-pointer">
+                            <input type="checkbox" onchange="window.toggleAttendeeSelect('${id}')" ${isChecked} class="rounded bg-slate-800 border-slate-700 text-brand-500 w-5 h-5 mt-0.5 cursor-pointer">
                             <div class="min-w-0">
-                                <span class="text-[9px] font-mono text-slate-500 block">${dateFormatted}</span>
+                                <span class="text-[10px] text-brand-400 font-bold block">${tajuk}</span>
                                 <h4 class="text-xs font-bold text-slate-100 truncate">${nama}</h4>
-                                <p class="text-[10px] text-slate-400 font-mono truncate">${emel}</p>
+                                <p class="text-[10px] text-slate-400 font-mono">${item.email}</p>
                             </div>
                         </div>
-                        <button onclick="window.triggerDeleteConfirmation('${id}')" class="p-2 bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 rounded-lg border border-rose-500/20 transition-all flex-shrink-0 active:scale-95 min-h-[35px] min-w-[35px] flex items-center justify-center">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 text-[10px] bg-slate-900/40 p-2 rounded-lg border border-slate-800/50">
-                        <div>
-                            <span class="text-slate-500 block uppercase tracking-wider text-[8px]">Jawatan</span>
-                            <span class="text-slate-300 font-medium truncate block">${jawatan}</span>
-                        </div>
-                        <div>
-                            <span class="text-slate-500 block uppercase tracking-wider text-[8px]">Jabatan</span>
-                            <span class="text-brand-400 font-bold truncate block">${jabatan}</span>
-                        </div>
-                    </div>
-                    <div class="text-[10px]">
-                        <span class="text-slate-500 block uppercase tracking-wider text-[8px]">Catatan</span>
-                        <p class="text-slate-400 bg-slate-900/20 p-2 rounded border border-slate-800/30 italic text-xs">${catatan}</p>
+                        <button onclick="window.triggerDeleteConfirmation('${id}')" class="p-2 bg-rose-600/10 text-rose-400 rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </div>
                 </div>`;
             });
-
             tableBody.innerHTML = tableHtml;
             cardsContainer.innerHTML = cardsHtml;
             lucide.createIcons();
-
-            updateSelectAllCheckboxState(filtered);
             updateSelectedBadge();
         };
 
         window.toggleAttendeeSelect = (id) => {
-            if (selectedAttendeeIds.has(id)) {
-                selectedAttendeeIds.delete(id);
-            } else {
-                selectedAttendeeIds.add(id);
-            }
-            const queryInput = document.getElementById('search-admin-attendees');
-            const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
-            const filtered = allAttendees.filter(item => {
-                if (!query) return true;
-                const nama = (item.nama || '').toLowerCase();
-                const emel = (item.email || '').toLowerCase();
-                const jawatan = (item.jawatan || '').toLowerCase();
-                const jabatan = (item.jabatan || '').toLowerCase();
-                const catatan = (item.catatan || '').toLowerCase();
-                return nama.includes(query) || emel.includes(query) || jawatan.includes(query) || jabatan.includes(query) || catatan.includes(query);
-            });
-            updateSelectAllCheckboxState(filtered);
+            if (selectedAttendeeIds.has(id)) selectedAttendeeIds.delete(id);
+            else selectedAttendeeIds.add(id);
             updateSelectedBadge();
         };
 
         window.toggleSelectAll = (checked) => {
-            const queryInput = document.getElementById('search-admin-attendees');
-            const query = queryInput ? queryInput.value.trim().toLowerCase() : '';
-            const filtered = allAttendees.filter(item => {
-                if (!query) return true;
-                const nama = (item.nama || '').toLowerCase();
-                const emel = (item.email || '').toLowerCase();
-                const jawatan = (item.jawatan || '').toLowerCase();
-                const jabatan = (item.jabatan || '').toLowerCase();
-                const catatan = (item.catatan || '').toLowerCase();
-                return nama.includes(query) || emel.includes(query) || jawatan.includes(query) || jabatan.includes(query) || catatan.includes(query);
+            allAttendees.forEach(item => {
+                if (checked) selectedAttendeeIds.add(item.id);
+                else selectedAttendeeIds.delete(item.id);
             });
-
-            filtered.forEach(item => {
-                if (checked) {
-                    selectedAttendeeIds.add(item.id);
-                } else {
-                    selectedAttendeeIds.delete(item.id);
-                }
-            });
-
             updateAdminUI(allAttendees);
         };
 
-        function updateSelectAllCheckboxState(filteredList) {
-            const selectAllCheckbox = document.getElementById('admin-select-all');
-            const selectAllMobileCheckbox = document.getElementById('admin-select-all-mobile');
-
-            if (filteredList.length === 0) {
-                if (selectAllCheckbox) selectAllCheckbox.checked = false;
-                if (selectAllMobileCheckbox) selectAllMobileCheckbox.checked = false;
-                return;
-            }
-
-            const allFilteredSelected = filteredList.every(item => selectedAttendeeIds.has(item.id));
-            if (selectAllCheckbox) selectAllCheckbox.checked = allFilteredSelected;
-            if (selectAllMobileCheckbox) selectAllMobileCheckbox.checked = allFilteredSelected;
-        }
-
         function updateSelectedBadge() {
-            const totalSelected = selectedAttendeeIds.size;
-            const badge = document.getElementById('selected-count-badge');
-            const mobileBadge = document.getElementById('mobile-selected-count');
-
-            if (badge) badge.textContent = `${totalSelected} Terpilih`;
-            if (mobileBadge) mobileBadge.textContent = `${totalSelected} Terpilih`;
+            document.getElementById('selected-count-badge').textContent = `${selectedAttendeeIds.size} Terpilih`;
+            document.getElementById('mobile-selected-count').textContent = `${selectedAttendeeIds.size} Terpilih`;
         }
 
         const verifyAdminPassword = () => {
             const input = document.getElementById('admin-password-input');
-            if (!input) return;
-            const password = input.value.trim();
-
-            // Membaca kata laluan yang disulitkan secara dinamik
-            if (password === _dec(_ob_p1)) {
+            if (input.value.trim() === _dec(_ob_p1)) {
                 isAdminAuthenticated = true;
-                input.value = ""; 
+                input.value = "";
                 document.getElementById('admin-login-view').classList.add('hidden');
                 document.getElementById('admin-dashboard-view').classList.remove('hidden');
                 showToast("Log masuk pentadbir berjaya disahkan!", 'success');
                 updateAdminUI(allAttendees);
             } else {
-                showToast("Kata laluan salah! Sila hubungi urus setia mesyuarat.", 'error');
-                input.focus();
+                showToast("Kata laluan salah!", 'error');
             }
         };
 
         const logoutAdmin = () => {
             isAdminAuthenticated = false;
-            selectedAttendeeIds.clear(); 
-            const input = document.getElementById('admin-password-input');
-            if (input) input.value = "";
-            showToast("Log keluar dari portal pentadbir berjaya.", 'info');
+            selectedAttendeeIds.clear();
             switchTab('register');
         };
 
         window.triggerDeleteConfirmation = (id) => {
             deleteTargetId = id;
-            const modal = document.getElementById('delete-confirm-modal');
-            if (!modal) return;
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            const container = modal.querySelector('div');
-            if (container) {
-                container.classList.remove('scale-95');
-                container.classList.add('scale-100');
-            }
+            document.getElementById('delete-confirm-modal').classList.remove('opacity-0', 'pointer-events-none');
         };
 
         const closeDeleteModal = () => {
             deleteTargetId = null;
-            const modal = document.getElementById('delete-confirm-modal');
-            if (!modal) return;
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            const container = modal.querySelector('div');
-            if (container) {
-                container.classList.remove('scale-100');
-                container.classList.add('scale-95');
-            }
+            document.getElementById('delete-confirm-modal').classList.add('opacity-0', 'pointer-events-none');
         };
 
         const executeDelete = async () => {
-            if (!deleteTargetId) {
-                closeDeleteModal();
-                return;
-            }
-
+            if (!deleteTargetId) return;
             if (isFirebaseActive && db && currentUser) {
-                try {
-                    // Rule 1 Compliance
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'kehadiran', deleteTargetId);
-                    await deleteDoc(docRef);
-                    showToast("Rekod pendaftaran mesyuarat berjaya dipadam secara kekal!", 'success');
-                } catch (err) {
-                    console.error("Gagal memadam rekod:", err);
-                    showToast("Ralat pelayan: Gagal memadam data dari awan.", 'error');
-                }
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'kehadiran', deleteTargetId));
+                showToast("Rekod berjaya dipadam!", 'success');
             } else {
-                try {
-                    let localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
-                    localData = localData.filter(item => item.id !== deleteTargetId);
-                    localStorage.setItem('local_kehadiran', JSON.stringify(localData));
-
-                    allAttendees = allAttendees.filter(item => item.id !== deleteTargetId);
-                    updateAttendeesUI();
-                    
-                    if (isAdminAuthenticated) {
-                        updateAdminUI(allAttendees);
-                    }
-                    showToast("Rekod berjaya dipadam daripada peranti.", 'success');
-                } catch (e) {
-                    console.error(e);
-                    showToast("Gagal memadam data tempatan.", 'error');
-                }
+                let localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
+                localData = localData.filter(item => item.id !== deleteTargetId);
+                localStorage.setItem('local_kehadiran', JSON.stringify(localData));
+                allAttendees = allAttendees.filter(item => item.id !== deleteTargetId);
+                updateAttendeesUI();
+                if (isAdminAuthenticated) updateAdminUI(allAttendees);
+                showToast("Rekod dipadam dari peranti.", 'success');
             }
             closeDeleteModal();
         };
 
         const openCSVModal = () => {
-            const selectedList = allAttendees.filter(item => selectedAttendeeIds.has(item.id));
-            if (selectedList.length === 0) {
-                showToast("Sila pilih sekurang-kurangnya satu rekod pendaftaran untuk dimuat turun.", 'error');
+            if (selectedAttendeeIds.size === 0) {
+                showToast("Sila pilih sekurang-kurangnya satu rekod untuk dimuat turun.", 'error');
                 return;
             }
-
-            const titleInput = document.getElementById('csv-meeting-title');
-            const passInput = document.getElementById('csv-download-password');
-            if (titleInput) titleInput.value = "";
-            if (passInput) passInput.value = "";
-
-            const modal = document.getElementById('download-csv-modal');
-            if (!modal) return;
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            const container = modal.querySelector('div');
-            if (container) {
-                container.classList.remove('scale-95');
-                container.classList.add('scale-100');
-            }
-            lucide.createIcons();
+            document.getElementById('csv-download-password').value = "";
+            document.getElementById('download-csv-modal').classList.remove('opacity-0', 'pointer-events-none');
         };
 
         const closeCSVModal = () => {
-            const modal = document.getElementById('download-csv-modal');
-            if (!modal) return;
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            const container = modal.querySelector('div');
-            if (container) {
-                container.classList.remove('scale-100');
-                container.classList.add('scale-95');
-            }
+            document.getElementById('download-csv-modal').classList.add('opacity-0', 'pointer-events-none');
         };
 
         const executeExportToCSV = () => {
             const selectedList = allAttendees.filter(item => selectedAttendeeIds.has(item.id));
-            if (selectedList.length === 0) {
-                showToast("Tiada rekod data yang dipilih untuk dieksport.", 'error');
-                return;
-            }
+            const passwordVal = document.getElementById('csv-download-password').value.trim();
 
-            const meetingTitleInput = document.getElementById('csv-meeting-title');
-            const passwordValInput = document.getElementById('csv-download-password');
-            const meetingTitle = meetingTitleInput ? meetingTitleInput.value.trim() : '';
-            const passwordVal = passwordValInput ? passwordValInput.value.trim() : '';
-
-            if (!meetingTitle) {
-                showToast("Sila masukkan tajuk mesyuarat sebelum muat turun.", 'error');
-                return;
-            }
-
-            // Membaca kata laluan yang disulitkan secara dinamik
             if (passwordVal !== _dec(_ob_p1)) {
-                showToast("Kebenaran Ditolak: Kata laluan pengesahan salah!", 'error');
+                showToast("Kata laluan pentadbir salah!", 'error');
                 return;
             }
 
-            let csvContent = "\uFEFF"; 
-            
-            csvContent += `TAJUK MESYUARAT:,${escapeCSV(meetingTitle)}\n`;
-            csvContent += `TARIKH PENJANAAN:,${escapeCSV(new Date().toLocaleString('ms-MY'))}\n`;
-            csvContent += `JUMLAH PESERTA DIEKSPORT:,${escapeCSV(selectedList.length)}\n\n`;
-            
-            csvContent += "Masa Pendaftaran,Nama Penuh,Alamat Emel,Jawatan,Jabatan/Organisasi,Catatan\n";
+            let csvContent = "\uFEFF";
+            csvContent += "Tarikh & Masa,Tajuk Mesyuarat,Nama Penuh,Alamat Emel,Jawatan,Jabatan/Organisasi,Catatan\n";
 
             selectedList.forEach(item => {
                 const dateObj = item.timestamp ? new Date(item.timestamp) : null;
                 const timeStr = dateObj ? `${dateObj.toLocaleDateString('ms-MY')} ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '-';
-
                 const row = [
-                    escapeCSV(timeStr),
-                    escapeCSV(toTitleCase(item.nama)),
-                    escapeCSV(item.email),
-                    escapeCSV(item.jawatan),
-                    escapeCSV(item.jabatan),
-                    escapeCSV(item.catatan)
+                    `"${timeStr}"`,
+                    `"${item.tajukMesyuarat || 'Mesyuarat Umum'}"`,
+                    `"${toTitleCase(item.nama)}"`,
+                    `"${item.email}"`,
+                    `"${item.jawatan}"`,
+                    `"${item.jabatan}"`,
+                    `"${item.catatan || '-'}"`
                 ].join(",");
-
                 csvContent += row + "\r\n";
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            const safeTitle = meetingTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
             link.setAttribute("href", url);
-            link.setAttribute("download", `Kehadiran_${safeTitle}_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.setAttribute("download", `Laporan_Kehadiran_Mesyuarat_${new Date().toISOString().slice(0, 10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
             closeCSVModal();
-            showToast("Fail CSV berjaya dijana dan dimuat turun!", 'success');
-        };
-
-        const escapeCSV = (field) => {
-            if (!field) return '""';
-            return `"${field.toString().replace(/"/g, '""')}"`;
+            showToast("Fail CSV berjaya dimuat turun!", 'success');
         };
 
         const switchTab = (tabName) => {
-            const btnReg = document.getElementById('tab-btn-register');
-            const btnList = document.getElementById('tab-btn-list');
-            const btnAdmin = document.getElementById('tab-btn-admin');
-            
-            const secReg = document.getElementById('section-register');
-            const secList = document.getElementById('section-list');
-            const secAdmin = document.getElementById('section-admin');
-
-            if (btnReg && btnList && btnAdmin) {
-                [btnReg, btnList, btnAdmin].forEach(btn => {
-                    btn.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200 min-h-[40px]";
-                });
-            }
-            if (secReg && secList && secAdmin) {
-                [secReg, secList, secAdmin].forEach(sec => sec.classList.add('hidden'));
-            }
+            ['section-register', 'section-list', 'section-admin'].forEach(s => document.getElementById(s).classList.add('hidden'));
+            ['tab-btn-register', 'tab-btn-list', 'tab-btn-admin'].forEach(b => {
+                document.getElementById(b).className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 min-h-[40px]";
+            });
 
             if (tabName === 'register') {
-                if (btnReg) btnReg.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
-                if (secReg) secReg.classList.remove('hidden');
+                document.getElementById('tab-btn-register').className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold bg-brand-500 text-white shadow-md min-h-[40px]";
+                document.getElementById('section-register').classList.remove('hidden');
                 updateRegistrationAccessUI();
             } else if (tabName === 'list') {
-                if (btnList) btnList.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
-                if (secList) secList.classList.remove('hidden');
-                
-                if (!isFirebaseActive) {
-                    loadLocalAndSheetsData();
-                } else {
-                    updateAttendeesUI();
-                }
+                document.getElementById('tab-btn-list').className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold bg-brand-500 text-white shadow-md min-h-[40px]";
+                document.getElementById('section-list').classList.remove('hidden');
+                updateAttendeesUI();
             } else if (tabName === 'admin') {
-                if (btnAdmin) btnAdmin.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]";
-                if (secAdmin) secAdmin.classList.remove('hidden');
-                
-                const loginView = document.getElementById('admin-login-view');
-                const dashboardView = document.getElementById('admin-dashboard-view');
-                if (loginView && dashboardView) {
-                    if (isAdminAuthenticated) {
-                        loginView.classList.add('hidden');
-                        dashboardView.classList.remove('hidden');
-                        updateAdminUI(allAttendees);
-                    } else {
-                        loginView.classList.remove('hidden');
-                        dashboardView.classList.add('hidden');
-                    }
-                }
-            }
-        };
-
-        // Verification security methods for check-in permissions block
-        const openLockAuthModal = () => {
-            const passInput = document.getElementById('lock-auth-password');
-            if (passInput) passInput.value = "";
-            const modal = document.getElementById('lock-auth-modal');
-            if (!modal) return;
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            const container = modal.querySelector('div');
-            if (container) {
-                container.classList.remove('scale-95');
-                container.classList.add('scale-100');
-            }
-            if (passInput) passInput.focus();
-        };
-
-        const closeLockAuthModal = () => {
-            const modal = document.getElementById('lock-auth-modal');
-            if (!modal) return;
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            const container = modal.querySelector('div');
-            if (container) {
-                container.classList.remove('scale-100');
-                container.classList.add('scale-95');
-            }
-        };
-
-        const executeLockSettingsUpdate = async () => {
-            const passwordInput = document.getElementById('lock-auth-password');
-            if (!passwordInput) return;
-            // Membaca kata laluan yang disulitkan secara dinamik
-            if (passwordInput.value.trim() !== _dec(_ob_p1)) {
-                showToast("Kata laluan salah! Kemaskini had akses ditolak.", "error");
-                passwordInput.focus();
-                return;
-            }
-
-            closeLockAuthModal();
-
-            const durationSelectEl = document.getElementById('reg-duration-select');
-            const durationSelect = durationSelectEl ? durationSelectEl.value : 'tutup';
-            let expiresAt = null;
-            let enabled = true;
-
-            if (durationSelect === 'tutup') {
-                expiresAt = null;
-                enabled = false;
-            } else if (durationSelect === 'sentiasa') {
-                expiresAt = null;
-                enabled = true;
-            } else {
-                let minutes = 0;
-                if (durationSelect === 'custom') {
-                    const customMinutesInput = document.getElementById('custom-minutes-input');
-                    minutes = customMinutesInput ? (parseInt(customMinutesInput.value) || 0) : 0;
+                document.getElementById('tab-btn-admin').className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold bg-brand-500 text-white shadow-md min-h-[40px]";
+                document.getElementById('section-admin').classList.remove('hidden');
+                if (isAdminAuthenticated) {
+                    document.getElementById('admin-login-view').classList.add('hidden');
+                    document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                    updateAdminUI(allAttendees);
                 } else {
-                    minutes = parseInt(durationSelect) || 0;
-                }
-
-                if (minutes <= 0) {
-                    showToast("Sila masukkan nilai minit yang sah.", "error");
-                    return;
-                }
-
-                expiresAt = window.getSyncedNow() + (minutes * 60000);
-                enabled = true;
-            }
-
-            const updatedSettings = { enabled, expiresAt };
-
-            // 1. Simpan ke Local Storage Komputer Admin
-            localStorage.setItem('system_settings', JSON.stringify(updatedSettings));
-            systemSettings = updatedSettings;
-            updateRegistrationAccessUI();
-
-            // 2. Simpan ke Firebase (Sekiranya Aktif)
-            if (isFirebaseActive && db && currentUser) {
-                try {
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tetapan', 'sistem');
-                    await setDoc(docRef, updatedSettings);
-                } catch (e) {
-                    console.error("Gagal mengemaskini tetapan di Firebase:", e);
+                    document.getElementById('admin-login-view').classList.remove('hidden');
+                    document.getElementById('admin-dashboard-view').classList.add('hidden');
                 }
             }
-
-            // 3. Simpan ke Google Sheets (Sentiasa hantar supaya platform lain yang tiada Firebase boleh menyegerak status!)
-            let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
-            if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
-                gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
-            }
-            if (gasTargetUrl) {
-                const settingsPayload = {
-                    id: 'settings-' + Date.now(),
-                    email: "SYSTEM_SETTINGS",
-                    nama: JSON.stringify(updatedSettings),
-                    jawatan: "SYSTEM",
-                    jabatan: "SYSTEM",
-                    catatan: "SYSTEM",
-                    timestamp: Date.now()
-                };
-                try {
-                    await fetch(gasTargetUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'text/plain' 
-                        },
-                        body: JSON.stringify(settingsPayload)
-                    });
-                    showToast("Had Akses berjaya dikongsi ke semua peranti talian!", "success");
-                } catch (e) {
-                    console.error("Gagal menyegerak tetapan ke Google Sheets:", e);
-                }
-            } else {
-                showToast("Tetapan disimpan secara peranti tempatan sahaja.", "success");
-            }
         };
 
-        // Google Sheets Access Restriction Integration
-        const openSetupAuthModal = () => {
-            const passInput = document.getElementById('setup-auth-password');
-            if (passInput) passInput.value = "";
-            const modal = document.getElementById('setup-auth-modal');
-            if (!modal) return;
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            const container = modal.querySelector('div');
-            if (container) {
-                container.classList.remove('scale-95');
-                container.classList.add('scale-100');
-            }
-            if (passInput) passInput.focus();
-        };
-
-        const closeSetupAuthModal = () => {
-            const modal = document.getElementById('setup-auth-modal');
-            if (!modal) return;
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            const container = modal.querySelector('div');
-            if (container) {
-                container.classList.remove('scale-100');
-                container.classList.add('scale-95');
-            }
-        };
-
-        const verifySetupPassword = () => {
-            const passwordInput = document.getElementById('setup-auth-password');
-            if (!passwordInput) return;
-            // Membaca kata laluan yang disulitkan secara dinamik
-            if (passwordInput.value.trim() === _dec(_ob_p2)) {
-                closeSetupAuthModal();
-                toggleSetupPanel(); 
-                showToast("Akses tetapan Google Sheets dibenarkan!", "success");
-            } else {
-                showToast("Kata laluan salah! Akses konfigurasi ditolak.", "error");
-                passwordInput.focus();
-            }
-        };
-
-        const toggleSetupPanel = function() {
-            const panel = document.getElementById('setup-panel');
-            if (!panel) return;
-            const container = panel.querySelector('div');
-            if (!container) return;
-            if (panel.classList.contains('opacity-0')) {
-                panel.classList.remove('opacity-0', 'pointer-events-none');
-                container.classList.remove('translate-y-full');
-                container.classList.add('translate-y-0');
-            } else {
-                panel.classList.add('opacity-0', 'pointer-events-none');
-                container.classList.remove('translate-y-0');
-                container.classList.add('translate-y-full');
-            }
-        };
-
-        const saveSetupConfig = function() {
-            const urlInput = document.getElementById('gas-url');
-            const urlVal = urlInput ? urlInput.value.trim() : '';
-            if (urlVal && !urlVal.startsWith('http')) {
-                showToast("Sila pastikan URL Google Apps Script dimasukkan dengan betul.", 'error');
-                return;
-            }
-            localStorage.setItem('gas_sheets_url', urlVal);
-            showToast("Konfigurasi integrasi Google Sheet disimpan secara tempatan!", 'success');
-            toggleSetupPanel();
-            if (!isFirebaseActive) {
-                loadLocalAndSheetsData(true);
-            }
-        };
-
-        const submitManualEmail = function() {
-            const emailInput = document.getElementById('input-email-manual');
-            const val = emailInput ? emailInput.value.trim() : '';
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!val || !emailRegex.test(val)) {
+        const submitManualEmail = () => {
+            const val = document.getElementById('input-email-manual').value.trim();
+            if (!val || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
                 showToast("Sila masukkan alamat emel rasmi yang sah.", 'error');
                 return;
             }
             attendanceRecord.email = val.toLowerCase();
-            proceedToDetailsForm();
+            document.getElementById('display-user-email').textContent = attendanceRecord.email;
+            document.getElementById('step-login').classList.add('hidden');
+            document.getElementById('step-details').classList.remove('hidden');
         };
 
-        function proceedToDetailsForm() {
-            const displayEmail = document.getElementById('display-user-email');
-            if (displayEmail) displayEmail.textContent = attendanceRecord.email;
-            
-            try {
-                const localData = JSON.parse(localStorage.getItem('local_kehadiran') || '[]');
-                const match = localData.find(item => item.email.toLowerCase() === attendanceRecord.email.toLowerCase());
-                if (match) {
-                    const guestNameEl = document.getElementById('guest-name');
-                    const guestDesigEl = document.getElementById('guest-designation');
-                    const guestDeptEl = document.getElementById('guest-department');
-                    if (guestNameEl) guestNameEl.value = match.nama || "";
-                    if (guestDesigEl) guestDesigEl.value = match.jawatan || "";
-                    if (guestDeptEl) guestDeptEl.value = match.jabatan || "";
-                }
-            } catch(e) {
-                console.warn(e);
-            }
-
-            const loginStep = document.getElementById('step-login');
-            const detailsStep = document.getElementById('step-details');
-            if (loginStep) loginStep.classList.add('hidden');
-            if (detailsStep) detailsStep.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            showToast("Sila lengkapkan maklumat peribadi kehadiran.", 'info');
-        }
-
-        const goBackToLogin = function() {
-            const detailsStep = document.getElementById('step-details');
-            const loginStep = document.getElementById('step-login');
-            if (detailsStep) detailsStep.classList.add('hidden');
-            if (loginStep) loginStep.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        const handleFormSubmission = async function(e) {
+        const handleFormSubmission = async (e) => {
             e.preventDefault();
-            
             const btn = document.getElementById('btn-submit-kehadiran');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>Merekodkan Kehadiran...</span>`;
-            }
-            lucide.createIcons();
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>Merekodkan Kehadiran...</span>`;
 
-            const guestNameEl = document.getElementById('guest-name');
-            const guestDesigEl = document.getElementById('guest-designation');
-            const guestDeptEl = document.getElementById('guest-department');
-            const guestNoteEl = document.getElementById('guest-note');
-
-            attendanceRecord.nama = guestNameEl ? guestNameEl.value.trim() : '';
-            attendanceRecord.jawatan = guestDesigEl ? guestDesigEl.value.trim() : '';
-            attendanceRecord.jabatan = guestDeptEl ? guestDeptEl.value.trim() : '';
-            attendanceRecord.catatan = guestNoteEl ? guestNoteEl.value.trim() : '';
+            attendanceRecord.tajukMesyuarat = document.getElementById('guest-meeting-title').value;
+            attendanceRecord.nama = document.getElementById('guest-name').value.trim();
+            attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
+            attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
+            attendanceRecord.catatan = document.getElementById('guest-note').value.trim();
 
             const timestamp = window.getSyncedNow();
-            const uniqueId = 'reg-' + timestamp + '-' + Math.floor(Math.random() * 100000);
-            
-            const payload = {
-                id: uniqueId,
-                ...attendanceRecord,
-                timestamp: timestamp
-            };
+            const payload = { id: 'reg-' + timestamp + '-' + Math.floor(Math.random() * 100000), ...attendanceRecord, timestamp };
 
             saveToLocalCache(payload);
-
             if (isFirebaseActive && currentUser && db) {
-                try {
-                    // Rule 1 Compliance
-                    const ref = collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran');
-                    await addDoc(ref, payload);
-                } catch (fsError) {
-                    console.warn("Ralat menulis ke pangkalan data Firebase: ", fsError);
-                }
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'kehadiran'), payload);
             }
 
-            let gasTargetUrl = URL_GOOGLE_APPS_SCRIPT;
-            if (!gasTargetUrl || gasTargetUrl === "TAMPAL_URL_APPS_SCRIPT_DI_SINI") {
-                gasTargetUrl = localStorage.getItem('gas_sheets_url') || "";
-            }
+            document.getElementById('step-details').classList.add('hidden');
+            document.getElementById('resit-tajuk-mesyuarat').textContent = payload.tajukMesyuarat;
+            document.getElementById('resit-nama').textContent = toTitleCase(payload.nama);
+            document.getElementById('resit-jawatan').textContent = payload.jawatan;
+            document.getElementById('resit-jabatan').textContent = payload.jabatan;
+            document.getElementById('resit-emel').textContent = payload.email;
+            document.getElementById('unique-id').textContent = 'REG-' + Math.floor(100000 + Math.random() * 900000);
 
-            if (gasTargetUrl) {
-                try {
-                    await fetch(gasTargetUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'text/plain' 
-                        },
-                        body: JSON.stringify(payload)
-                    });
-                } catch (gasError) {
-                    console.error("Integrasi Google Sheets terputus:", gasError);
-                }
-            }
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, { text: `${payload.tajukMesyuarat}|${payload.nama}|${payload.email}`, width: 128, height: 128 });
 
-            if (!isFirebaseActive) {
-                await loadLocalAndSheetsData();
-            }
-
-            showSuccessScreen(payload);
+            document.getElementById('step-success').classList.remove('hidden');
+            confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+            showToast("Kehadiran berjaya direkodkan!", 'success');
         };
 
-        function showSuccessScreen(record) {
-            const detailsStep = document.getElementById('step-details');
-            if (detailsStep) detailsStep.classList.add('hidden');
+        const resetSystem = () => {
+            document.getElementById('input-email-manual').value = "";
+            document.getElementById('guest-meeting-title').selectedIndex = 0;
+            document.getElementById('guest-name').value = "";
+            document.getElementById('guest-designation').value = "";
+            document.getElementById('guest-department').value = "";
+            document.getElementById('guest-note').value = "";
+            document.getElementById('policy-check').checked = false;
             
-            const resitNamaEl = document.getElementById('resit-nama');
-            const resitJawatanEl = document.getElementById('resit-jawatan');
-            const resitJabatanEl = document.getElementById('resit-jabatan');
-            const resitEmelEl = document.getElementById('resit-emel');
-            const ticketTimeEl = document.getElementById('ticket-time');
-            const uniqueIdEl = document.getElementById('unique-id');
-
-            if (resitNamaEl) resitNamaEl.textContent = toTitleCase(record.nama);
-            if (resitJawatanEl) resitJawatanEl.textContent = record.jawatan;
-            if (resitJabatanEl) resitJabatanEl.textContent = record.jabatan;
-            if (resitEmelEl) resitEmelEl.textContent = record.email;
-            
-            const timeNow = new Date(window.getSyncedNow());
-            if (ticketTimeEl) ticketTimeEl.textContent = `Masa: ${timeNow.toLocaleDateString('ms-MY')} | ${timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            
-            const randomRef = 'REG-' + Math.floor(100000 + Math.random() * 900000);
-            if (uniqueIdEl) uniqueIdEl.textContent = randomRef;
-
-            const qrCodeContainer = document.getElementById('qrcode');
-            if (qrCodeContainer) {
-                qrCodeContainer.innerHTML = "";
-                new QRCode(qrCodeContainer, {
-                    text: `${randomRef}|${toTitleCase(record.nama)}|${record.email}|${record.jawatan}`,
-                    width: 128,
-                    height: 128,
-                    colorDark : "#0F172A",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.M
-                });
-            }
-
-            const successStep = document.getElementById('step-success');
-            if (successStep) successStep.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            confetti({
-                particleCount: 140,
-                spread: 70,
-                origin: { y: 0.65 },
-                colors: ['#0c85eb', '#36a2fc', '#ffffff', '#10b981']
-            });
-
-            showToast("Kehadiran anda telah berjaya direkodkan secara rasmi.", 'success');
-        }
-
-        const shareAttendance = function() {
-            const textToCopy = `Pendaftaran Kehadiran Mesyuarat Berjaya!\n\nNama: ${toTitleCase(attendanceRecord.nama)}\nJawatan: ${attendanceRecord.jawatan}\nJabatan/Organisasi: ${attendanceRecord.jabatan}\nTarikh Pendaftaran: ${new Date().toLocaleDateString('ms-MY')}\nSistem: Kehadiran Mesyuarat Bersepadu`;
-            
-            const temp = document.createElement("textarea");
-            temp.value = textToCopy;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            document.body.removeChild(temp);
-            
-            showToast("Maklumat pas rekod disalin ke papan klip peranti anda!", 'success');
-        };
-
-        const resetSystem = function() {
-            const emailInput = document.getElementById('input-email-manual');
-            const guestNameEl = document.getElementById('guest-name');
-            const guestDesigEl = document.getElementById('guest-designation');
-            const guestDeptEl = document.getElementById('guest-department');
-            const guestNoteEl = document.getElementById('guest-note');
-            const policyCheckEl = document.getElementById('policy-check');
-
-            if (emailInput) emailInput.value = "";
-            if (guestNameEl) guestNameEl.value = "";
-            if (guestDesigEl) guestDesigEl.value = "";
-            if (guestDeptEl) guestDeptEl.value = "";
-            if (guestNoteEl) guestNoteEl.value = "";
-            if (policyCheckEl) policyCheckEl.checked = false;
-            
-            attendanceRecord = {
-                email: "",
-                nama: "",
-                jawatan: "",
-                jabatan: "",
-                catatan: ""
-            };
-
             const btn = document.getElementById('btn-submit-kehadiran');
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>Sahkan & Hantar Kehadiran</span>`;
-            }
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> <span>Sahkan & Hantar Kehadiran</span>`;
 
-            const successStep = document.getElementById('step-success');
-            const loginStep = document.getElementById('step-login');
-            if (successStep) successStep.classList.add('hidden');
-            if (loginStep) loginStep.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            lucide.createIcons();
-            updateRegistrationAccessUI();
-        };
-
-        // Fungsi penyambung pengikatan selamat bagi mengelakkan ralat null pointer
-        const safeBind = (id, event, callback) => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener(event, callback);
-            }
+            document.getElementById('step-success').classList.add('hidden');
+            document.getElementById('step-login').classList.remove('hidden');
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
             initLiveClock();
-            
             loadLocalAndSheetsData();
             await runSecureAuth();
 
-            const cachedGasUrl = localStorage.getItem('gas_sheets_url');
-            if (cachedGasUrl) {
-                const gasUrlInput = document.getElementById('gas-url');
-                if (gasUrlInput) gasUrlInput.value = cachedGasUrl;
-            }
-
-            // Google Sheets Access Restriction Integration
-            safeBind('btn-open-setup', 'click', openSetupAuthModal);
-            safeBind('btn-open-setup-mobile', 'click', openSetupAuthModal);
-            safeBind('btn-cancel-setup-auth', 'click', closeSetupAuthModal);
-            safeBind('btn-confirm-setup-auth', 'click', verifySetupPassword);
+            document.getElementById('tab-btn-register').addEventListener('click', () => switchTab('register'));
+            document.getElementById('tab-btn-list').addEventListener('click', () => switchTab('list'));
+            document.getElementById('tab-btn-admin').addEventListener('click', () => switchTab('admin'));
             
-            const setupAuthPass = document.getElementById('setup-auth-password');
-            if (setupAuthPass) {
-                setupAuthPass.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') verifySetupPassword();
-                });
-            }
-
-            safeBind('btn-close-setup', 'click', toggleSetupPanel);
-            safeBind('btn-save-setup', 'click', saveSetupConfig);
-            
-            safeBind('tab-btn-register', 'click', () => switchTab('register'));
-            safeBind('tab-btn-list', 'click', () => switchTab('list'));
-            safeBind('tab-btn-admin', 'click', () => switchTab('admin'));
-            
-            safeBind('btn-submit-email', 'click', submitManualEmail);
-            safeBind('btn-back-login', 'click', goBackToLogin);
-            safeBind('btn-share-attendance', 'click', shareAttendance);
-            safeBind('btn-reset-system', 'click', resetSystem);
-            
-            safeBind('details-form', 'submit', handleFormSubmission);
-            safeBind('search-attendees', 'input', updateAttendeesUI);
-            safeBind('btn-refresh-list', 'click', () => {
-                loadLocalAndSheetsData(true);
+            document.getElementById('btn-submit-email').addEventListener('click', submitManualEmail);
+            document.getElementById('btn-back-login').addEventListener('click', () => {
+                document.getElementById('step-details').classList.add('hidden');
+                document.getElementById('step-login').classList.remove('hidden');
             });
-
-            safeBind('btn-submit-admin-login', 'click', verifyAdminPassword);
-            
-            const adminPassInput = document.getElementById('admin-password-input');
-            if (adminPassInput) {
-                adminPassInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') verifyAdminPassword();
-                });
-            }
-            
-            safeBind('btn-admin-logout', 'click', logoutAdmin);
-            safeBind('btn-export-csv', 'click', openCSVModal);
-            safeBind('search-admin-attendees', 'input', () => updateAdminUI(allAttendees));
-
-            safeBind('btn-cancel-delete', 'click', closeDeleteModal);
-            safeBind('btn-confirm-delete', 'click', executeDelete);
-
-            safeBind('btn-cancel-csv', 'click', closeCSVModal);
-            safeBind('btn-confirm-csv', 'click', executeExportToCSV);
-            
-            const csvDownloadPass = document.getElementById('csv-download-password');
-            if (csvDownloadPass) {
-                csvDownloadPass.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') executeExportToCSV();
-                });
-            }
-
-            // Timed lock settings configuration triggers
-            const durationSelect = document.getElementById('reg-duration-select');
-            if (durationSelect) {
-                durationSelect.addEventListener('change', (e) => {
-                    const customContainer = document.getElementById('custom-minutes-container');
-                    if (customContainer) {
-                        if (e.target.value === 'custom') {
-                            customContainer.classList.remove('hidden');
-                        } else {
-                            customContainer.classList.add('hidden');
-                        }
-                    }
-                });
-            }
-
-            safeBind('btn-trigger-lock-settings', 'click', openLockAuthModal);
-            safeBind('btn-cancel-lock-auth', 'click', closeLockAuthModal);
-            safeBind('btn-confirm-lock-auth', 'click', executeLockSettingsUpdate);
-            
-            const lockAuthPass = document.getElementById('lock-auth-password');
-            if (lockAuthPass) {
-                lockAuthPass.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') executeLockSettingsUpdate();
-                });
-            }
-
-            // SEGERAK LATAR BELAKANG AUTOMATIK: Menyegerakkan had akses terkini ke semua peranti mudah alih setiap 12 saat
-            setInterval(() => {
-                try {
-                    if (!isFirebaseActive) {
-                        loadLocalAndSheetsData(false); // Proses berjalan senyap tanpa popup pemberitahuan mengganggu
-                    }
-                } catch (e) {
-                    console.error("Gagal menyegerak di latar belakang:", e);
-                }
-            }, 12000);
+            document.getElementById('details-form').addEventListener('submit', handleFormSubmission);
+            document.getElementById('btn-reset-system').addEventListener('click', resetSystem);
+            document.getElementById('btn-submit-admin-login').addEventListener('click', verifyAdminPassword);
+            document.getElementById('btn-admin-logout').addEventListener('click', logoutAdmin);
+            document.getElementById('btn-export-csv').addEventListener('click', openCSVModal);
+            document.getElementById('btn-confirm-csv').addEventListener('click', executeExportToCSV);
+            document.getElementById('btn-cancel-csv').addEventListener('click', closeCSVModal);
+            document.getElementById('btn-confirm-delete').addEventListener('click', executeDelete);
+            document.getElementById('btn-cancel-delete').addEventListener('click', closeDeleteModal);
+            document.getElementById('search-attendees').addEventListener('input', updateAttendeesUI);
+            document.getElementById('search-admin-attendees').addEventListener('input', () => updateAdminUI(allAttendees));
         });
-
     </script>
 </body>
 </html>
