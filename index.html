@@ -153,7 +153,7 @@
         <div class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 w-full sm:w-auto">
             <button id="tab-btn-register" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-all duration-200 bg-brand-500 text-white shadow-md min-h-[40px]">
                 <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-                <span>Daftar Masuk</span>
+                <span>Daftar Kehadiran</span>
             </button>
             <button id="tab-btn-list" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200 min-h-[40px]">
                 <i data-lucide="users" class="w-3.5 h-3.5"></i>
@@ -421,9 +421,6 @@
                         <p class="text-xs text-slate-400">Tambah jadual mesyuarat dan semak tandatangan peserta.</p>
                     </div>
                     <div class="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap">
-                        <button id="btn-delete-selected" class="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs border border-rose-500/30 flex items-center gap-2 min-h-[44px]">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih (<span id="selected-count-badge">0</span>)
-                        </button>
                         <button id="btn-export-pdf" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 min-h-[44px]">
                             <i data-lucide="printer" class="w-4 h-4"></i> Cetak / PDF Rasmi
                         </button>
@@ -468,9 +465,17 @@
                     <div id="admin-meetings-list" class="space-y-2"></div>
                 </div>
 
-                <div class="relative">
-                    <input type="text" id="search-admin-attendees" placeholder="Cari rekod pendaftar..." 
-                        class="w-full bg-corporate-card/80 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-200 focus:ring-2 focus:ring-brand-500" />
+                <!-- Ruang Carian dan Butang Hapus Terpilih di Bawahnya -->
+                <div class="space-y-3">
+                    <div class="relative">
+                        <input type="text" id="search-admin-attendees" placeholder="Cari rekod pendaftar..." 
+                            class="w-full bg-corporate-card/80 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-200 focus:ring-2 focus:ring-brand-500" />
+                    </div>
+                    <div>
+                        <button id="btn-delete-selected" class="bg-rose-600/25 hover:bg-rose-600/35 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs border border-rose-500/30 flex items-center gap-2 min-h-[40px]">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih (<span id="selected-count-badge">0</span>)
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
