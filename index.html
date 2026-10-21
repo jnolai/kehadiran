@@ -105,10 +105,6 @@
         }
         .ticket-notch-left { left: -8px; transform: translateY(-50%); }
         .ticket-notch-right { right: -8px; transform: translateY(-50%); }
-        .scan-line {
-            height: 2px; background: linear-gradient(to right, transparent, #36a2fc, transparent); animation: scan 3s linear infinite;
-        }
-        @keyframes scan { 0% { transform: translateY(0); } 50% { transform: translateY(128px); } 100% { transform: translateY(0); } }
         canvas.signature-pad {
             touch-action: none; width: 100%; height: 140px; background-color: #0B0F19; border-radius: 0.75rem; cursor: crosshair;
         }
@@ -422,7 +418,7 @@
                     </div>
                     <div class="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap">
                         <button id="btn-export-pdf" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 min-h-[44px]">
-                            <i data-lucide="printer" class="w-4 h-4"></i> Cetak / PDF Rasmi
+                            <i data-lucide="send" class="w-4 h-4"></i> Eksport / WhatsApp
                         </button>
                         <button id="btn-admin-logout" class="bg-rose-600/20 text-rose-400 font-bold py-2.5 px-4 rounded-xl text-xs border border-rose-500/20 min-h-[44px]">Keluar</button>
                     </div>
@@ -508,7 +504,6 @@
     <div id="print-template-container" class="hidden">
         <div style="font-family: Arial, sans-serif; padding: 20px; color: black; font-size: 12pt;">
             <div style="text-align: center; margin-bottom: 20px;">
-                <!-- Logo DBKL diletakkan di tengah dengan margin auto -->
                 <img src="https://raw.githubusercontent.com/jnolai/kehadiran/main/logo.png" alt="Logo DBKL" style="display: block; margin: 0 auto 12px auto; max-height: 80px; width: auto; object-fit: contain;">
                 <h2 style="margin: 0; font-size: 16pt; font-weight: bold; text-transform: uppercase;">SENARAI KEHADIRAN MESYUARAT</h2>
             </div>
@@ -528,13 +523,12 @@
                     </tr>
                 </thead>
                 <tbody id="print-table-body">
-                    <!-- Dynamic rows injected here -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- MODAL PADAM & PDF -->
+    <!-- MODAL PADAM -->
     <div id="delete-confirm-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
@@ -548,11 +542,12 @@
         </div>
     </div>
 
+    <!-- MODAL CETAK PDF & WHATSAPP -->
     <div id="download-pdf-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
         <div class="bg-corporate-card border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-5 shadow-2xl">
             <div class="text-center space-y-2">
-                <h3 class="text-lg font-bold text-white">Cetak / Muat Turun PDF Rasmi</h3>
-                <p class="text-xs text-slate-400">Pilih mesyuarat dan masukkan kata laluan pentadbir.</p>
+                <h3 class="text-lg font-bold text-white">Eksport / Hantar Kehadiran</h3>
+                <p class="text-xs text-slate-400">Pilih mesyuarat untuk cetak PDF atau hantar ringkasan ke WhatsApp.</p>
             </div>
             <div class="space-y-3">
                 <div>
@@ -562,14 +557,24 @@
                     </select>
                 </div>
                 <div>
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Nombor WhatsApp Penerima (Pilihan)</label>
+                    <input type="tel" id="whatsapp-phone-input" placeholder="Contoh: 60123456789 (Kosongkan jika nak pilih dalam WA)" 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
                     <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Kata Laluan Pentadbir</label>
                     <input type="password" id="pdf-download-password" placeholder="••••••••" 
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100">
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
             </div>
-            <div class="flex gap-3 pt-2">
-                <button id="btn-cancel-pdf" class="flex-1 bg-slate-800 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
-                <button id="btn-confirm-pdf" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-3 rounded-xl min-h-[44px]">Jana & Cetak PDF</button>
+            <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
+                <button id="btn-cancel-pdf" class="w-full sm:w-auto flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-3 rounded-xl min-h-[44px]">Batal</button>
+                <button id="btn-confirm-pdf" class="w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 rounded-xl min-h-[44px] flex items-center justify-center gap-1.5">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Cetak PDF
+                </button>
+                <button id="btn-send-whatsapp" class="w-full sm:w-auto flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs py-3 rounded-xl min-h-[44px] flex items-center justify-center gap-1.5">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp
+                </button>
             </div>
         </div>
     </div>
@@ -753,7 +758,6 @@
             const selectedMeetingFilter = document.getElementById('filter-meeting-select')?.value || 'ALL';
             const query = (document.getElementById('search-attendees')?.value || '').trim().toLowerCase();
 
-            // Jika belum pilih mesyuarat (masih 'ALL'), paparkan mesej panduan dan kosongkan senarai
             if (selectedMeetingFilter === 'ALL') {
                 container.innerHTML = `<div class="text-center py-10 text-slate-500"><p class="text-xs">Sila pilih tajuk mesyuarat di atas untuk memaparkan senarai kehadiran.</p></div>`;
                 return;
@@ -1018,6 +1022,7 @@
                 document.getElementById('download-pdf-modal').classList.remove('opacity-0', 'pointer-events-none');
                 populateMeetingDropdowns();
             });
+
             document.getElementById('btn-cancel-pdf').addEventListener('click', () => {
                 document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
             });
@@ -1039,7 +1044,6 @@
                 const targetMeeting = activeMeetings.find(m => m.title === selectedMeetingTitle);
                 const targetList = allAttendees.filter(i => i.tajukMesyuarat === selectedMeetingTitle);
 
-                // Masukkan info ke templat cetakan
                 document.getElementById('print-perkara').textContent = selectedMeetingTitle;
                 document.getElementById('print-tarikh').textContent = targetMeeting ? targetMeeting.datetime : '-';
                 document.getElementById('print-lokasi').textContent = targetMeeting ? targetMeeting.location : '-';
@@ -1068,7 +1072,6 @@
                 document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
                 showToast("Menjana dokumen rasmi untuk dicetak...", "success");
 
-                // Paparkan bekas templat, cetak, kemudian sembunyikan semula
                 const container = document.getElementById('print-template-container');
                 container.classList.remove('hidden');
                 
@@ -1076,6 +1079,62 @@
                     window.print();
                     container.classList.add('hidden');
                 }, 300);
+            });
+
+            // PROSES HANTAR KE WHATSAPP
+            document.getElementById('btn-send-whatsapp').addEventListener('click', () => {
+                const pass = document.getElementById('pdf-download-password').value.trim();
+                if (pass !== _dec(_ob_p1)) {
+                    showToast("Kata laluan salah!", "error");
+                    return;
+                }
+
+                const selectedMeetingTitle = document.getElementById('pdf-meeting-select').value;
+                if (!selectedMeetingTitle) {
+                    showToast("Sila pilih mesyuarat terlebih dahulu.", "error");
+                    return;
+                }
+
+                const targetMeeting = activeMeetings.find(m => m.title === selectedMeetingTitle);
+                const targetList = allAttendees.filter(i => i.tajukMesyuarat === selectedMeetingTitle);
+
+                if (targetList.length === 0) {
+                    showToast("Tiada rekod kehadiran bagi mesyuarat ini.", "error");
+                    return;
+                }
+
+                // Formatkan mesej rasmi WhatsApp
+                let msg = `*SENARAI KEHADIRAN MESYUARAT RASMI*\n\n`;
+                msg += `📌 *Perkara:* ${selectedMeetingTitle}\n`;
+                msg += `📅 *Tarikh/Masa:* ${targetMeeting ? targetMeeting.datetime : '-'}\n`;
+                msg += `📍 *Lokasi:* ${targetMeeting ? targetMeeting.location : '-'}\n`;
+                msg += `👥 *Jumlah Kehadiran:* ${targetList.length} orang\n\n`;
+                msg += `*SENARAI PEGAWAI HADIR:*\n`;
+
+                targetList.forEach((item, index) => {
+                    msg += `${index + 1}. *${toTitleCase(item.nama)}*\n`;
+                    msg += `   • Jawatan: ${item.jawatan || '-'}\n`;
+                    msg += `   • Jabatan: ${item.jabatan || '-'}\n`;
+                    if (item.catatan) msg += `   • Catatan: ${item.catatan}\n`;
+                });
+
+                msg += `\n_Dijana secara automatik melalui Sistem Kehadiran Mesyuarat Bersepadu._`;
+
+                let rawPhone = document.getElementById('whatsapp-phone-input').value.trim();
+                let cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+
+                if (cleanPhone.startsWith('01')) {
+                    cleanPhone = '6' + cleanPhone;
+                }
+
+                let waUrl = cleanPhone 
+                    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
+                    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+                document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
+                showToast("Membuka WhatsApp...", "success");
+
+                window.open(waUrl, '_blank');
             });
 
             document.getElementById('filter-meeting-select').addEventListener('change', updateAttendeesUI);
