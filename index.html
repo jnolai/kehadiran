@@ -372,7 +372,7 @@
                         <i data-lucide="filter" class="w-3.5 h-3.5 text-brand-400"></i> Pilih Mesyuarat Untuk Paparan
                     </label>
                     <select id="filter-meeting-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <option value="ALL">-- Papar Semua Kehadiran --</option>
+                        <option value="ALL" selected>-- Sila Pilih Tajuk Mesyuarat --</option>
                     </select>
                 </div>
 
@@ -387,7 +387,7 @@
 
             <div class="bg-corporate-card/80 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-sm">
                 <div id="attendees-container" class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
-                    <div class="text-center py-10 text-slate-400"><i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto text-brand-400"></i></div>
+                    <div class="text-center py-10 text-slate-500"><p class="text-xs">Sila pilih tajuk mesyuarat di atas untuk memaparkan senarai kehadiran.</p></div>
                 </div>
             </div>
         </div>
@@ -689,7 +689,7 @@
             const pdfSelectEl = document.getElementById('pdf-meeting-select');
 
             let htmlOptions = '<option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>';
-            let htmlFilterOptions = '<option value="ALL">-- Papar Semua Kehadiran --</option>';
+            let htmlFilterOptions = '<option value="ALL" selected>-- Sila Pilih Tajuk Mesyuarat --</option>';
             let htmlPdfOptions = '<option value="" disabled selected>-- Pilih Mesyuarat Untuk Cetak --</option>';
 
             activeMeetings.forEach(m => {
@@ -753,14 +753,20 @@
             const selectedMeetingFilter = document.getElementById('filter-meeting-select')?.value || 'ALL';
             const query = (document.getElementById('search-attendees')?.value || '').trim().toLowerCase();
 
+            // Jika belum pilih mesyuarat (masih 'ALL'), paparkan mesej panduan dan kosongkan senarai
+            if (selectedMeetingFilter === 'ALL') {
+                container.innerHTML = `<div class="text-center py-10 text-slate-500"><p class="text-xs">Sila pilih tajuk mesyuarat di atas untuk memaparkan senarai kehadiran.</p></div>`;
+                return;
+            }
+
             const filtered = allAttendees.filter(item => {
-                const matchMeeting = (selectedMeetingFilter === 'ALL' || item.tajukMesyuarat === selectedMeetingFilter);
+                const matchMeeting = (item.tajukMesyuarat === selectedMeetingFilter);
                 const matchQuery = !query || (item.nama || '').toLowerCase().includes(query) || (item.jabatan || '').toLowerCase().includes(query) || (item.jawatan || '').toLowerCase().includes(query);
                 return matchMeeting && matchQuery;
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-slate-500"><p class="text-xs">Tiada rekod kehadiran dijumpai bagi pilihan ini.</p></div>`;
+                container.innerHTML = `<div class="text-center py-10 text-slate-500"><p class="text-xs">Tiada rekod kehadiran dijumpai bagi mesyuarat ini.</p></div>`;
                 return;
             }
 
