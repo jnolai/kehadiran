@@ -196,7 +196,6 @@
             background-color: var(--accent-primary-hover);
         }
 
-        /* Gaya Kad Pilihan Mesyuarat Terasing */
         .meeting-choice-card {
             background-color: var(--bg-input);
             border: 1.5px solid var(--border-color);
@@ -231,7 +230,6 @@
             touch-action: none; width: 100%; height: 140px; background-color: var(--canvas-bg); border-radius: 0.75rem; cursor: crosshair;
         }
 
-        /* Styling Percetakan PDF Rasmi Templat */
         @media print {
             body * { visibility: hidden; }
             #print-template-container, #print-template-container * { visibility: visible; }
@@ -489,7 +487,7 @@
 
         </div>
 
-        <!-- SECTION 2: LIVE ATTENDEE LIST (KAD PILIHAN MESYUARAT TERASING) -->
+        <!-- SECTION 2: LIVE ATTENDEE LIST -->
         <div id="section-list" class="w-full space-y-6 max-w-2xl mx-auto hidden animate-fade-in">
             <div class="text-center space-y-2">
                 <div class="inline-flex p-3 bg-[#457B9D]/15 dark:bg-[#2370A1]/20 rounded-full border border-[#A8DADC] dark:border-[#2370A1]/40 mb-1">
@@ -499,7 +497,6 @@
                 <p class="text-xs theme-text-muted">Diselaraskan secara automatik setiap 1 minit merentasi semua peranti.</p>
             </div>
 
-            <!-- Bekas Pilihan Kad Mesyuarat Terasing -->
             <div class="theme-card border rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
                 <div class="flex items-center justify-between border-b theme-border pb-3">
                     <label class="text-xs font-bold theme-text-primary flex items-center gap-1.5">
@@ -509,15 +506,10 @@
                     <span id="total-meetings-badge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full theme-subcard theme-text-secondary border">0 Mesyuarat</span>
                 </div>
 
-                <!-- Input tersembunyi untuk simpan nilai mesyuarat dipilih -->
                 <input type="hidden" id="filter-meeting-select" value="ALL">
 
-                <!-- Senarai Kad Mesyuarat Terasing (Setiap satu berasingan dengan jarak & butiran lengkap) -->
-                <div id="meeting-cards-selector" class="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
-                    <!-- Dijana secara dinamik oleh JS -->
-                </div>
+                <div id="meeting-cards-selector" class="space-y-2.5 max-h-[280px] overflow-y-auto pr-1"></div>
 
-                <!-- Kotak Carian Peserta (Hanya muncul apabila mesyuarat telah dipilih) -->
                 <div id="attendee-search-wrapper" class="pt-3 border-t theme-border hidden animate-fade-in">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -529,7 +521,6 @@
                 </div>
             </div>
 
-            <!-- Bekas Senarai Peserta -->
             <div class="theme-card border rounded-2xl p-4 sm:p-5 shadow-xl backdrop-blur-sm space-y-3">
                 <div id="selected-meeting-header" class="hidden pb-3 border-b theme-border flex items-center justify-between gap-2">
                     <div class="min-w-0">
@@ -744,11 +735,8 @@
 
     <!-- Main Script Integration -->
     <script type="module">
-        // =========================================================================
-        // MASUKKAN URL GOOGLE APPS SCRIPT WEB APP ANDA DI BAWAH:
-        // =========================================================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxu-Hb9i2fBT1DRTyehD8Ph3XE69ySfu0KzOVAYNT_1JC5lcjQb0aW5q30HxrHtKEiehg/exec";
-        const SYNC_INTERVAL_MS = 60000; // 60,000 ms = 1 Minit
+        const SYNC_INTERVAL_MS = 60000;
 
         window.clientClockOffset = 0;
         window.getSyncedNow = () => Date.now() + (window.clientClockOffset || 0);
@@ -759,7 +747,7 @@
             return str;
         };
 
-        const _ob_p1 = "756d6b623133383133"; // 'umkb13813'
+        const _ob_p1 = "756d6b623133383133";
 
         let allAttendees = []; 
         let selectedAttendeeIds = new Set();
@@ -776,6 +764,95 @@
         let attendanceRecord = { email: "", tajukMesyuarat: "", tarikhMasaMesyuarat: "", lokasiMesyuarat: "", nama: "", jawatan: "", jabatan: "", catatan: "", signature: "" };
 
         let canvas, ctx, isDrawing = false, hasSignature = false;
+
+        // =========================================================================
+        // PENGESAN & PENYELARASAN AUTOMATIK TANDATANGAN (REKOD LAMA PUTIH & BAHARU)
+        // =========================================================================
+        const normalizedSigCache = new Map();
+
+        window.fixSignatureVisibility = (imgEl) => {
+            if (!imgEl || imgEl.dataset.sigFixed === '1') return;
+            imgEl.dataset.sigFixed = '1';
+
+            try {
+                const w = imgEl.naturalWidth || 200;
+                const h = imgEl.naturalHeight || 80;
+                if (!w || !h) return;
+
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = w;
+                tempCanvas.height = h;
+                const tCtx = tempCanvas.getContext('2d');
+                tCtx.drawImage(imgEl, 0, 0);
+
+                const imgData = tCtx.getImageData(0, 0, w, h);
+                const data = imgData.data;
+                let lightPixels = 0;
+                let visiblePixels = 0;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i + 3] > 20) {
+                        visiblePixels++;
+                        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        if (brightness > 170) lightPixels++;
+                    }
+                }
+
+                // Jika lebih 50% piksel tandatangan berwarna putih/cerah, tukarkan kepada dakwat gelap (#1D3557)
+                if (visiblePixels > 0 && (lightPixels / visiblePixels) > 0.5) {
+                    for (let i = 0; i < data.length; i += 4) {
+                        if (data[i + 3] > 20) {
+                            data[i] = 29;
+                            data[i + 1] = 53;
+                            data[i + 2] = 87;
+                        }
+                    }
+                    tCtx.putImageData(imgData, 0, 0);
+                    const fixedUrl = tempCanvas.toDataURL('image/png');
+                    normalizedSigCache.set(imgEl.getAttribute('src'), fixedUrl);
+                    imgEl.src = fixedUrl;
+                }
+            } catch (e) {
+                // Fallback CSS invert jika canvas terhalang CORS
+                imgEl.style.filter = 'invert(1) brightness(0.35)';
+            }
+        };
+
+        const renderSignatureImg = (sigSrc, heightClass = 'h-9 max-w-[95px]') => {
+            if (!sigSrc) return '';
+            const finalSrc = normalizedSigCache.get(sigSrc) || sigSrc;
+            return `<img src="${finalSrc}" onload="window.fixSignatureVisibility(this)" class="${heightClass} object-contain block mx-auto" alt="Tandatangan">`;
+        };
+
+        const normalizeSignatureForPdf = (dataUrl) => {
+            return new Promise((resolve) => {
+                if (!dataUrl) return resolve('');
+                if (normalizedSigCache.has(dataUrl)) return resolve(normalizedSigCache.get(dataUrl));
+                const img = new Image();
+                img.onload = () => {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = img.width;
+                    tempCanvas.height = img.height;
+                    const tCtx = tempCanvas.getContext('2d');
+                    tCtx.drawImage(img, 0, 0);
+                    const imgData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                    const data = imgData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        if (data[i + 3] > 20) {
+                            data[i] = 29;
+                            data[i + 1] = 53;
+                            data[i + 2] = 87;
+                        }
+                    }
+                    tCtx.putImageData(imgData, 0, 0);
+                    const resUrl = tempCanvas.toDataURL('image/png');
+                    normalizedSigCache.set(dataUrl, resUrl);
+                    resolve(resUrl);
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
+            });
+        };
 
         // =========================================================================
         // PENGURUSAN TEMA CERAH / GELAP
@@ -803,33 +880,6 @@
             if (ctx) {
                 ctx.strokeStyle = theme === 'dark' ? '#ffffff' : '#1D3557';
             }
-        };
-
-        const normalizeSignatureForPdf = (dataUrl) => {
-            return new Promise((resolve) => {
-                if (!dataUrl) return resolve('');
-                const img = new Image();
-                img.onload = () => {
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = img.width;
-                    tempCanvas.height = img.height;
-                    const tCtx = tempCanvas.getContext('2d');
-                    tCtx.drawImage(img, 0, 0);
-                    const imgData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-                    const data = imgData.data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        if (data[i + 3] > 20) {
-                            data[i] = 29;
-                            data[i + 1] = 53;
-                            data[i + 2] = 87;
-                        }
-                    }
-                    tCtx.putImageData(imgData, 0, 0);
-                    resolve(tempCanvas.toDataURL('image/png'));
-                };
-                img.onerror = () => resolve(dataUrl);
-                img.src = dataUrl;
-            });
         };
 
         const setSyncIndicator = (status) => {
@@ -992,19 +1042,16 @@
             populateMeetingDropdowns();
         };
 
-        // Fungsi Pilih Kad Mesyuarat Terasing pada Tab Senarai Hadir
         window.selectMeetingCard = (encodedTitle) => {
             const title = decodeURIComponent(encodedTitle);
             const hiddenInput = document.getElementById('filter-meeting-select');
             if (hiddenInput) {
-                // Jika klik semula pada kad yang sama, nyahpilih (toggle)
                 hiddenInput.value = (hiddenInput.value === title) ? 'ALL' : title;
             }
             renderMeetingSelectorCards();
             updateAttendeesUI();
         };
 
-        // Jana Kad Pilihan Mesyuarat Terasing (Bersih, berasingan, lengkap dengan tarikh, lokasi & kiraan peserta)
         const renderMeetingSelectorCards = () => {
             const cardsContainer = document.getElementById('meeting-cards-selector');
             const totalMeetingsBadge = document.getElementById('total-meetings-badge');
@@ -1088,7 +1135,6 @@
                 if (prevPdfVal && activeMeetings.some(m => m.title === prevPdfVal)) pdfSelectEl.value = prevPdfVal;
             }
 
-            // Kemas kini kad pilihan mesyuarat terasing
             renderMeetingSelectorCards();
 
             const adminListEl = document.getElementById('admin-meetings-list');
@@ -1193,7 +1239,7 @@
                         </div>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        ${item.signature ? `<div class="bg-white p-1 rounded border border-[#A8DADC] dark:border-slate-700 inline-block"><img src="${item.signature}" class="h-8 max-w-[80px] object-contain" alt="Sign"></div>` : ''}
+                        ${item.signature ? `<div class="bg-white px-2 py-1 rounded-lg border border-[#A8DADC] dark:border-slate-600 inline-block shadow-xs">${renderSignatureImg(item.signature, 'h-8 max-w-[85px]')}</div>` : ''}
                         <span class="bg-[#457B9D]/15 dark:bg-[#2370A1]/25 text-[#1D3557] dark:text-[#FAD3CE] text-[9px] font-bold px-2 py-0.5 rounded-full block mt-1">${timeStr}</span>
                     </div>
                 </div>`;
@@ -1229,7 +1275,7 @@
                     <td class="p-4 font-bold text-[#457B9D] dark:text-[#A495C6]">${item.tajukMesyuarat}</td>
                     <td class="p-4"><div class="font-bold theme-text-primary">${toTitleCase(item.nama)}</div><div class="text-[10px] theme-text-muted font-mono">${item.email}</div></td>
                     <td class="p-4">
-                        ${item.signature ? `<div class="bg-white p-1 rounded inline-block border border-[#A8DADC] dark:border-slate-700"><img src="${item.signature}" class="h-10 max-w-[100px] object-contain" alt="Tandatangan"></div>` : '<span class="text-[10px] theme-text-muted">Tiada</span>'}
+                        ${item.signature ? `<div class="bg-white px-2.5 py-1.5 rounded-lg inline-block border border-[#A8DADC] dark:border-slate-600 shadow-xs">${renderSignatureImg(item.signature, 'h-10 max-w-[105px]')}</div>` : '<span class="text-[10px] theme-text-muted">Tiada</span>'}
                     </td>
                     <td class="p-4 text-right">
                         <button onclick="window.triggerDelete('${item.id}')" class="p-2 bg-[#E63946]/15 dark:bg-[#FAD3CE]/15 text-[#E63946] dark:text-[#FAD3CE] rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
@@ -1279,7 +1325,7 @@
             }
         };
 
-        const preparePrintTemplate = (selectedMeetingTitle) => {
+        const preparePrintTemplate = async (selectedMeetingTitle) => {
             const targetMeeting = activeMeetings.find(m => m.title === selectedMeetingTitle);
             const targetList = allAttendees.filter(i => i.tajukMesyuarat === selectedMeetingTitle);
 
@@ -1293,7 +1339,9 @@
             if (targetList.length === 0) {
                 rowsHtml = `<tr><td colspan="5" style="border: 1.5px solid #000; padding: 15px; text-align: center;">Tiada rekod kehadiran bagi mesyuarat ini.</td></tr>`;
             } else {
-                targetList.forEach((i, idx) => {
+                for (let idx = 0; idx < targetList.length; idx++) {
+                    const i = targetList[idx];
+                    const cleanSig = i.signature ? await normalizeSignatureForPdf(i.signature) : '';
                     rowsHtml += `
                     <tr style="border: 1.5px solid #000;">
                         <td style="border: 1.5px solid #000; padding: 8px 6px; text-align: center; vertical-align: middle;">${idx + 1}.</td>
@@ -1304,10 +1352,10 @@
                         <td style="border: 1.5px solid #000; padding: 8px 10px; vertical-align: middle; font-weight: 500;">${i.jawatan || '-'}</td>
                         <td style="border: 1.5px solid #000; padding: 8px 10px; vertical-align: middle; font-weight: 500;">${i.jabatan || '-'}</td>
                         <td style="border: 1.5px solid #000; padding: 4px; text-align: center; vertical-align: middle;">
-                            ${i.signature ? `<img src="${i.signature}" style="height: 38px; max-width: 105px; object-fit: contain; display: block; margin: 0 auto;">` : '<span style="color:#888; font-size:8pt;">-</span>'}
+                            ${cleanSig ? `<img src="${cleanSig}" style="height: 38px; max-width: 105px; object-fit: contain; display: block; margin: 0 auto;">` : '<span style="color:#888; font-size:8pt;">-</span>'}
                         </td>
                     </tr>`;
-                });
+                }
             }
             tbody.innerHTML = rowsHtml;
             return { targetMeeting, targetList };
@@ -1515,7 +1563,7 @@
                 document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
             });
             
-            document.getElementById('btn-confirm-pdf').addEventListener('click', () => {
+            document.getElementById('btn-confirm-pdf').addEventListener('click', async () => {
                 const pass = document.getElementById('pdf-download-password').value.trim();
                 if (pass !== _dec(_ob_p1)) {
                     showToast("Kata laluan salah!", "error");
@@ -1528,7 +1576,7 @@
                     return;
                 }
 
-                preparePrintTemplate(selectedMeetingTitle);
+                await preparePrintTemplate(selectedMeetingTitle);
 
                 document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
                 showToast("Menjana dokumen rasmi untuk dicetak...", "success");
@@ -1555,7 +1603,7 @@
                     return;
                 }
 
-                const { targetList } = preparePrintTemplate(selectedMeetingTitle);
+                const { targetList } = await preparePrintTemplate(selectedMeetingTitle);
 
                 if (targetList.length === 0) {
                     showToast("Tiada rekod kehadiran bagi mesyuarat ini.", "error");
