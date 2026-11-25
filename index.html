@@ -183,6 +183,22 @@
             box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 30%, transparent);
         }
 
+        /* Skema warna ikon pemilih kalendar mengikut tema cerah / gelap */
+        input[type="datetime-local"] {
+            color-scheme: light;
+        }
+        html.dark input[type="datetime-local"] {
+            color-scheme: dark;
+        }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.85;
+            transition: opacity 0.2s;
+        }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
         .theme-text-primary { color: var(--text-primary); }
         .theme-text-secondary { color: var(--text-secondary); }
         .theme-text-muted { color: var(--text-muted); }
@@ -587,9 +603,11 @@
                                 class="w-full theme-input border rounded-xl px-3 py-2.5 text-xs">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold uppercase tracking-wider theme-text-muted">Tarikh & Masa</label>
-                            <input type="text" id="admin-meeting-datetime" required placeholder="Contoh: 20 Okt 2026, 9:00 Pagi" 
-                                class="w-full theme-input border rounded-xl px-3 py-2.5 text-xs">
+                            <label class="text-[10px] font-bold uppercase tracking-wider theme-text-muted flex items-center gap-1">
+                                <i data-lucide="calendar" class="w-3 h-3 text-[#457B9D] dark:text-[#A495C6]"></i> Tarikh & Masa
+                            </label>
+                            <input type="datetime-local" id="admin-meeting-datetime" required 
+                                class="w-full theme-input border rounded-xl px-3 py-2.5 text-xs cursor-pointer">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold uppercase tracking-wider theme-text-muted">Lokasi Mesyuarat</label>
@@ -766,7 +784,34 @@
         let canvas, ctx, isDrawing = false, hasSignature = false;
 
         // =========================================================================
-        // PENGESAN & PENYELARASAN AUTOMATIK TANDATANGAN (REKOD LAMA PUTIH & BAHARU)
+        // FORMAT TARIKH & MASA KALENDAR KE BAHASA MELAYU RASMI
+        // =========================================================================
+        const formatMalayDateTime = (isoVal) => {
+            if (!isoVal) return '-';
+            const dt = new Date(isoVal);
+            if (isNaN(dt.getTime())) return isoVal;
+
+            const bulanMs = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+            const hariMs = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+
+            const hari = dt.getDate();
+            const bulan = bulanMs[dt.getMonth()];
+            const tahun = dt.getFullYear();
+            const namaHari = hariMs[dt.getDay()];
+
+            let jam = dt.getHours();
+            const minit = String(dt.getMinutes()).padStart(2, '0');
+            let tempoh = 'Pagi';
+            if (jam >= 12 && jam < 14) tempoh = 'Tengah Hari';
+            else if (jam >= 14 && jam < 19) tempoh = 'Petang';
+            else if (jam >= 19 || jam < 5) tempoh = 'Malam';
+
+            const jam12 = jam % 12 === 0 ? 12 : jam % 12;
+            return `${hari} ${bulan} ${tahun} (${namaHari}), ${jam12}:${minit} ${tempoh}`;
+        };
+
+        // =========================================================================
+        // PENGESAN & PENYELARASAN AUTOMATIK TANDATANGAN
         // =========================================================================
         const normalizedSigCache = new Map();
 
@@ -798,7 +843,6 @@
                     }
                 }
 
-                // Jika lebih 50% piksel tandatangan berwarna putih/cerah, tukarkan kepada dakwat gelap (#1D3557)
                 if (visiblePixels > 0 && (lightPixels / visiblePixels) > 0.5) {
                     for (let i = 0; i < data.length; i += 4) {
                         if (data[i + 3] > 20) {
@@ -813,7 +857,6 @@
                     imgEl.src = fixedUrl;
                 }
             } catch (e) {
-                // Fallback CSS invert jika canvas terhalang CORS
                 imgEl.style.filter = 'invert(1) brightness(0.35)';
             }
         };
@@ -1073,6 +1116,7 @@
                 const isSelected = (selectedVal === m.title);
                 const count = allAttendees.filter(a => a.tajukMesyuarat === m.title).length;
                 const encodedTitle = encodeURIComponent(m.title);
+                const formattedDt = formatMalayDateTime(m.datetime);
 
                 cardsHtml += `
                 <button type="button" onclick="window.selectMeetingCard('${encodedTitle}')" 
@@ -1084,7 +1128,7 @@
                         <div class="min-w-0 flex-1 space-y-1.5">
                             <p class="text-xs font-bold theme-text-primary leading-snug break-words">${m.title}</p>
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] theme-text-muted">
-                                <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3 text-[#457B9D] dark:text-[#A495C6]"></i> ${m.datetime || '-'}</span>
+                                <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3 text-[#457B9D] dark:text-[#A495C6]"></i> ${formattedDt}</span>
                                 <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 text-[#457B9D] dark:text-[#A495C6]"></i> ${m.location || '-'}</span>
                             </div>
                         </div>
@@ -1117,7 +1161,8 @@
             let htmlPdfOptions = '<option value="" disabled selected>-- Pilih Mesyuarat Untuk Cetak --</option>';
 
             activeMeetings.forEach(m => {
-                htmlOptions += `<option value="${m.title}" data-datetime="${m.datetime}" data-location="${m.location}">${m.title} (${m.datetime})</option>`;
+                const formattedDt = formatMalayDateTime(m.datetime);
+                htmlOptions += `<option value="${m.title}" data-datetime="${formattedDt}" data-location="${m.location}">${m.title} (${formattedDt})</option>`;
                 htmlPdfOptions += `<option value="${m.title}">${m.title}</option>`;
             });
 
@@ -1145,11 +1190,12 @@
                 }
                 let adminHtml = "";
                 activeMeetings.forEach(m => {
+                    const formattedDt = formatMalayDateTime(m.datetime);
                     adminHtml += `
                     <div class="flex items-center justify-between p-3 theme-subcard rounded-xl border text-xs">
                         <div>
                             <span class="font-bold theme-text-primary block">${m.title}</span>
-                            <span class="text-[10px] theme-text-muted">📅 ${m.datetime} &bull; 📍 ${m.location}</span>
+                            <span class="text-[10px] theme-text-muted">📅 ${formattedDt} &bull; 📍 ${m.location}</span>
                         </div>
                         <button onclick="window.removeMeeting('${m.id}')" class="p-2 bg-[#E63946]/15 dark:bg-[#FAD3CE]/15 text-[#E63946] dark:text-[#FAD3CE] rounded-lg hover:opacity-80"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </div>`;
@@ -1330,7 +1376,7 @@
             const targetList = allAttendees.filter(i => i.tajukMesyuarat === selectedMeetingTitle);
 
             document.getElementById('print-perkara').textContent = selectedMeetingTitle;
-            document.getElementById('print-tarikh').textContent = targetMeeting ? targetMeeting.datetime : '-';
+            document.getElementById('print-tarikh').textContent = targetMeeting ? formatMalayDateTime(targetMeeting.datetime) : '-';
             document.getElementById('print-lokasi').textContent = targetMeeting ? targetMeeting.location : '-';
 
             const tbody = document.getElementById('print-table-body');
@@ -1496,10 +1542,13 @@
 
             document.getElementById('meeting-create-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const rawDateTime = document.getElementById('admin-meeting-datetime').value;
+                const formattedDateTime = formatMalayDateTime(rawDateTime);
+
                 const newMeeting = {
                     id: 'm-' + Date.now(),
                     title: document.getElementById('admin-meeting-title').value.trim(),
-                    datetime: document.getElementById('admin-meeting-datetime').value.trim(),
+                    datetime: formattedDateTime,
                     location: document.getElementById('admin-meeting-location').value.trim()
                 };
                 activeMeetings.push(newMeeting);
