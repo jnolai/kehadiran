@@ -14,67 +14,109 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- QR Code Generator -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- html2pdf.js untuk penjanaan fail PDF sebenar -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Skrip Perlindungan Keselamatan Berlapis -->
+    <!-- Skrip Perlindungan Anti-Inspect & Anti-View Source Berlapis -->
     <script>
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('selectstart', e => e.preventDefault());
-        document.addEventListener('dragstart', e => e.preventDefault());
-        
-        document.addEventListener('keydown', e => {
-            const key = e.key.toUpperCase();
-            if (
-                e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(key)) ||
-                (e.ctrlKey && key === 'U') ||
-                (e.metaKey && e.altKey && ['I', 'J', 'C'].includes(e.key.toLowerCase())) ||
-                (e.metaKey && e.key.toLowerCase() === 'u')
-            ) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
         (function() {
-            const isIframe = () => {
-                try { return window.self !== window.top; } catch (e) { return true; }
-            };
-            if (isIframe()) return;
+            'use strict';
 
-            const blockAccess = () => {
-                document.body.innerHTML = `
-                    <div class="flex flex-col items-center justify-center min-h-screen bg-[#060608] text-slate-100 p-6 text-center animate-fade-in">
-                        <div class="p-4 bg-[#FAD3CE]/10 border border-[#FAD3CE]/30 rounded-full mb-4">
+            ['contextmenu', 'selectstart', 'dragstart', 'copy', 'cut'].forEach(evt => {
+                document.addEventListener(evt, e => {
+                    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+                    e.preventDefault();
+                    return false;
+                }, { capture: true });
+            });
+
+            document.addEventListener('keydown', e => {
+                const key = (e.key || '').toUpperCase();
+                const code = e.keyCode || e.which;
+
+                if (
+                    code === 123 || key === 'F12' ||
+                    (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'K', 'E'].includes(key)) ||
+                    (e.ctrlKey && ['U', 'S', 'P'].includes(key)) ||
+                    (e.metaKey && e.altKey && ['I', 'J', 'C', 'U'].includes(key)) ||
+                    (e.metaKey && ['U', 'S'].includes(key))
+                ) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    triggerSecurityLock('Pintasan papan kekunci DevTools / View Source dikesan.');
+                    return false;
+                }
+            }, { capture: true });
+
+            let isLocked = false;
+
+            const triggerSecurityLock = (reason) => {
+                if (isLocked) return;
+                isLocked = true;
+
+                try {
+                    window.stop();
+                } catch (err) {}
+
+                const lockMarkup = `
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#060608;color:#f8fafc;padding:24px;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;user-select:none;">
+                        <div style="padding:16px;background:rgba(250,211,206,0.1);border:1px solid rgba(250,211,206,0.3);border-radius:9999px;margin-bottom:16px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FAD3CE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                         </div>
-                        <h1 class="text-xl font-bold text-[#FAD3CE] mb-2 uppercase tracking-wide">Akses Disekat Secara Automatik</h1>
-                        <p class="text-xs text-slate-400 max-w-sm leading-relaxed">Sistem mengesan cubaan membuka Developer Tools. Penggunaan alat pengembang dilarang sama sekali.</p>
-                        <button onclick="window.location.reload()" class="mt-6 bg-[#2370A1] hover:opacity-90 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition duration-150">Muat Semula Halaman</button>
+                        <h1 style="font-size:18px;font-weight:800;color:#FAD3CE;margin:0 0 8px 0;text-transform:uppercase;letter-spacing:0.05em;">Akses Disekat Secara Automatik</h1>
+                        <p style="font-size:12px;color:#94a3b8;max-width:380px;line-height:1.6;margin:0;">Sistem keselamatan mengesan cubaan membuka alat pembangun (Inspect / Developer Tools). Akses ke kod sumber adalah dilarang sama sekali.</p>
+                        <button onclick="window.location.replace(window.location.href)" style="margin-top:24px;background:#2370A1;color:#ffffff;font-weight:700;padding:10px 20px;border:none;border-radius:12px;font-size:12px;cursor:pointer;">Muat Semula Halaman</button>
                     </div>
                 `;
-                throw new Error("Akses disekat kerana memulakan Developer Tools.");
+
+                if (document.head) document.head.innerHTML = '<title>Akses Disekat</title>';
+                if (document.body) {
+                    document.body.innerHTML = lockMarkup;
+                } else {
+                    document.documentElement.innerHTML = lockMarkup;
+                }
             };
 
-            const element = new Image();
-            Object.defineProperty(element, 'id', { get: function() { blockAccess(); } });
+            const isEmbeddedPreview = () => {
+                try { return window.self !== window.top; } catch (e) { return true; }
+            };
+            if (isEmbeddedPreview()) return;
 
-            setInterval(function() {
-                const startTime = performance.now();
-                debugger;
-                const endTime = performance.now();
-                if (endTime - startTime > 100) blockAccess();
-                console.log(element);
-                console.clear();
-            }, 500);
+            const trapObj = new Image();
+            Object.defineProperty(trapObj, 'id', {
+                get: function() {
+                    triggerSecurityLock('Pemeriksaan objek konsol dikesan.');
+                }
+            });
 
-            const threshold = 160;
-            setInterval(function() {
-                if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) blockAccess();
-            }, 500);
+            const checkWindowBounds = () => {
+                const widthDiff = window.outerWidth - window.innerWidth;
+                const heightDiff = window.outerHeight - window.innerHeight;
+                if ((widthDiff > 160 || heightDiff > 160) && window.innerWidth > 0) {
+                    triggerSecurityLock('Panel DevTools dikesan pada tetingkap pelayar.');
+                }
+            };
+
+            const checkDebuggerTiming = () => {
+                const t0 = performance.now();
+                (function() { return false; })['constructor']('debugger')['call']();
+                const t1 = performance.now();
+                if (t1 - t0 > 80) {
+                    triggerSecurityLock('Sesi nyahpepijat (debugger) dikesan.');
+                }
+            };
+
+            window.addEventListener('resize', checkWindowBounds);
+
+            setInterval(() => {
+                if (isLocked) return;
+                checkWindowBounds();
+                checkDebuggerTiming();
+                try {
+                    console.log(trapObj);
+                    console.clear();
+                } catch (e) {}
+            }, 400);
         })();
     </script>
 
@@ -149,6 +191,13 @@
             background-image: var(--bg-gradient);
             color: var(--text-primary);
             transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .theme-header {
@@ -336,7 +385,7 @@
                     <p class="text-xs theme-text-muted max-w-xs mx-auto">Sila masukkan alamat emel rasmi anda untuk memulakan pendaftaran.</p>
                 </div>
 
-                <!-- Notis Jadual Pembukaan (Jika semua mesyuarat belum tiba waktunya) -->
+                <!-- Notis Jadual Pembukaan -->
                 <div id="upcoming-schedule-notice" class="hidden theme-card border border-amber-500/40 rounded-2xl p-4 space-y-2.5 shadow-lg">
                     <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                         <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i>
@@ -456,7 +505,7 @@
                 </form>
             </div>
 
-            <!-- STEP 3: SUCCESS TICKET -->
+            <!-- STEP 3: SUCCESS TICKET (TANPA QR CODE) -->
             <div id="step-success" class="w-full space-y-6 hidden animate-fade-in py-2 sm:py-4">
                 <div class="text-center space-y-2">
                     <div class="inline-flex p-3 bg-emerald-500/15 rounded-full border border-emerald-500/30 mb-1">
@@ -495,9 +544,9 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-dashed theme-border flex flex-col items-center gap-3 relative z-20">
-                        <div id="qrcode" class="w-28 h-28 bg-white p-2 rounded-xl border border-[#A8DADC] dark:border-slate-700"></div>
-                        <span class="text-[9px] theme-text-muted font-mono" id="unique-id">-</span>
+                    <div class="pt-3 border-t border-dashed theme-border flex items-center justify-between relative z-20">
+                        <span class="text-[9px] theme-text-muted uppercase tracking-wider font-bold">No. Rujukan</span>
+                        <span class="text-[10px] theme-text-muted font-mono font-bold" id="unique-id">-</span>
                     </div>
                 </div>
 
@@ -804,13 +853,11 @@
             if (!dtStr) return null;
             const cleanStr = String(dtStr).trim();
 
-            // 1. Cuba format ISO standard (cth: 2026-11-26T15:00 atau 2026-11-26T15:00:00.000Z)
             if (/^\d{4}-\d{2}-\d{2}/.test(cleanStr)) {
                 const isoDate = new Date(cleanStr);
                 if (!isNaN(isoDate.getTime())) return isoDate.getTime();
             }
 
-            // 2. Cuba format Bahasa Melayu (cth: "26 November 2026 (Khamis), 3:00 Petang" atau "20 Okt 2026, 9:30 Pagi")
             const monthMap = {
                 'januari': 0, 'jan': 0,
                 'februari': 1, 'feb': 1,
@@ -857,7 +904,6 @@
             return isNaN(fallback.getTime()) ? null : fallback.getTime();
         };
 
-        // Semak sama ada mesyuarat sudah dibuka mengikut masa & tarikh ditetapkan
         const isMeetingOpen = (meeting) => {
             if (!meeting || !meeting.datetime) return true;
             const scheduledTs = parseMeetingTimestamp(meeting.datetime);
@@ -1280,7 +1326,6 @@
                 else hintEl.classList.add('hidden');
             }
 
-            // Papar notis jika terdapat mesyuarat berdaftar tetapi belum ada satu pun yang dibuka mengikut masa
             if (upcomingNotice && upcomingPreview) {
                 if (activeMeetings.length > 0 && openCount === 0) {
                     upcomingNotice.classList.remove('hidden');
@@ -1369,7 +1414,6 @@
                 const clockEl = document.getElementById('live-clock');
                 if (clockEl) clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
-                // Semak secara masa nyata jika status pembukaan mesyuarat bertukar (daripada Belum Dibuka -> Dibuka)
                 const currentHash = activeMeetings.map(m => `${m.id}:${isMeetingOpen(m)}`).join('|');
                 if (currentHash !== lastOpenStateHash) {
                     lastOpenStateHash = currentHash;
@@ -1710,13 +1754,15 @@
                 document.getElementById('resit-signature-img').src = payload.signature;
                 document.getElementById('unique-id').textContent = payload.id.toUpperCase();
 
-                const qrContainer = document.getElementById('qrcode');
-                qrContainer.innerHTML = "";
-                new QRCode(qrContainer, { text: `${payload.tajukMesyuarat}|${payload.nama}|${payload.email}`, width: 110, height: 110 });
-
                 document.getElementById('step-success').classList.remove('hidden');
                 confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
                 showToast("Kehadiran direkodkan & diselaraskan!", "success");
+            });
+
+            document.getElementById('btn-share-attendance')?.addEventListener('click', () => {
+                const text = `PAS MASUK MESYUARAT\nMesyuarat: ${document.getElementById('resit-tajuk-mesyuarat').textContent}\nTarikh: ${document.getElementById('resit-tarikh-masa').textContent}\nLokasi: ${document.getElementById('resit-lokasi').textContent}\nNama: ${document.getElementById('resit-nama').textContent}\nJawatan: ${document.getElementById('resit-jawatan').textContent}\nNo. Rujukan: ${document.getElementById('unique-id').textContent}`;
+                navigator.clipboard?.writeText(text);
+                showToast("Maklumat pas masuk berjaya disalin!", "success");
             });
 
             document.getElementById('meeting-create-form').addEventListener('submit', async (e) => {
