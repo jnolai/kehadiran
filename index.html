@@ -627,7 +627,7 @@
                 </div>
 
                 <div class="theme-card border rounded-2xl p-6 space-y-4 shadow-xl">
-                    <input type="password" id="admin-password-input" placeholder="••••••••" 
+                    <input type="password" id="admin-password-input" placeholder="••••••••" autocomplete="new-password"
                         class="w-full theme-input border rounded-xl px-4 py-3.5 text-sm">
                     <button id="btn-submit-admin-login" class="w-full btn-accent-primary font-bold py-3.5 rounded-xl text-xs min-h-[44px]">Sahkan Sesi</button>
                 </div>
@@ -793,7 +793,7 @@
                 </div>
                 <div>
                     <label class="text-[10px] font-bold uppercase tracking-wider theme-text-muted block mb-1">Kata Laluan Pentadbir</label>
-                    <input type="password" id="pdf-download-password" placeholder="••••••••" 
+                    <input type="password" id="pdf-download-password" placeholder="••••••••" autocomplete="new-password"
                         class="w-full theme-input border rounded-xl px-4 py-3 text-xs">
                 </div>
             </div>
@@ -1548,11 +1548,35 @@
             document.getElementById('delete-confirm-modal').classList.remove('opacity-0', 'pointer-events-none');
         };
 
-        const switchTab = (tabName) => {
+        // Fungsi mengunci sesi Admin secara menyeluruh
+        const lockAdminSession = () => {
+            isAdminAuthenticated = false;
+            selectedAttendeeIds.clear();
+            const passInput = document.getElementById('admin-password-input');
+            const pdfPassInput = document.getElementById('pdf-download-password');
+            const dashView = document.getElementById('admin-dashboard-view');
+            const loginView = document.getElementById('admin-login-view');
+            const pdfModal = document.getElementById('download-pdf-modal');
+            const delModal = document.getElementById('delete-confirm-modal');
+
+            if (passInput) passInput.value = "";
+            if (pdfPassInput) pdfPassInput.value = "";
+            if (dashView) dashView.classList.add('hidden');
+            if (loginView) loginView.classList.remove('hidden');
+            if (pdfModal) pdfModal.classList.add('opacity-0', 'pointer-events-none');
+            if (delModal) delModal.classList.add('opacity-0', 'pointer-events-none');
+        };
+
+        const switchTab = (tabName, pushHistory = true) => {
             ['section-register', 'section-list', 'section-admin'].forEach(s => document.getElementById(s).classList.add('hidden'));
             ['tab-btn-register', 'tab-btn-list', 'tab-btn-admin'].forEach(b => document.getElementById(b).className = "flex-1 lg:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-semibold theme-text-muted hover:opacity-80 min-h-[40px]");
 
             const activeClasses = "flex-1 lg:flex-initial flex items-center justify-center gap-1.5 px-3 py-2.5 md:px-4 md:py-2 rounded-lg text-xs font-bold btn-accent-primary shadow-sm min-h-[40px]";
+
+            // Setiap kali keluar dari tab Admin, kunci semula sesi Admin secara automatik
+            if (tabName !== 'admin') {
+                lockAdminSession();
+            }
 
             if (tabName === 'register') {
                 document.getElementById('tab-btn-register').className = activeClasses;
@@ -1569,7 +1593,15 @@
                     document.getElementById('admin-login-view').classList.add('hidden');
                     document.getElementById('admin-dashboard-view').classList.remove('hidden');
                     updateAdminUI(allAttendees);
+                } else {
+                    lockAdminSession();
                 }
+            }
+
+            if (pushHistory && window.history && window.history.pushState) {
+                try {
+                    window.history.pushState({ tab: tabName }, '', `#${tabName}`);
+                } catch (e) {}
             }
         };
 
@@ -1609,11 +1641,26 @@
             return { targetMeeting, targetList };
         };
 
+        // Kunci sesi admin jika pengguna menekan butang Back pelayar atau halaman dipulihkan dari bfcache
+        window.addEventListener('pageshow', () => {
+            lockAdminSession();
+            if (!document.getElementById('section-admin').classList.contains('hidden')) {
+                switchTab('register', false);
+            }
+        });
+
+        window.addEventListener('popstate', (event) => {
+            lockAdminSession();
+            const targetTab = (event.state && event.state.tab) ? event.state.tab : 'register';
+            switchTab(targetTab === 'admin' ? 'register' : targetTab, false);
+        });
+
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             applyTheme(currentTheme);
             initLiveClock();
             loadMeetingsFromStorage();
+            lockAdminSession();
 
             document.getElementById('btn-theme-toggle').addEventListener('click', () => {
                 const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -1785,9 +1832,11 @@
             });
 
             document.getElementById('btn-submit-admin-login').addEventListener('click', () => {
-                const pass = document.getElementById('admin-password-input').value.trim();
+                const passInput = document.getElementById('admin-password-input');
+                const pass = passInput.value.trim();
                 if (pass === _dec(_ob_p1)) {
                     isAdminAuthenticated = true;
+                    passInput.value = "";
                     document.getElementById('admin-login-view').classList.add('hidden');
                     document.getElementById('admin-dashboard-view').classList.remove('hidden');
                     updateAdminUI(allAttendees);
@@ -1798,7 +1847,8 @@
             });
 
             document.getElementById('btn-admin-logout').addEventListener('click', () => {
-                isAdminAuthenticated = false;
+                lockAdminSession();
+                showToast("Anda telah log keluar dari sesi Admin.", "info");
                 switchTab('register');
             });
 
@@ -1829,11 +1879,13 @@
             });
 
             document.getElementById('btn-export-pdf').addEventListener('click', () => {
+                document.getElementById('pdf-download-password').value = "";
                 document.getElementById('download-pdf-modal').classList.remove('opacity-0', 'pointer-events-none');
                 populateMeetingDropdowns();
             });
 
             document.getElementById('btn-cancel-pdf').addEventListener('click', () => {
+                document.getElementById('pdf-download-password').value = "";
                 document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
             });
             
@@ -1852,6 +1904,7 @@
 
                 await preparePrintTemplate(selectedMeetingTitle);
 
+                document.getElementById('pdf-download-password').value = "";
                 document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
                 showToast("Menjana dokumen rasmi untuk dicetak...", "success");
 
@@ -1888,12 +1941,12 @@
                 let cleanPhone = rawPhone.replace(/[^0-9]/g, '');
                 if (cleanPhone.startsWith('01')) cleanPhone = '6' + cleanPhone;
 
-                // Buka tab awal sebelum proses async supaya tidak disekat pop-up blocker pelayar
                 let waWindow = null;
                 if (cleanPhone || !navigator.canShare) {
                     waWindow = window.open('about:blank', '_blank');
                 }
 
+                document.getElementById('pdf-download-password').value = "";
                 document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
                 showToast("Sedang menjana fail PDF templat rasmi...", "info");
 
