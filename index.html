@@ -1884,6 +1884,16 @@
                     return;
                 }
 
+                let rawPhone = document.getElementById('whatsapp-phone-input').value.trim();
+                let cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+                if (cleanPhone.startsWith('01')) cleanPhone = '6' + cleanPhone;
+
+                // Buka tab awal sebelum proses async supaya tidak disekat pop-up blocker pelayar
+                let waWindow = null;
+                if (cleanPhone || !navigator.canShare) {
+                    waWindow = window.open('about:blank', '_blank');
+                }
+
                 document.getElementById('download-pdf-modal').classList.add('opacity-0', 'pointer-events-none');
                 showToast("Sedang menjana fail PDF templat rasmi...", "info");
 
@@ -1896,7 +1906,7 @@
                     margin:       [10, 10, 10, 10],
                     filename:     fileName,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true },
+                    html2canvas:  { scale: 2, useCORS: true, allowTaint: true },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
@@ -1905,41 +1915,41 @@
                     container.classList.add('hidden');
 
                     const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-                    let rawPhone = document.getElementById('whatsapp-phone-input').value.trim();
-                    let cleanPhone = rawPhone.replace(/[^0-9]/g, '');
-                    if (cleanPhone.startsWith('01')) cleanPhone = '6' + cleanPhone;
-
                     const shareText = `*SENARAI KEHADIRAN RASMI*\n📌 *Mesyuarat:* ${selectedMeetingTitle}\n👥 *Jumlah Kehadiran:* ${targetList.length} orang\n\n_Sila rujuk dokumen PDF yang dilampirkan._`;
 
-                    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                    if (!cleanPhone && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                        if (waWindow) waWindow.close();
                         await navigator.share({
                             files: [pdfFile],
                             title: 'Senarai Kehadiran Mesyuarat',
                             text: shareText
                         });
                         showToast("Fail PDF berjaya dikongsi ke WhatsApp!", "success");
-                    } else {
-                        const downloadUrl = URL.createObjectURL(pdfBlob);
-                        const a = document.createElement('a');
-                        a.href = downloadUrl;
-                        a.download = fileName;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(downloadUrl);
-
-                        const waUrl = cleanPhone 
-                            ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(shareText)}` 
-                            : `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-
-                        showToast("Fail PDF dimuat turun! Membuka WhatsApp untuk dihantar...", "success");
-                        setTimeout(() => {
-                            window.open(waUrl, '_blank');
-                        }, 600);
+                        return;
                     }
+
+                    const downloadUrl = URL.createObjectURL(pdfBlob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(downloadUrl);
+
+                    const waUrl = cleanPhone 
+                        ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(shareText)}` 
+                        : `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+
+                    if (waWindow) {
+                        waWindow.location.href = waUrl;
+                    } else {
+                        window.location.href = waUrl;
+                    }
+                    showToast("Fail PDF dimuat turun! Sila lampirkan fail dalam chat WhatsApp.", "success");
                 } catch (err) {
                     console.error(err);
+                    if (waWindow) waWindow.close();
                     container.classList.add('hidden');
                     showToast("Ralat semasa menjana fail PDF.", "error");
                 }
