@@ -183,7 +183,6 @@
             box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 30%, transparent);
         }
 
-        /* Skema warna ikon pemilih kalendar mengikut tema cerah / gelap */
         input[type="datetime-local"] {
             color-scheme: light;
         }
@@ -337,7 +336,17 @@
                     <p class="text-xs theme-text-muted max-w-xs mx-auto">Sila masukkan alamat emel rasmi anda untuk memulakan pendaftaran.</p>
                 </div>
 
-                <div class="theme-card border rounded-2xl p-5 sm:p-6 space-y-5 shadow-xl backdrop-blur-sm">
+                <!-- Notis Jadual Pembukaan (Jika semua mesyuarat belum tiba waktunya) -->
+                <div id="upcoming-schedule-notice" class="hidden theme-card border border-amber-500/40 rounded-2xl p-4 space-y-2.5 shadow-lg">
+                    <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                        <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i>
+                        <span class="text-xs font-bold uppercase tracking-wide">Pendaftaran Belum Dibuka</span>
+                    </div>
+                    <p class="text-[11px] theme-text-muted leading-relaxed">Pendaftaran kehadiran hanya akan dibuka secara automatik mengikut tarikh dan masa mesyuarat yang ditetapkan:</p>
+                    <div id="upcoming-meetings-preview" class="space-y-1.5 pt-1"></div>
+                </div>
+
+                <div id="login-card-box" class="theme-card border rounded-2xl p-5 sm:p-6 space-y-5 shadow-xl backdrop-blur-sm">
                     <div class="space-y-2">
                         <label class="text-xs font-semibold theme-text-primary flex items-center gap-1.5">
                             <i data-lucide="at-sign" class="w-3.5 h-3.5 text-[#457B9D] dark:text-[#A495C6]"></i> Alamat Emel Rasmi
@@ -378,11 +387,12 @@
                 <form id="details-form" class="space-y-4 theme-card border rounded-2xl p-5 sm:p-6 shadow-xl">
                     <div class="space-y-1.5">
                         <label class="text-xs font-semibold theme-text-primary flex items-center gap-1.5">
-                            <i data-lucide="layers" class="w-3.5 h-3.5 text-[#457B9D] dark:text-[#A495C6]"></i> Pilih Mesyuarat Rasmi
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-[#457B9D] dark:text-[#A495C6]"></i> Pilih Mesyuarat Rasmi (Sedang Dibuka)
                         </label>
                         <select id="guest-meeting-select" required class="w-full theme-input border rounded-xl px-4 py-3 text-xs">
                             <option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>
                         </select>
+                        <p id="guest-meeting-hint" class="text-[10px] theme-text-muted hidden">Mesyuarat berlabel [BELUM DIBUKA] hanya boleh dipilih apabila tiba tarikh & masa ditetapkan.</p>
                         <div id="meeting-info-box" class="p-3 theme-subcard rounded-xl border text-[11px] theme-text-primary space-y-1 hidden">
                             <p class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-[#457B9D] dark:text-[#A495C6]"></i> <span id="info-box-date">-</span></p>
                             <p class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#457B9D] dark:text-[#A495C6]"></i> <span id="info-box-location">-</span></p>
@@ -604,7 +614,7 @@
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold uppercase tracking-wider theme-text-muted flex items-center gap-1">
-                                <i data-lucide="calendar" class="w-3 h-3 text-[#457B9D] dark:text-[#A495C6]"></i> Tarikh & Masa
+                                <i data-lucide="calendar" class="w-3 h-3 text-[#457B9D] dark:text-[#A495C6]"></i> Tarikh & Masa Dibuka
                             </label>
                             <input type="datetime-local" id="admin-meeting-datetime" required 
                                 class="w-full theme-input border rounded-xl px-3 py-2.5 text-xs cursor-pointer">
@@ -623,10 +633,13 @@
                 </div>
 
                 <div class="theme-card border rounded-2xl p-5 space-y-3 shadow-xl">
-                    <h3 class="text-sm font-bold theme-text-primary flex items-center gap-2">
-                        <i data-lucide="list" class="text-[#457B9D] dark:text-[#A495C6] w-5 h-5"></i>
-                        <span>Senarai Mesyuarat Aktif Didaftarkan</span>
-                    </h3>
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-sm font-bold theme-text-primary flex items-center gap-2">
+                            <i data-lucide="list" class="text-[#457B9D] dark:text-[#A495C6] w-5 h-5"></i>
+                            <span>Senarai Mesyuarat Aktif Didaftarkan</span>
+                        </h3>
+                        <span class="text-[10px] theme-text-muted">Dibuka automatik ikut tarikh & masa</span>
+                    </div>
                     <div id="admin-meetings-list" class="space-y-2"></div>
                 </div>
 
@@ -778,10 +791,79 @@
         let isBatchDelete = false;
         let isSyncing = false;
         let currentTheme = localStorage.getItem('ui_theme') || 'dark';
+        let lastOpenStateHash = "";
 
         let attendanceRecord = { email: "", tajukMesyuarat: "", tarikhMasaMesyuarat: "", lokasiMesyuarat: "", nama: "", jawatan: "", jabatan: "", catatan: "", signature: "" };
 
         let canvas, ctx, isDrawing = false, hasSignature = false;
+
+        // =========================================================================
+        // PENGHURAIAN TARIKH & MASA (ISO & FORMAT MELAYU) UNTUK KAWALAN PEMBUKAAN
+        // =========================================================================
+        const parseMeetingTimestamp = (dtStr) => {
+            if (!dtStr) return null;
+            const cleanStr = String(dtStr).trim();
+
+            // 1. Cuba format ISO standard (cth: 2026-11-26T15:00 atau 2026-11-26T15:00:00.000Z)
+            if (/^\d{4}-\d{2}-\d{2}/.test(cleanStr)) {
+                const isoDate = new Date(cleanStr);
+                if (!isNaN(isoDate.getTime())) return isoDate.getTime();
+            }
+
+            // 2. Cuba format Bahasa Melayu (cth: "26 November 2026 (Khamis), 3:00 Petang" atau "20 Okt 2026, 9:30 Pagi")
+            const monthMap = {
+                'januari': 0, 'jan': 0,
+                'februari': 1, 'feb': 1,
+                'mac': 2, 'mar': 2,
+                'april': 3, 'apr': 3,
+                'mei': 4, 'may': 4,
+                'jun': 5, 'june': 5,
+                'julai': 6, 'jul': 6, 'july': 6,
+                'ogos': 7, 'aug': 7,
+                'september': 8, 'sep': 8, 'sept': 8,
+                'oktober': 9, 'okt': 9, 'oct': 9,
+                'november': 10, 'nov': 10,
+                'disember': 11, 'dis': 11, 'dec': 11
+            };
+
+            const match = cleanStr.match(/(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})(?:.*?(\d{1,2})[:.](\d{2})\s*(pagi|tengah\s*hari|petang|malam|am|pm)?)?/i);
+            if (match) {
+                const day = parseInt(match[1], 10);
+                const monthName = match[2].toLowerCase();
+                const year = parseInt(match[3], 10);
+                const month = monthMap[monthName];
+
+                if (month !== undefined) {
+                    let hour = match[4] ? parseInt(match[4], 10) : 0;
+                    const minute = match[5] ? parseInt(match[5], 10) : 0;
+                    const period = (match[6] || '').toLowerCase().replace(/\s+/g, '');
+
+                    if (period) {
+                        if ((period === 'petang' || period === 'malam' || period === 'pm') && hour < 12) {
+                            hour += 12;
+                        } else if ((period === 'pagi' || period === 'am') && hour === 12) {
+                            hour = 0;
+                        } else if (period === 'tengahhari' && hour < 11) {
+                            hour += 12;
+                        }
+                    }
+
+                    const parsedDate = new Date(year, month, day, hour, minute, 0, 0);
+                    if (!isNaN(parsedDate.getTime())) return parsedDate.getTime();
+                }
+            }
+
+            const fallback = new Date(cleanStr);
+            return isNaN(fallback.getTime()) ? null : fallback.getTime();
+        };
+
+        // Semak sama ada mesyuarat sudah dibuka mengikut masa & tarikh ditetapkan
+        const isMeetingOpen = (meeting) => {
+            if (!meeting || !meeting.datetime) return true;
+            const scheduledTs = parseMeetingTimestamp(meeting.datetime);
+            if (!scheduledTs) return true;
+            return window.getSyncedNow() >= scheduledTs;
+        };
 
         // =========================================================================
         // FORMAT TARIKH & MASA KALENDAR KE BAHASA MELAYU RASMI
@@ -1117,6 +1199,7 @@
                 const count = allAttendees.filter(a => a.tajukMesyuarat === m.title).length;
                 const encodedTitle = encodeURIComponent(m.title);
                 const formattedDt = formatMalayDateTime(m.datetime);
+                const openStatus = isMeetingOpen(m);
 
                 cardsHtml += `
                 <button type="button" onclick="window.selectMeetingCard('${encodedTitle}')" 
@@ -1130,6 +1213,9 @@
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] theme-text-muted">
                                 <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3 text-[#457B9D] dark:text-[#A495C6]"></i> ${formattedDt}</span>
                                 <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 text-[#457B9D] dark:text-[#A495C6]"></i> ${m.location || '-'}</span>
+                                ${openStatus 
+                                    ? `<span class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Dibuka</span>` 
+                                    : `<span class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold"><i data-lucide="clock" class="w-2.5 h-2.5"></i> Belum Dibuka</span>`}
                             </div>
                         </div>
                     </div>
@@ -1152,6 +1238,11 @@
             const selectEl = document.getElementById('guest-meeting-select');
             const filterSelectEl = document.getElementById('filter-meeting-select');
             const pdfSelectEl = document.getElementById('pdf-meeting-select');
+            const hintEl = document.getElementById('guest-meeting-hint');
+            const upcomingNotice = document.getElementById('upcoming-schedule-notice');
+            const upcomingPreview = document.getElementById('upcoming-meetings-preview');
+            const submitEmailBtn = document.getElementById('btn-submit-email');
+            const emailInput = document.getElementById('input-email-manual');
 
             const prevGuestVal = selectEl ? selectEl.value : "";
             const prevFilterVal = filterSelectEl ? filterSelectEl.value : "ALL";
@@ -1159,16 +1250,67 @@
 
             let htmlOptions = '<option value="" disabled selected>-- Sila Pilih Mesyuarat --</option>';
             let htmlPdfOptions = '<option value="" disabled selected>-- Pilih Mesyuarat Untuk Cetak --</option>';
+            let openCount = 0;
+            let lockedCount = 0;
+            let upcomingHtml = "";
 
             activeMeetings.forEach(m => {
                 const formattedDt = formatMalayDateTime(m.datetime);
-                htmlOptions += `<option value="${m.title}" data-datetime="${formattedDt}" data-location="${m.location}">${m.title} (${formattedDt})</option>`;
+                const openStatus = isMeetingOpen(m);
+
+                if (openStatus) {
+                    openCount++;
+                    htmlOptions += `<option value="${m.title}" data-datetime="${formattedDt}" data-location="${m.location}">${m.title} (${formattedDt})</option>`;
+                } else {
+                    lockedCount++;
+                    htmlOptions += `<option value="${m.title}" disabled data-datetime="${formattedDt}" data-location="${m.location}">[BELUM DIBUKA] ${m.title} — Dibuka pada ${formattedDt}</option>`;
+                    upcomingHtml += `
+                    <div class="p-2.5 rounded-xl theme-subcard border text-[11px] space-y-1">
+                        <p class="font-bold theme-text-primary leading-snug">${m.title}</p>
+                        <p class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+                            <i data-lucide="calendar-clock" class="w-3 h-3"></i> Dibuka: ${formattedDt}
+                        </p>
+                    </div>`;
+                }
                 htmlPdfOptions += `<option value="${m.title}">${m.title}</option>`;
             });
 
+            if (hintEl) {
+                if (lockedCount > 0) hintEl.classList.remove('hidden');
+                else hintEl.classList.add('hidden');
+            }
+
+            // Papar notis jika terdapat mesyuarat berdaftar tetapi belum ada satu pun yang dibuka mengikut masa
+            if (upcomingNotice && upcomingPreview) {
+                if (activeMeetings.length > 0 && openCount === 0) {
+                    upcomingNotice.classList.remove('hidden');
+                    upcomingPreview.innerHTML = upcomingHtml;
+                    if (submitEmailBtn) {
+                        submitEmailBtn.disabled = true;
+                        submitEmailBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        submitEmailBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i><span>Menunggu Waktu Mesyuarat Dibuka</span>`;
+                    }
+                    if (emailInput) emailInput.disabled = true;
+                } else {
+                    upcomingNotice.classList.add('hidden');
+                    if (submitEmailBtn) {
+                        submitEmailBtn.disabled = false;
+                        submitEmailBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        submitEmailBtn.innerHTML = `<span>Seterusnya</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+                    }
+                    if (emailInput) emailInput.disabled = false;
+                }
+            }
+
             if (selectEl) {
                 selectEl.innerHTML = htmlOptions;
-                if (prevGuestVal && activeMeetings.some(m => m.title === prevGuestVal)) selectEl.value = prevGuestVal;
+                const stillOpen = activeMeetings.some(m => m.title === prevGuestVal && isMeetingOpen(m));
+                if (prevGuestVal && stillOpen) {
+                    selectEl.value = prevGuestVal;
+                } else {
+                    selectEl.value = "";
+                    document.getElementById('meeting-info-box')?.classList.add('hidden');
+                }
             }
             if (filterSelectEl) {
                 if (prevFilterVal !== "ALL" && !activeMeetings.some(m => m.title === prevFilterVal)) {
@@ -1191,18 +1333,26 @@
                 let adminHtml = "";
                 activeMeetings.forEach(m => {
                     const formattedDt = formatMalayDateTime(m.datetime);
+                    const openStatus = isMeetingOpen(m);
+                    const statusBadge = openStatus
+                        ? `<span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> DIBUKA</span>`
+                        : `<span class="inline-flex items-center gap-1 bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full"><i data-lucide="clock" class="w-3 h-3"></i> BELUM DIBUKA</span>`;
+
                     adminHtml += `
-                    <div class="flex items-center justify-between p-3 theme-subcard rounded-xl border text-xs">
-                        <div>
-                            <span class="font-bold theme-text-primary block">${m.title}</span>
-                            <span class="text-[10px] theme-text-muted">📅 ${formattedDt} &bull; 📍 ${m.location}</span>
+                    <div class="flex items-center justify-between gap-3 p-3 theme-subcard rounded-xl border text-xs">
+                        <div class="min-w-0 space-y-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="font-bold theme-text-primary leading-snug">${m.title}</span>
+                                ${statusBadge}
+                            </div>
+                            <span class="text-[10px] theme-text-muted block">📅 ${formattedDt} &bull; 📍 ${m.location}</span>
                         </div>
-                        <button onclick="window.removeMeeting('${m.id}')" class="p-2 bg-[#E63946]/15 dark:bg-[#FAD3CE]/15 text-[#E63946] dark:text-[#FAD3CE] rounded-lg hover:opacity-80"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="window.removeMeeting('${m.id}')" class="p-2 bg-[#E63946]/15 dark:bg-[#FAD3CE]/15 text-[#E63946] dark:text-[#FAD3CE] rounded-lg hover:opacity-80 flex-shrink-0"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </div>`;
                 });
                 adminListEl.innerHTML = adminHtml;
-                lucide.createIcons();
             }
+            lucide.createIcons();
         };
 
         window.removeMeeting = async (id) => {
@@ -1218,6 +1368,13 @@
                 const now = new Date(window.getSyncedNow());
                 const clockEl = document.getElementById('live-clock');
                 if (clockEl) clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+                // Semak secara masa nyata jika status pembukaan mesyuarat bertukar (daripada Belum Dibuka -> Dibuka)
+                const currentHash = activeMeetings.map(m => `${m.id}:${isMeetingOpen(m)}`).join('|');
+                if (currentHash !== lastOpenStateHash) {
+                    lastOpenStateHash = currentHash;
+                    populateMeetingDropdowns();
+                }
             }, 1000);
         };
 
@@ -1356,6 +1513,7 @@
             if (tabName === 'register') {
                 document.getElementById('tab-btn-register').className = activeClasses;
                 document.getElementById('section-register').classList.remove('hidden');
+                populateMeetingDropdowns();
             } else if (tabName === 'list') {
                 document.getElementById('tab-btn-list').className = activeClasses;
                 document.getElementById('section-list').classList.remove('hidden');
@@ -1465,6 +1623,13 @@
                 const opt = e.target.selectedOptions[0];
                 const box = document.getElementById('meeting-info-box');
                 if (opt && opt.value) {
+                    const meetingObj = activeMeetings.find(m => m.title === opt.value);
+                    if (meetingObj && !isMeetingOpen(meetingObj)) {
+                        e.target.value = "";
+                        box.classList.add('hidden');
+                        showToast(`Pendaftaran mesyuarat ini hanya dibuka pada ${formatMalayDateTime(meetingObj.datetime)}.`, "error");
+                        return;
+                    }
                     document.getElementById('info-box-date').textContent = opt.getAttribute('data-datetime');
                     document.getElementById('info-box-location').textContent = opt.getAttribute('data-location');
                     box.classList.remove('hidden');
@@ -1476,6 +1641,12 @@
             });
 
             document.getElementById('btn-submit-email').addEventListener('click', () => {
+                const hasAnyOpen = activeMeetings.some(m => isMeetingOpen(m));
+                if (activeMeetings.length > 0 && !hasAnyOpen) {
+                    showToast("Tiada mesyuarat yang telah dibuka buat masa ini.", "error");
+                    return;
+                }
+
                 const email = document.getElementById('input-email-manual').value.trim();
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                     showToast("Sila masukkan emel sah.", "error");
@@ -1485,12 +1656,20 @@
                 document.getElementById('display-user-email').textContent = email;
                 document.getElementById('step-login').classList.add('hidden');
                 document.getElementById('step-details').classList.remove('hidden');
+                populateMeetingDropdowns();
                 
                 setTimeout(initSignaturePad, 150);
             });
 
             document.getElementById('details-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+
+                const chosenTitle = document.getElementById('guest-meeting-select').value;
+                const chosenMeeting = activeMeetings.find(m => m.title === chosenTitle);
+                if (chosenMeeting && !isMeetingOpen(chosenMeeting)) {
+                    showToast(`Pendaftaran mesyuarat ini belum dibuka (Dibuka: ${formatMalayDateTime(chosenMeeting.datetime)}).`, "error");
+                    return;
+                }
                 
                 if (!hasSignature) {
                     showToast("Sila buat tandatangan digital anda terlebih dahulu.", "error");
@@ -1505,7 +1684,7 @@
                 const rawSigData = canvas.toDataURL('image/png');
                 const normalizedSig = await normalizeSignatureForPdf(rawSigData);
 
-                attendanceRecord.tajukMesyuarat = document.getElementById('guest-meeting-select').value;
+                attendanceRecord.tajukMesyuarat = chosenTitle;
                 attendanceRecord.nama = document.getElementById('guest-name').value.trim();
                 attendanceRecord.jawatan = document.getElementById('guest-designation').value.trim();
                 attendanceRecord.jabatan = document.getElementById('guest-department').value.trim();
@@ -1728,6 +1907,7 @@
                 document.getElementById('input-email-manual').value = "";
                 document.getElementById('details-form').reset();
                 clearSignature();
+                populateMeetingDropdowns();
             });
         });
     </script>
